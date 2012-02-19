@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace U2Pa
+﻿namespace U2Pa
 {
   public enum VppLevel : byte
   {
