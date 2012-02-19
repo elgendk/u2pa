@@ -35,5 +35,4 @@ namespace U2Pa
       return exponent == 0 ? 1 : baseNumber * Pow(baseNumber, exponent - 1);
     }
   }
-
 }

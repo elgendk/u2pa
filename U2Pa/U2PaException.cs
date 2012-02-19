@@ -1,4 +1,5 @@
 ﻿using System;
+
 namespace U2Pa
 {
   public class U2PaException : Exception

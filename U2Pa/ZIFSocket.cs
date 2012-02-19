@@ -11,10 +11,10 @@ namespace U2Pa
       pins = new BitArray(size + 1);
     }
 
-    public ZIFSocket(int size, byte[] initial2Pbytes)
+    public ZIFSocket(int size, byte[] initialTopbytes)
     : this(size)
     {
-      Swallow2PBytes(initial2Pbytes);
+      SwallowTopBytes(initialTopbytes);
     }
 
     public bool this[int i]
@@ -28,16 +28,16 @@ namespace U2Pa
       pins.SetAll(value);
     }
 
-    private void Swallow2PBytes(byte[] bytes)
+    private void SwallowTopBytes(byte[] bytes)
     {
-      Swallow2PByte(bytes[0], 1, 8, 20);
-      Swallow2PByte(bytes[1], 9, 16, 20);
-      Swallow2PByte(bytes[2], 17, 25, 20);
-      Swallow2PByte(bytes[3], 26, 33, 20);
-      Swallow2PByte(bytes[4], 34, 40, 20);
+      SwallowTopByte(bytes[0], 1, 8, 20);
+      SwallowTopByte(bytes[1], 9, 16, 20);
+      SwallowTopByte(bytes[2], 17, 25, 20);
+      SwallowTopByte(bytes[3], 26, 33, 20);
+      SwallowTopByte(bytes[4], 34, 40, 20);
     }
 
-    private void Swallow2PByte(byte b, int from, int to, int skip)
+    private void SwallowTopByte(byte b, int from, int to, int skip)
     {
       var skipOffset = 0;
       for(var i = from; i <= to; i++)
@@ -49,19 +49,19 @@ namespace U2Pa
       }
     }
 
-    public byte[] Spew2PBytes()
+    public byte[] ToTopBytes()
     {
       return new[]
                {
-                 Spew2PByte(1, 8, 20),
-                 Spew2PByte(9, 16, 20),
-                 Spew2PByte(17, 25, 20),
-                 Spew2PByte(26, 33, 20),
-                 Spew2PByte(34, 40, 20)
+                 ToTopByte(1, 8, 20),
+                 ToTopByte(9, 16, 20),
+                 ToTopByte(17, 25, 20),
+                 ToTopByte(26, 33, 20),
+                 ToTopByte(34, 40, 20)
                };
     }
 
-    private byte Spew2PByte(int from, int to, int skip)
+    private byte ToTopByte(int from, int to, int skip)
     {
       byte acc = 0x00;
       var j = 0;
