@@ -1,4 +1,8 @@
-﻿namespace U2Pa
+﻿using System;
+using System.IO;
+using System.Linq;
+
+namespace U2Pa
 {
   internal static class U2PaMain
   {
@@ -13,7 +17,17 @@
 
         Core.Init();
 
-        Core.Read2716();
+        var mb8516Data = Core.ReadMB8516().ToArray();
+        var mb8516FileName = @"C:\Users\Elgen\Arcade\MoonCrestaBootleg\Test4A.bin";
+        using (var fs = new FileStream(mb8516FileName, FileMode.Create, FileAccess.Write))
+        {
+          using (var bw = new BinaryWriter(fs))
+          {
+            bw.Write(mb8516Data);
+            bw.Flush();
+          }
+        }
+        Core.ShoutLine(4, "Read MB8516 data written to file {0}", mb8516FileName);
       }
       catch (U2PaException e)
       {

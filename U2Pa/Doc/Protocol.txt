@@ -1,0 +1,8 @@
+﻿Commands
+========
+
+0E XX 00 00 commands
+--------------------
+
+0E 11 00 00		Used to put the id string of the programmer into the buffer. 
+				Seems to the be followed by a write of 07 before the read of the buffer.

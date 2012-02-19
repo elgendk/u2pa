@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using LibUsbDotNet;
 using LibUsbDotNet.Main;
 
@@ -9,7 +10,7 @@ namespace U2Pa
 {
   public static class Core
   {
-    public static int VerbosityLevel = 5;
+    public static int VerbosityLevel = 4;
     private static UsbDevice U2PaDevice;
     private static UsbEndpointReader U2PaReader;
     private static UsbEndpointWriter U2PaWriter;
@@ -18,7 +19,6 @@ namespace U2Pa
     private static List<byte> GndPins = new List<byte> { 10, 14, 16, 20, 25, 31 };
     private const int VendorId = 0x2471;
     private const int ProductId = 0x0853;
-    private const string BitStreamFileName = @"C:\Top\Topwin6\Blib3\ictest.bit";
 
     /// <summary>
     /// 
@@ -82,7 +82,37 @@ namespace U2Pa
         throw new U2PaException("Unable to open write endpoint ${0}", "02");
       ShoutLine(4, "Writer endpoint ${0} opened.", U2PaWriter.EndpointInfo.Descriptor.EndpointID.ToString("X2"));
 
-      UploadBitStream(BitStreamFileName);
+      string programmerId = ReadIdString();
+
+      ShoutLine(1, "Connected Top device is: {0}.", programmerId);
+
+      //UploadBitStream(@"C:\Top\Topwin6\Blib2\ictest.bit");
+      UpLoadBitStreamTopWin6Style(@"C:\Top\Topwin6\Blib2\ictest.bit");
+    }
+
+    public static string ReadIdString()
+    {
+      int transferLength;
+      var errorCode = U2PaWriter.Write(new byte[] { 0x0E, 0x11, 0x00, 0x00 }, 1000, out transferLength);
+      if (errorCode == ErrorCode.None && transferLength == 4)
+        ShoutLine(4, "Send write-version-string-to-buffer command.");
+      else
+        throw new U2PaException("Failed to send write-version-string-to-buffer command. Transferlength: {0} ErrorCode: {1}", transferLength, errorCode);
+
+      errorCode = U2PaWriter.Write(new byte[] { 0x07 }, 1000, out transferLength);
+      if (errorCode == ErrorCode.None && transferLength == 1)
+        ShoutLine(4, "Send 07 command.");
+      else
+        throw new U2PaException("Failed to send 07 command. Transferlength: {0} ErrorCode: {1}", transferLength, errorCode);
+
+      var readBuffer = new byte[64];
+      errorCode = U2PaReader.Read(readBuffer, 1000, out transferLength);
+      if (errorCode == ErrorCode.None && transferLength == readBuffer.Length)
+        ShoutLine(4, "Buffer read.");
+      else
+        throw new U2PaException("Failed to read buffer. Transferlength: {0} ErrorCode: {1}", transferLength, errorCode);
+
+      return readBuffer.TakeWhile(t => t != 0x20).Aggregate("", (current, t) => current + (char) t);
     }
 
     /// <summary>
@@ -119,7 +149,7 @@ namespace U2Pa
       var buffer = new byte[1];
       var bytes = new List<byte>();
       // Open file and read it in
-      using (var fs = new FileStream(BitStreamFileName, FileMode.Open, FileAccess.Read))
+      using (var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read))
       {
         using (var br = new BinaryReader(fs))
         {
@@ -134,19 +164,20 @@ namespace U2Pa
 
     private static int CheckBitStreamHeader(IList<byte> bytes)
     {
-      var startIndex = 0;
-      for (var i = 0; i < bytes.Count; i++)
-      {
-        // Find position of 2nd 'e' in the stream...only works for ictest.bin
-        if (bytes[i] == 0x65 && i > 19)
-        {
-          startIndex = i;
-          break;
-        }
-      }
-      if (startIndex == 0 || startIndex == bytes.Count)
-        throw new U2PaException("Header check of bitstream failed!");
-      return startIndex + 1 + 4;
+      return 0x47;
+      //var startIndex = 0;
+      //for (var i = 0; i < bytes.Count; i++)
+      //{
+      //  // Find position of 2nd 'e' in the stream...only works for ictest.bin
+      //  if (bytes[i] == 0x65 && i > 19)
+      //  {
+      //    startIndex = i;
+      //    break;
+      //  }
+      //}
+      //if (startIndex == 0 || startIndex == bytes.Count)
+      //  throw new U2PaException("Header check of bitstream failed!");
+      //return startIndex + 1 + 4;
 
       // TODO: Make this alot smarter by using something like the below...
       //'skip e character
@@ -166,6 +197,49 @@ namespace U2Pa
       //    Exit Sub
       //End If
     }
+
+    public static void UpLoadBitStreamTopWin6Style(string fileName)
+    {
+      // Prelude of black magic
+      SendRawPackage(5, new byte[] { 0x0A, 0x1B, 0x00 }, "???");
+      SendRawPackage(5, new byte[] { 0x0E, 0x21, 0x00, 0x00 }, "Start bitstream upload");
+      SendRawPackage(5, new byte[] { 0x07 }, "Some kind of finish up/execute command");
+      RecieveRawPackage(5, "Some values that maby should be validated in some way");
+
+      var bytes = ReadBinaryFile(fileName);
+      var bytesToSend = PackBytes(bytes).SelectMany(x => x).ToArray();
+      SendRawPackage(5, bytesToSend, String.Format("Uploading file: {0}", fileName));
+
+      // Postlude of black magic
+      SendRawPackage(5, new byte[] { 0x0E, 0x12, 0x00, 0x00 }, "Set Vpp boost off");
+      SendRawPackage(5, new byte[] { 0x1B }, "???");
+      // Why 2 times???
+      SendRawPackage(5, new byte[] { 0x0E, 0x12, 0x00, 0x00 }, "Set Vpp boost off");
+      SendRawPackage(5, new byte[] { 0x1B }, "???");
+      SendRawPackage(5, new byte[] { 0x0E, 0x13, 0x32, 0x00 }, "Set Vcc = 5V");
+      SendRawPackage(5, new byte[] { 0x1B }, "???");
+      SendRawPackage(5, new byte[] { 0x0E, 0x15, 0x00, 0x00 }, "Clear all Vcc assignments");
+      // Why no 0x1B here???
+      SendRawPackage(5, new byte[] { 0x0E, 0x17, 0x00, 0x00 }, "Clear all ??? assignments");
+      // Why no 0x1B here???
+      SendRawPackage(5, new byte[] { 0x0A, 0x1D, 0x86 }, "???");
+      SendRawPackage(5, new byte[] { 0x0E, 0x16, 0x00, 0x00 }, "Clear all Gnd assignments");
+      var clueless = new byte[]
+                       {
+                         0x3E, 0x00, 0x3E, 0x01, 0x3E, 0x02, 0x3E, 0x03, 0x3E, 0x04, 0x3E, 0x05, 0x3E, 0x06, 0x3E, 0x07,
+                         0x3E, 0x08, 0x3E, 0x09, 0x3E, 0x0A, 0x3E, 0x0B, 0x3E, 0x0C, 0x3E, 0x0D, 0x3E, 0x0E, 0x3E, 0x0F,
+                         0x3E, 0x10, 0x3E, 0x11, 0x3E, 0x12, 0x3E, 0x13, 0x3E, 0x14, 0x3E, 0x15, 0x3E, 0x16, 0x3E, 0x17,
+                         0x07
+                       };
+      SendRawPackage(5, clueless, "I´m clueless on this one atm");
+      RecieveRawPackage(5, "Properly answer to clueless that maby should be validated in some way");
+      // Again?
+      SendRawPackage(5, new byte[] { 0x0E, 0x12, 0x00, 0x00 }, "Set Vpp boost off");
+      SendRawPackage(5, new byte[] { 0x1B }, "???");
+      // Again, again???
+      SendRawPackage(5, new byte[] { 0x0E, 0x12, 0x00, 0x00 }, "Set Vpp boost off");
+    }
+
 
     public static void UploadBitStream(string fileName)
     {
@@ -239,9 +313,32 @@ namespace U2Pa
       }
     }
 
-    public static byte[] Read2716()
+    public static void SendRawPackage(int verbosity, byte[] data, string description)
     {
-      ShoutLine(4, "Reading 2716.");
+      int transferLength;
+      int timeOut = Math.Max(1000, data.Length/10);
+      var errorCode = U2PaWriter.Write(data, timeOut, out transferLength);
+      if (errorCode == ErrorCode.None && transferLength == data.Length)
+        ShoutLine(verbosity, "Write operation success: {0}. Timeout {1}ms.", description, timeOut);
+      else
+        throw new U2PaException("Write operation failure. {0}. Transferlength: {1} ErrorCode: {2}", description, transferLength, errorCode);
+    }
+
+    public static byte[] RecieveRawPackage(int verbosity, string description)
+    {  
+      var readBuffer = new byte[64];
+      int transferLength;
+      var errorCode = U2PaReader.Read(readBuffer, 1000, out transferLength);
+      if (errorCode == ErrorCode.None && transferLength == readBuffer.Length)
+        ShoutLine(verbosity, "Read operation success: {0}.", description);
+      else
+        throw new U2PaException("Read operation success: {0}. Transferlength: {1} ErrorCode: {2}", description, transferLength, errorCode);
+      return readBuffer;
+    }
+
+    public static IEnumerable<byte> ReadMB8516()
+    {
+      ShoutLine(4, "Reading MB8516...");
       // Setting up chip...
       SetVccLevel(VccLevel.Vcc_5_0v);
       SetVppLevel(VppLevel.Vpp_Off);
@@ -254,7 +351,7 @@ namespace U2Pa
 
       var t = new PinNumberTranslator(24, 0);
 
-      var zif = new BitArray(41);
+      var zif = new ZIFSocket(40);
       for (int address = 0; address < 2.Pow(addressPins.Length); address++)
       {
         // Reset ZIF Vector to all 1's
@@ -270,8 +367,16 @@ namespace U2Pa
           zif[t.ToZIF(p)] = false;
 
         int transferLength;
-        var package = zif.Spew2PBytes();
-        //var errorCode = U2PaWriter.Write(new byte[]{0x10, 0x00, 0x11, 0x00, 0x12, 0x00, 0x13, 0x00, 0x14, 0x00, 0x0A, 0x15, 0xFF}, 1000, out transferLength);
+        var rawBytes = zif.Spew2PBytes();
+        var package = new byte[]
+                        {
+                          0x10, rawBytes[0],
+                          0x11, rawBytes[1],
+                          0x12, rawBytes[2],
+                          0x13, rawBytes[3],
+                          0x14, rawBytes[4],
+                          0x0A, 0x15, 0xFF
+                        };
         var errorCode = U2PaWriter.Write(package, 1000, out transferLength);
         if (errorCode == ErrorCode.None && transferLength == package.Length)
           ShoutLine(5, "Address {0} written to ZIF.", address.ToString("X4"));
@@ -295,12 +400,17 @@ namespace U2Pa
         else
           throw new U2PaException("Failed to read ZIF for address {0}. Transferlength: {1} ErrorCode: {2}", address, transferLength, errorCode);
 
-        var readBytes = "";
-        for (int i = 0; i < readBuffer.Length; i++)
-          readBytes += readBuffer[i].ToString("X2") + " ";
-        ShoutLine(5, readBytes);
+
+
+        var readBits = new ZIFSocket(40, readBuffer.Take(5).ToArray());
+        var readByte = new BitArray(8);
+
+        for (int i = 0; i < dataPins.Length; i++)
+          readByte[i] = readBits[t.ToZIF(dataPins[i])];
+
+        var bytes = readByte.ToBytes().ToArray();
+        yield return bytes[0];
       }
-      return null;
     }
 
     public static void SetVppLevel(VppLevel level)
@@ -338,9 +448,9 @@ namespace U2Pa
       ApplyPropertyToPins("Gnd", 0x16, GndPins, zifPins);
     }
 
-    private static void ApplyPropertyToPins(string name, byte propCode, List<byte> validPins, params byte[] zifPins)
+    private static void ApplyPropertyToPins(string name, byte propCode, ICollection<byte> validPins, params byte[] zifPins)
     {
-      // Always start by clearing all Vcc pins
+      // Always start by clearing all pins
       int transferLength;
       var errorCode = U2PaWriter.Write(new byte[] { 0x0e, propCode, 0x00, 0x00 }, 1000, out transferLength);
       if (errorCode == ErrorCode.None && transferLength == 4)

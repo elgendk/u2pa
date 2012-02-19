@@ -55,6 +55,10 @@
     <Compile Include="PinNumberTranslator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="U2PaException.cs" />
+    <Compile Include="ZIFSocket.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Doc\Protocol.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
