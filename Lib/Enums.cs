@@ -1,4 +1,4 @@
-﻿namespace U2Pa
+﻿namespace U2Pa.Lib
 {
   public enum VppLevel : byte
   {
@@ -29,5 +29,12 @@
     Vcc_2_5v = 0x19,
     Vcc_3_3v = 0x21,
     Vcc_5_0v = 0x32,
+  }
+
+  public enum ReadSoundness
+  {
+    SeemsToBeAOkay,
+    TryReread,
+    TryRewrite
   }
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using LibUsbDotNet;
 
-namespace U2Pa
+namespace U2Pa.Lib
 {
   public class Top2005Plus : TopDevice
   {

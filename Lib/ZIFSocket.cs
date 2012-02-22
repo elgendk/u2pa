@@ -1,20 +1,22 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
-namespace U2Pa
+namespace U2Pa.Lib
 {
   public class ZIFSocket
   {
     private readonly BitArray pins;
 
-    public ZIFSocket(int size)
-    {
-      pins = new BitArray(size + 1);
-    }
-
     public ZIFSocket(int size, byte[] initialTopbytes)
     : this(size)
     {
       SwallowTopBytes(initialTopbytes);
+    }
+
+    public ZIFSocket(int size)
+    {
+      pins = new BitArray(size + 1);
     }
 
     public bool this[int i]
@@ -26,6 +28,34 @@ namespace U2Pa
     public void SetAll(bool value)
     {
       pins.SetAll(value);
+    }
+
+    public void SetEpromAddress(Eproms.Eprom eprom, int address)
+    {
+      var translator = new PinNumberTranslator(eprom.DilType, eprom.Placement);
+      var bitAddress = new BitArray(new[] { address });
+      for (var i = 0; i < eprom.AddressPins.Length; i++)
+        pins[translator.ToZIF(eprom.AddressPins[i])] = bitAddress[i];
+    }
+
+    public int GetEpromAddress(Eproms.Eprom eprom)
+    {
+      var translator = new PinNumberTranslator(eprom.DilType, eprom.Placement);
+      var acc = 0;
+      for (var i = 0; i < eprom.AddressPins.Length; i++)
+      {
+        acc |= pins[translator.ToZIF(eprom.AddressPins[i])] ? 1 << i : 0;
+      }
+      return acc;
+    }
+
+    public IEnumerable<byte> GetEpromData(Eproms.Eprom eprom)
+    {
+      var translator = new PinNumberTranslator(eprom.DilType, eprom.Placement);
+      var readByte = new BitArray(eprom.DataPins.Length);
+      for (var i = 0; i < eprom.DataPins.Length; i++)
+        readByte[i] = pins[translator.ToZIF(eprom.DataPins[i])];
+      return readByte.ToBytes();
     }
 
     private void SwallowTopBytes(byte[] bytes)

@@ -5,10 +5,10 @@
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{BCDA5C78-D3C6-439C-A377-DDA20680A40B}</ProjectGuid>
+    <ProjectGuid>{F2462FD5-F29F-4CC5-AB5F-33BC04CAFEC3}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>U2Pa</RootNamespace>
+    <RootNamespace>U2Pa.Cmd</RootNamespace>
     <AssemblyName>u2pa</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
@@ -19,7 +19,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -33,12 +33,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup />
-  <PropertyGroup />
   <ItemGroup>
-    <Reference Include="LibUsbDotNet">
-      <HintPath>..\..\..\Program Files\LibUsbDotNet\LibUsbDotNet.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -48,23 +43,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Eproms\Eprom272048.cs" />
-    <Compile Include="Eproms\Eprom.cs" />
-    <Compile Include="Eproms\Eprom2716.cs" />
-    <Compile Include="PublicAddress.cs" />
-    <Compile Include="ExtensionMethods.cs" />
-    <Compile Include="Tools.cs" />
-    <Compile Include="Enums.cs" />
     <Compile Include="Main.cs" />
-    <Compile Include="PinNumberTranslator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Top2005Plus.cs" />
-    <Compile Include="TopDevice.cs" />
-    <Compile Include="U2PaException.cs" />
-    <Compile Include="ZIFSocket.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Doc\Protocol.txt" />
+    <ProjectReference Include="..\Lib\Lib.csproj">
+      <Project>{BCDA5C78-D3C6-439C-A377-DDA20680A40B}</Project>
+      <Name>Lib</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

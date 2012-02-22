@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using LibUsbDotNet;
 using LibUsbDotNet.Main;
-using U2Pa.Eproms;
+using U2Pa.Lib.Eproms;
 
-namespace U2Pa
+namespace U2Pa.Lib
 {
   public abstract class TopDevice : IDisposable
   {
@@ -37,10 +39,12 @@ namespace U2Pa
       // If the device is open and ready
       if (usbDevice == null)
         throw new U2PaException(
-          "Top2005+ Programmer with VendorId: 0x{0} and ProductId: 0x{1} not found.", VendorId.ToString("X4"), ProductId.ToString("X4"));
+          "Top Universal Programmer with VendorId: 0x{0} and ProductId: 0x{1} not found.", 
+          VendorId.ToString("X4"), 
+          ProductId.ToString("X4"));
 
       pa.ShoutLine(4,
-                   "Top2005+ Programmer with VendorId: 0x{0} and ProductId: 0x{1} found.",
+                   "Top Universal Programmer with VendorId: 0x{0} and ProductId: 0x{1} found.",
                    usbDevice.UsbRegistryInfo.Vid.ToString("X2"),
                    usbDevice.UsbRegistryInfo.Pid.ToString("X2"));
 
@@ -76,7 +80,7 @@ namespace U2Pa
       pa.ShoutLine(4, "Writer endpoint ${0} opened.", usbEndpointWriter.EndpointInfo.Descriptor.EndpointID.ToString("X2"));
 
       var idString = ReadTopDeviceIdString(pa, usbEndpointReader, usbEndpointWriter);
-      pa.ShoutLine(1, "Connected Top device is: {0}.", idString);
+      pa.ShoutLine(2, "Connected Top device is: {0}.", idString);
 
       if (idString.StartsWith("top2005+"))
         return new Top2005Plus(pa, usbDevice, usbEndpointReader, usbEndpointWriter);
@@ -168,7 +172,7 @@ namespace U2Pa
       //End If
     }
 
-    protected void SendRawPackage(int verbosity, byte[] data, string description)
+    internal void SendRawPackage(int verbosity, byte[] data, string description)
     {
       int transferLength;
       int timeOut = Math.Max(1000, data.Length / 10);
@@ -183,11 +187,12 @@ namespace U2Pa
     {
       var readBuffer = new byte[64];
       int transferLength;
-      var errorCode = UsbEndpointReader.Read(readBuffer, 1000, out transferLength);
+      int timeOut = 1000;
+      var errorCode = UsbEndpointReader.Read(readBuffer, timeOut, out transferLength);
       if (errorCode == ErrorCode.None && transferLength == readBuffer.Length)
-        PA.ShoutLine(verbosity, "Read operation success: {0}.", description);
+        PA.ShoutLine(verbosity, "Read operation  success: {0}. Timeout {1}ms.", description, timeOut);
       else
-        throw new U2PaException("Read operation success: {0}. Transferlength: {1} ErrorCode: {2}", description, transferLength, errorCode);
+        throw new U2PaException("Read operation failure: {0}. Transferlength: {1} ErrorCode: {2}", description, transferLength, errorCode);
       return readBuffer;
     }
 
@@ -201,78 +206,239 @@ namespace U2Pa
       return UsbEndpointReader.Read(buffer, timeOut, out transferLength);
     }
 
-    public IEnumerable<byte> ReadEprom(string type)
+    public int ReadEprom(Eprom eprom, PublicAddress.ProgressBar progressBar, IList<byte> bytes, int fromAddress)
     {
-      var eprom = Eprom.Create(type);
-      PA.ShoutLine(4, "Reading EPROM{0}...", eprom.Type);
+      const int rewriteCount = 5;
+      const int rereadCount = 5;
+      PA.ShoutLine(2, "Reading EPROM{0}.", eprom.Type);
       // Setting up chip...
       SetVccLevel(eprom.VccLevel);
       SetVppLevel(eprom.VppLevel);
       ApplyVcc(eprom.VccPins);
       ApplyGnd(eprom.GndPins);
 
-      var t = new PinNumberTranslator(eprom.DilType, 0);
+      var translator = new PinNumberTranslator(eprom.DilType, 0);
 
       var zif = new ZIFSocket(40);
-      for (int address = 0; address < 2.Pow(eprom.AddressPins.Length); address++)
+      int totalNumberOfAdresses = 2.Pow(eprom.AddressPins.Length);
+      int returnAddress = fromAddress;
+      PA.ShoutLine(2, "Now reading bytes...");
+      progressBar.Init();
+      for (var address = fromAddress; address < totalNumberOfAdresses; address++)
       {
-        // Reset ZIF Vector to all 1's
+        returnAddress = address;
         zif.SetAll(true);
-
-        // Set adress pins
-        var bitAddress = new BitArray(new[] { address });
-        for (var i = 0; i < eprom.AddressPins.Length; i++)
-          zif[t.ToZIF(eprom.AddressPins[i])] = bitAddress[i];
+        zif.SetEpromAddress(eprom, address);
 
         // Set enable pins low
         foreach (var p in eprom.EnablePins)
-          zif[t.ToZIF(p)] = false;
+          zif[translator.ToZIF(p)] = false;
 
-        int transferLength;
-        var rawBytes = zif.ToTopBytes();
-        var package = new byte[]
-                        {
-                          0x10, rawBytes[0],
-                          0x11, rawBytes[1],
-                          0x12, rawBytes[2],
-                          0x13, rawBytes[3],
-                          0x14, rawBytes[4],
-                          0x0A, 0x15, 0xFF
-                        };
-        var errorCode = Write(package, 1000, out transferLength);
-        if (errorCode == ErrorCode.None && transferLength == package.Length)
-          PA.ShoutLine(5, "Address {0} written to ZIF.", address.ToString("X4"));
-        else
-          throw new U2PaException("Failed to write address {0}. Transferlength: {1} ErrorCode: {2}",
-                                   address.ToString("X4"), transferLength, errorCode);
+        ZIFSocket resultZIF = null;
+        var result = ReadSoundness.TryRewrite;
 
-        // Prepare ZIF for reading
-        errorCode = Write(new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x07 }, 1000, out transferLength);
-        if (errorCode == ErrorCode.None && transferLength == 6)
-          PA.ShoutLine(5, "ZIF prepared for reading all pins.");
-        else
-          throw new U2PaException("Failed to prepare ZIF for reading. Transferlength: {0} ErrorCode: {1}",
-                                   transferLength, errorCode);
+        for (var i = 0; i < rewriteCount; i++)
+        {
+          if (result == ReadSoundness.SeemsToBeAOkay)
+            break;
 
-        // Read ZIF
-        var readBuffer = new byte[64];
-        errorCode = Read(readBuffer, 1000, out transferLength);
-        if (errorCode == ErrorCode.None && transferLength == readBuffer.Length)
-          PA.ShoutLine(5, "ZIF read for address {0}.", address.ToString("X4"));
-        else
-          throw new U2PaException("Failed to read ZIF for address {0}. Transferlength: {1} ErrorCode: {2}", address, transferLength, errorCode);
+          if (result == ReadSoundness.TryRewrite)
+          {
+            if (i > 0)
+              progressBar.Shout("A: {0}; WS: {1}ms", address.ToString("X4"), 100*i);
+            WriteZIF(zif, String.Format("A: {0}", address.ToString("X4")));
+            if (i > 0)
+              Thread.Sleep(100*i);
+            result = ReadSoundness.TryReread;
+          }
 
-        var readBits = new ZIFSocket(40, readBuffer.Take(5).ToArray());
-        var readByte = new BitArray(eprom.DataPins.Length);
+          for (var j = 0; j < rereadCount; j++)
+          {
+            if (result != ReadSoundness.TryReread)
+              break;
 
-        for (int i = 0; i < eprom.DataPins.Length; i++)
-          readByte[i] = readBits[t.ToZIF(eprom.DataPins[i])];
+            if (j > 0)
+            {
+              progressBar.Shout("A: {0}; WS: {1}ms; RS: {2}ms", address.ToString("X4"), 100*i, 100*(j*i));
+              Thread.Sleep(100*(j*i));
+            }
+            var readZifs = ReadZIF(String.Format("for address {0}", address.ToString("X4")), address);
+            result = Tools.AnalyzeEpromReadSoundness(readZifs, eprom, address, out resultZIF);
+            if (j == rereadCount - 1)
+              result = ReadSoundness.TryRewrite;
+            if (result == ReadSoundness.SeemsToBeAOkay && j > 0)
+              progressBar.Shout("Address: {0} read }};-P", address);
+          }
+        }
 
-        var bytes = readByte.ToBytes().ToArray();
-        yield return bytes[0];
-        if (eprom.DataPins.Length > 8)
-          yield return bytes[1];
+        if (result != ReadSoundness.SeemsToBeAOkay)
+          return returnAddress;
+
+        foreach(var b in resultZIF.GetEpromData(eprom))
+          bytes.Add(b);
+
+        progressBar.Progress();
       }
+      return returnAddress + 1;
+    }
+
+
+    //public IEnumerable<byte> ReadEpromOld(string type)
+    //{
+    //  var rewriteCount = 10;
+    //  var rereadCount = 10;
+    //  var eprom = Eprom.Create(type);
+    //  PA.ShoutLine(2, "Reading EPROM{0}.", eprom.Type);
+    //  // Setting up chip...
+    //  SetVccLevel(eprom.VccLevel);
+    //  SetVppLevel(eprom.VppLevel);
+    //  ApplyVcc(eprom.VccPins);
+    //  ApplyGnd(eprom.GndPins);
+
+    //  var translator = new PinNumberTranslator(eprom.DilType, 0);
+
+    //  var zif = new ZIFSocket(40);
+    //  int totalNumberOfAdresses = 2.Pow(eprom.AddressPins.Length);
+    //  PA.ShoutLine(2, "Now reading bytes...");
+    //  using (var progressBar = PA.GetProgressBar(totalNumberOfAdresses))
+    //  {
+    //    for (var address = 0; address < totalNumberOfAdresses; address++)
+    //    {
+    //      zif.SetAll(true);
+    //      zif.SetEpromAddress(eprom, address);
+
+    //      // Set enable pins low
+    //      foreach (var p in eprom.EnablePins)
+    //        zif[translator.ToZIF(p)] = false;
+
+    //      ZIFSocket resultZIF = null;
+    //      var result = ReadSoundness.TryRewrite;
+
+    //      for (var i = 0; i < rewriteCount; i++)
+    //      {
+    //        if (result == ReadSoundness.SeemsToBeAOkay)
+    //          break;
+
+    //        if(result == ReadSoundness.TryRewrite)
+    //        {
+    //          if(i > 0)
+    //            progressBar.Shout("Address: {0} Write sleeps {1}ms", address.ToString("X4"), 100*i);
+    //          WriteZIF(zif, String.Format("Address {0}", address.ToString("X4")));
+    //          if(i > 0) 
+    //            Thread.Sleep(100*i);
+    //          result = ReadSoundness.TryReread;
+    //        }
+
+    //        for (var j = 0; j < rereadCount; j++)
+    //        {
+    //          if (result != ReadSoundness.TryReread)
+    //            break;
+
+    //          if (j > 0)
+    //          {
+    //            progressBar.Shout("Address: {0} Write sleeps: {1}ms Read sleeps: {2}ms", address.ToString("X4"), 100*i, 100*(j*i));
+    //            Thread.Sleep(100*(j*i));
+    //          }
+    //          var readZifs = ReadZIFWithValidate(String.Format("for address {0}", address.ToString("X4")), address);
+    //          result = Tools.AnalyzeEpromReadSoundness(readZifs, eprom, address, out resultZIF);
+    //          if(j == rereadCount-1)
+    //            result = ReadSoundness.TryRewrite;
+    //          if(result == ReadSoundness.SeemsToBeAOkay && j > 0)
+    //            progressBar.Shout("Address: {0} read }};-P", address);
+    //        }
+    //      }
+
+    //      if(result != ReadSoundness.SeemsToBeAOkay)
+    //        throw new U2PaException("No clear read: {0}", address.ToString("X4"));
+
+    //      progressBar.Progress();
+
+    //      foreach (var b in resultZIF.GetEpromData(eprom))
+    //        yield return b;
+    //    }
+    //  }
+    //}
+
+    //public virtual ZIFSocket ReadZIF(string packageName)
+    //{
+    //  // Write ZIF to Top Programmer buffer
+    //  int transferLength;
+    //  var errorCode = Write(new byte[] {0x01, 0x02, 0x03, 0x04, 0x05, 0x07}, 1000, out transferLength);
+    //  if (errorCode == ErrorCode.None && transferLength == 6)
+    //    PA.ShoutLine(5, "ZIF written to buffer.");
+    //  else
+    //    throw new U2PaException("Failed to write ZIF to buffer. Transferlength: {0} ErrorCode: {1}",
+    //                            transferLength, errorCode);
+
+    //  // Read buffer
+    //  var readBuffer = new byte[64];
+    //  errorCode = Read(readBuffer, 1000, out transferLength);
+    //  if (errorCode == ErrorCode.None && transferLength == readBuffer.Length)
+    //    PA.ShoutLine(5, "ZIF read {0}.", packageName);
+    //  else
+    //    throw new U2PaException("ZIF read failed {0}. Transferlength: {1} ErrorCode: {2}", packageName,
+    //                            transferLength, errorCode);
+
+    //  return new ZIFSocket(40, readBuffer.Take(5).ToArray());
+    //}
+
+    public virtual ZIFSocket[] ReadZIF(string packageName, int address)
+    {
+      var package = new List<byte>();
+      for(var i = 0; i < 12; i++)
+        for(byte b = 0x01; b <= 0x05; b++)
+          package.Add(b);
+      package.Add(0x07);
+
+      // Write ZIF to Top Programmer buffer
+      int transferLength;
+      var errorCode = Write(package.ToArray(), 1000, out transferLength);
+      if (errorCode == ErrorCode.None && transferLength == package.Count)
+        PA.ShoutLine(5, "12 x ZIF written to buffer.");
+      else
+        throw new U2PaException("Failed to write 12 x ZIF to buffer. Transferlength: {0} ErrorCode: {1}",
+                                transferLength, errorCode);
+
+      // Read buffer
+      var readBuffer = new byte[64];
+      errorCode = Read(readBuffer, 1000, out transferLength);
+      if (errorCode == ErrorCode.None && transferLength == readBuffer.Length)
+        PA.ShoutLine(5, "ZIF read {0}.", packageName);
+      else
+        throw new U2PaException("ZIF read failed {0}. Transferlength: {1} ErrorCode: {2}", packageName,
+                                transferLength, errorCode);
+
+      var zifs = new List<ZIFSocket>();
+      for(var i = 0; i + 5 <= 60; i += 5)
+      {
+        var bytes = new List<byte>();
+        for(var j = i; j < i + 5; j++)
+          bytes.Add(readBuffer[j]);
+        zifs.Add(new ZIFSocket(40, bytes.ToArray()));
+      }
+      return zifs.ToArray();
+    }
+
+    public virtual void WriteZIF(ZIFSocket zif, string packageName)
+    {
+      int transferLength;
+      var rawBytes = zif.ToTopBytes();
+      var package = new byte[]
+                          {
+                            0x10, rawBytes[0],
+                            0x11, rawBytes[1],
+                            0x12, rawBytes[2],
+                            0x13, rawBytes[3],
+                            0x14, rawBytes[4],
+                            0x0A, 0x15, 0xFF
+                          };
+
+      var errorCode = Write(package, 1000, out transferLength);
+      if (errorCode == ErrorCode.None && transferLength == package.Length)
+        PA.ShoutLine(5, "{0} written to ZIF.", packageName);
+      else
+        throw new U2PaException("{0} write failed {0}. Transferlength: {1} ErrorCode: {2}",
+                                packageName, transferLength, errorCode);
     }
 
     public virtual void SetVppLevel(VppLevel level)
