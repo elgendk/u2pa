@@ -1,4 +1,4 @@
-﻿namespace U2Pa
+﻿namespace U2Pa.Lib
 {
   public class PinNumberTranslator
   {

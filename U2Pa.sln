@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cmd", "Cmd\Cmd.csproj", "{F2462FD5-F29F-4CC5-AB5F-33BC04CAFEC3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lib", "Lib\Lib.csproj", "{BCDA5C78-D3C6-439C-A377-DDA20680A40B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F2462FD5-F29F-4CC5-AB5F-33BC04CAFEC3}.Debug|x86.ActiveCfg = Debug|x86
+		{F2462FD5-F29F-4CC5-AB5F-33BC04CAFEC3}.Debug|x86.Build.0 = Debug|x86
+		{F2462FD5-F29F-4CC5-AB5F-33BC04CAFEC3}.Release|x86.ActiveCfg = Release|x86
+		{F2462FD5-F29F-4CC5-AB5F-33BC04CAFEC3}.Release|x86.Build.0 = Release|x86
+		{BCDA5C78-D3C6-439C-A377-DDA20680A40B}.Debug|x86.ActiveCfg = Debug|x86
+		{BCDA5C78-D3C6-439C-A377-DDA20680A40B}.Debug|x86.Build.0 = Debug|x86
+		{BCDA5C78-D3C6-439C-A377-DDA20680A40B}.Release|x86.ActiveCfg = Release|x86
+		{BCDA5C78-D3C6-439C-A377-DDA20680A40B}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

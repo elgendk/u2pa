@@ -1,9 +1,11 @@
-﻿namespace U2Pa.Eproms
+﻿namespace U2Pa.Lib.Eproms
 {
   public abstract class Eprom
   {
     public string Type;
     public int DilType;
+    public string Notes;
+    public int Placement;
     public int[] AddressPins;
     public int[] DataPins;
     public int[] EnablePins;
@@ -17,6 +19,8 @@
     {
       if (type == "2716")
         return new Eprom2716();
+      if (type == "271024")
+        return new Eprom271024();
       if (type == "272048")
         return new Eprom272048();
 
