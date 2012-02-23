@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using LibUsbDotNet;
-using LibUsbDotNet.Main;
 using U2Pa.Lib.Eproms;
 
 namespace U2Pa.Lib
@@ -54,8 +52,11 @@ options:
           break;
 
         case "write":
-          pa.ShoutLine(1, "rom write not yet implemented!");
-          return 1;
+          return RomWrite(pa, args[2], args[3]);
+          break;
+
+        case "info":
+          return RomInfo(pa, args[2]);
           break;
 
         case "id":
@@ -69,6 +70,19 @@ options:
       }
     }
 
+    private static int RomInfo(PublicAddress pa, string type)
+    {
+      var eprom = EpromXml.Specified[type];
+      Console.Write(eprom.Display);
+      
+      if (!String.IsNullOrEmpty(eprom.Notes))
+      {
+        Console.Write(eprom.Notes);
+        Console.WriteLine();
+      }
+      return 0;
+    }
+
     public static int Ram(PublicAddress pa, string[] args)
     {
       pa.ShoutLine(1, "category ram not yet implemented!");
@@ -77,8 +91,37 @@ options:
 
     public static int Prog(PublicAddress pa, string[] args)
     {
+      if (args.Length <= 1)
+      {
+        Console.Write(progHelp);
+        return 0;
+      }
+
+      switch (args[1])
+      {
+        case "id":
+          return ProgId(pa, args);
+      }
       pa.ShoutLine(1, "category prog not yet implemented!");
       return 1;
+    }
+
+    private static int ProgId(PublicAddress pa, string[] args)
+    {
+      var v = pa.VerbosityLevel;
+      try
+      {
+        pa.VerbosityLevel = 0;
+        using (var topDevice = TopDevice.Create(pa))
+        {
+          pa.ShoutLine(0, topDevice.ReadTopDeviceIdString());
+        }
+        return 0;
+      }
+      finally
+      {
+        pa.VerbosityLevel = v;
+      }
     }
 
     public static int Help(PublicAddress pa, string[] args)
@@ -109,7 +152,7 @@ options:
       {
         for (byte vcc = 0x00; vcc < 0x100; vcc++)
         {
-          topDevice.ApplyGnd(20);
+          //topDevice.ApplyGnd(20);
           pa.ShoutLine(-1, "Vcc {0} centivolts", vcc);
           topDevice.SendRawPackage(-1, new byte[] { 0x0e, 0x13, vcc, 0x00 }, "dev");
           topDevice.SendRawPackage(-1, new byte[] { 0x0e, 0x15, 0x08, 0x00 }, "dev");
@@ -123,9 +166,9 @@ options:
     public static int RomRead(PublicAddress pa, string type, string fileName)
     {
       IList<byte> bytes = new List<byte>();
-      var eprom = Eprom.Create(type);
-      int totalNumberOfAdresses = 2.Pow(eprom.AddressPins.Length);
-      int startAddress = 0;
+      var eprom = EpromXml.Specified[type];
+      var totalNumberOfAdresses = 2.Pow(eprom.AddressPins.Length);
+      var startAddress = 0;
       using (var progressBar = pa.GetProgressBar(totalNumberOfAdresses))
       {
         while (startAddress < totalNumberOfAdresses)
@@ -150,39 +193,11 @@ options:
       return 0;
     }
 
-    //public static void RomReadRecycle(PublicAddress pa, string type, string fileName)
-    //{
-    //  var eprom = Eprom.Create(type);
-    //  var totalNumberOfAddresses = 2.Pow(eprom.AddressPins.Length);
-    //  var addressStride = totalNumberOfAddresses/4;
-    //  IList<byte[]> data = new List<byte[]>();
-    //  using (var progressBar = pa.GetProgressBar(totalNumberOfAddresses))
-    //  {
-    //    var i = 0;
-    //    do
-    //    {
-    //      using (var topDevice = TopDevice.Create(pa))
-    //      {
-    //        data.Add(topDevice.ReadEprom(eprom, i*addressStride, (i + 1)*addressStride, progressBar).ToArray());
-    //        i++;
-    //        progressBar.Shout(String.Format("Recycle({0}), Reconnect programmer!", i));
-    //      }
-    //      Console.ReadLine();
-    //    } while (i*addressStride != totalNumberOfAddresses);
-    //  }
-    //  using (var fs = new FileStream(fileName, FileMode.Create, FileAccess.Write))
-    //  {
-    //    using (var bw = new BinaryWriter(fs))
-    //    {
-    //      bw.Write(data.SelectMany(x => x).ToArray());
-    //      bw.Flush();
-    //    }
-    //  }
-    //  pa.ShoutLine(2, "EPROM{0} data written to file {1}", type, fileName);
-    //}
-
-    public static void RomWrite(PublicAddress pa, string type, string fileName, params string[] vppLevel)
+    public static int RomWrite(PublicAddress pa, string type, string fileName, params string[] vppLevel)
     {
+      return 1;
     }
+
+    public const string progHelp = "";
   }
 }

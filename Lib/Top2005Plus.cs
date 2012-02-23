@@ -11,9 +11,9 @@ namespace U2Pa.Lib
     public Top2005Plus(PublicAddress pa, UsbDevice usbDevice, UsbEndpointReader usbEndpointReader, UsbEndpointWriter usbEndpointWriter)
       : base(pa, usbDevice, usbEndpointReader, usbEndpointWriter)
     {
-      VccPins = new List<byte> {8, 13, 17, 24, 25, 26, 27, 28, 30, 32, 34, 36, 40};
-      VppPins = new List<byte> {1, 5, 7, 9, 10, 11, 12, 14, 15, 20, 26, 28, 29, 30, 31, 34, 40};
-      GndPins = new List<byte> {10, 14, 16, 20, 25, 31};
+      ValidVccPins = new List<byte> {8, 13, 17, 24, 25, 26, 27, 28, 30, 32, 34, 36, 40};
+      ValidVppPins = new List<byte> {1, 5, 7, 9, 10, 11, 12, 14, 15, 20, 26, 28, 29, 30, 31, 34, 40};
+      ValidGndPins = new List<byte> {10, 14, 16, 20, 25, 31};
 
       UpLoadBitStreamTopWin6Style(@"C:\Top\Topwin6\Blib2\ictest.bit");
     }

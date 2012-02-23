@@ -30,11 +30,11 @@
       return returnValue <= dilIndex || returnValue > dilType ? 0 : returnValue;
     }
 
-    public int ToZIF(int dilPinNumber)
+    public byte ToZIF(int dilPinNumber)
     {
       if (dilPinNumber <= dilIndex)
-        return dilPinNumber + 20 - dilIndex - placement;
-      return dilPinNumber + 20 - dilIndex + placement;
+        return (byte)(dilPinNumber + 20 - dilIndex - placement);
+      return (byte)(dilPinNumber + 20 - dilIndex + placement);
     }
   }
 }
