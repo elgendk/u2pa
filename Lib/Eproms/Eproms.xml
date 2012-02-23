@@ -4,6 +4,7 @@
     <AddressPins>8, 7, 6, 5, 4, 3, 2, 1, 23, 22, 19</AddressPins>
     <DataPins>9, 10, 11, 13, 14, 15, 16, 17</DataPins>
     <EnablePins>18, 20</EnablePins>
+    <ProgramPin>18</ProgramPin>
     <VccPins>24</VccPins>
     <GndPins>12</GndPins>
     <VppPins>21</VppPins>
@@ -13,6 +14,7 @@
     <AddressPins>8, 7, 6, 5, 4, 3, 2, 1, 23, 22, 19, 21</AddressPins>
     <DataPins>9, 10, 11, 13, 14, 15, 16, 17</DataPins>
     <EnablePins>18, 20</EnablePins>
+    <ProgramPin>18</ProgramPin>
     <VccPins>24</VccPins>
     <GndPins>12</GndPins>
     <VppPins>21</VppPins>
@@ -37,9 +39,10 @@ in order to get a proper GND feed for the IC.
     <AddressPins>21, 22, 23, 24, 25, 26, 27, 28, 29, 31, 32, 33, 34, 35, 36, 37</AddressPins>
     <DataPins>19, 18, 17, 16, 15, 14, 13, 12, 10, 9, 8, 7, 6, 5, 4, 3</DataPins>
     <EnablePins>2</EnablePins>
+    <ProgramPin>39</ProgramPin>
     <VccPins>40</VccPins>
     <GndPins>20</GndPins>
-    <VppPins>39</VppPins>
+    <VppPins>1</VppPins>
   </Eprom>
   
   <Eprom type = "272048" dilType = "40" placement = "0" Vcc = "5" Vpp = "12.5">

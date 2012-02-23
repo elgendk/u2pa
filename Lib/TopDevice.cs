@@ -212,20 +212,18 @@ namespace U2Pa.Lib
       return UsbEndpointReader.Read(buffer, timeOut, out transferLength);
     }
 
-    public int ReadEprom(Eprom eprom, PublicAddress.ProgressBar progressBar, IList<byte> bytes, int fromAddress)
+    public int ReadEprom(Eprom eprom, PublicAddress.ProgressBar progressBar, IList<byte> bytes, int fromAddress, int totalNumberOfAdresses)
     {
       const int rewriteCount = 5;
       const int rereadCount = 5;
       PA.ShoutLine(2, "Reading EPROM{0}.", eprom.Type);
       // Setting up chip...
       SetVccLevel(eprom.VccLevel);
-      //SetVppLevel(eprom.VppLevel);
       var translator = new PinNumberTranslator(eprom.DilType, 0);
       ApplyVcc(translator, eprom.VccPins);
       ApplyGnd(translator, eprom.GndPins);
 
       var zif = new ZIFSocket(40);
-      int totalNumberOfAdresses = 2.Pow(eprom.AddressPins.Length);
       int returnAddress = fromAddress;
       PA.ShoutLine(2, "Now reading bytes...");
       progressBar.Init();

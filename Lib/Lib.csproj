@@ -69,7 +69,6 @@
     <Compile Include="ZIFSocket.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Doc\ICVisuals.txt" />
     <Content Include="Doc\Protocol.txt" />
     <Content Include="Eproms\Eproms.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

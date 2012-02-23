@@ -75,11 +75,6 @@ namespace U2Pa.Lib
       }
     }
 
-    public static int Pow(this int baseNumber, int exponent)
-    {
-      return exponent == 0 ? 1 : baseNumber * Pow(baseNumber, exponent - 1);
-    }
-
     internal static VccLevel ParseVccLevel(string stringValue)
     {
       stringValue = stringValue.Trim();
@@ -99,7 +94,7 @@ namespace U2Pa.Lib
       if (stringValue == "21") return VppLevel.Vpp_21_11v;
       if (stringValue == "25") return VppLevel.Vpp_25_59v;
 
-      throw new U2PaException("Unknown Vcc: {0}", stringValue);
+      throw new U2PaException("Unknown Vpp: {0}", stringValue);
     }
   }
 }
