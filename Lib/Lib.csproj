@@ -28,7 +28,7 @@
     <PlatformTarget>x86</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>..\bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -51,6 +51,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Eproms\EpromXml.cs" />
+    <Compile Include="Eproms\Eprom2732.cs" />
     <Compile Include="Eproms\Eprom271024.cs" />
     <Compile Include="Eproms\Eprom272048.cs" />
     <Compile Include="Eproms\Eprom.cs" />
@@ -69,6 +71,9 @@
   <ItemGroup>
     <Content Include="Doc\ICVisuals.txt" />
     <Content Include="Doc\Protocol.txt" />
+    <Content Include="Eproms\Eproms.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

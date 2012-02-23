@@ -18,11 +18,12 @@ namespace U2Pa.Lib
     protected UsbDevice UsbDevice { get; private set; }
     protected UsbEndpointReader UsbEndpointReader { get; private set; }
     protected UsbEndpointWriter UsbEndpointWriter { get; private set; }
+
     public PublicAddress PA { get; private set; }
 
-    public List<byte> VccPins;
-    public List<byte> VppPins;
-    public List<byte> GndPins;
+    public List<byte> ValidVccPins;
+    public List<byte> ValidVppPins;
+    public List<byte> ValidGndPins;
 
     protected TopDevice(PublicAddress pa, UsbDevice usbDevice, UsbEndpointReader usbEndpointReader, UsbEndpointWriter usbEndpointWriter)
     {
@@ -86,6 +87,11 @@ namespace U2Pa.Lib
         return new Top2005Plus(pa, usbDevice, usbEndpointReader, usbEndpointWriter);
 
       throw new U2PaException("Not supported Top Programmer {0}", idString);
+    }
+
+    public string ReadTopDeviceIdString()
+    {
+      return ReadTopDeviceIdString(PA, UsbEndpointReader, UsbEndpointWriter);
     }
 
     protected static string ReadTopDeviceIdString(PublicAddress pa, UsbEndpointReader usbEndpointReader, UsbEndpointWriter usbEndpointWriter)
@@ -213,11 +219,10 @@ namespace U2Pa.Lib
       PA.ShoutLine(2, "Reading EPROM{0}.", eprom.Type);
       // Setting up chip...
       SetVccLevel(eprom.VccLevel);
-      SetVppLevel(eprom.VppLevel);
-      ApplyVcc(eprom.VccPins);
-      ApplyGnd(eprom.GndPins);
-
+      //SetVppLevel(eprom.VppLevel);
       var translator = new PinNumberTranslator(eprom.DilType, 0);
+      ApplyVcc(translator, eprom.VccPins);
+      ApplyGnd(translator, eprom.GndPins);
 
       var zif = new ZIFSocket(40);
       int totalNumberOfAdresses = 2.Pow(eprom.AddressPins.Length);
@@ -281,106 +286,6 @@ namespace U2Pa.Lib
       }
       return returnAddress + 1;
     }
-
-
-    //public IEnumerable<byte> ReadEpromOld(string type)
-    //{
-    //  var rewriteCount = 10;
-    //  var rereadCount = 10;
-    //  var eprom = Eprom.Create(type);
-    //  PA.ShoutLine(2, "Reading EPROM{0}.", eprom.Type);
-    //  // Setting up chip...
-    //  SetVccLevel(eprom.VccLevel);
-    //  SetVppLevel(eprom.VppLevel);
-    //  ApplyVcc(eprom.VccPins);
-    //  ApplyGnd(eprom.GndPins);
-
-    //  var translator = new PinNumberTranslator(eprom.DilType, 0);
-
-    //  var zif = new ZIFSocket(40);
-    //  int totalNumberOfAdresses = 2.Pow(eprom.AddressPins.Length);
-    //  PA.ShoutLine(2, "Now reading bytes...");
-    //  using (var progressBar = PA.GetProgressBar(totalNumberOfAdresses))
-    //  {
-    //    for (var address = 0; address < totalNumberOfAdresses; address++)
-    //    {
-    //      zif.SetAll(true);
-    //      zif.SetEpromAddress(eprom, address);
-
-    //      // Set enable pins low
-    //      foreach (var p in eprom.EnablePins)
-    //        zif[translator.ToZIF(p)] = false;
-
-    //      ZIFSocket resultZIF = null;
-    //      var result = ReadSoundness.TryRewrite;
-
-    //      for (var i = 0; i < rewriteCount; i++)
-    //      {
-    //        if (result == ReadSoundness.SeemsToBeAOkay)
-    //          break;
-
-    //        if(result == ReadSoundness.TryRewrite)
-    //        {
-    //          if(i > 0)
-    //            progressBar.Shout("Address: {0} Write sleeps {1}ms", address.ToString("X4"), 100*i);
-    //          WriteZIF(zif, String.Format("Address {0}", address.ToString("X4")));
-    //          if(i > 0) 
-    //            Thread.Sleep(100*i);
-    //          result = ReadSoundness.TryReread;
-    //        }
-
-    //        for (var j = 0; j < rereadCount; j++)
-    //        {
-    //          if (result != ReadSoundness.TryReread)
-    //            break;
-
-    //          if (j > 0)
-    //          {
-    //            progressBar.Shout("Address: {0} Write sleeps: {1}ms Read sleeps: {2}ms", address.ToString("X4"), 100*i, 100*(j*i));
-    //            Thread.Sleep(100*(j*i));
-    //          }
-    //          var readZifs = ReadZIFWithValidate(String.Format("for address {0}", address.ToString("X4")), address);
-    //          result = Tools.AnalyzeEpromReadSoundness(readZifs, eprom, address, out resultZIF);
-    //          if(j == rereadCount-1)
-    //            result = ReadSoundness.TryRewrite;
-    //          if(result == ReadSoundness.SeemsToBeAOkay && j > 0)
-    //            progressBar.Shout("Address: {0} read }};-P", address);
-    //        }
-    //      }
-
-    //      if(result != ReadSoundness.SeemsToBeAOkay)
-    //        throw new U2PaException("No clear read: {0}", address.ToString("X4"));
-
-    //      progressBar.Progress();
-
-    //      foreach (var b in resultZIF.GetEpromData(eprom))
-    //        yield return b;
-    //    }
-    //  }
-    //}
-
-    //public virtual ZIFSocket ReadZIF(string packageName)
-    //{
-    //  // Write ZIF to Top Programmer buffer
-    //  int transferLength;
-    //  var errorCode = Write(new byte[] {0x01, 0x02, 0x03, 0x04, 0x05, 0x07}, 1000, out transferLength);
-    //  if (errorCode == ErrorCode.None && transferLength == 6)
-    //    PA.ShoutLine(5, "ZIF written to buffer.");
-    //  else
-    //    throw new U2PaException("Failed to write ZIF to buffer. Transferlength: {0} ErrorCode: {1}",
-    //                            transferLength, errorCode);
-
-    //  // Read buffer
-    //  var readBuffer = new byte[64];
-    //  errorCode = Read(readBuffer, 1000, out transferLength);
-    //  if (errorCode == ErrorCode.None && transferLength == readBuffer.Length)
-    //    PA.ShoutLine(5, "ZIF read {0}.", packageName);
-    //  else
-    //    throw new U2PaException("ZIF read failed {0}. Transferlength: {1} ErrorCode: {2}", packageName,
-    //                            transferLength, errorCode);
-
-    //  return new ZIFSocket(40, readBuffer.Take(5).ToArray());
-    //}
 
     public virtual ZIFSocket[] ReadZIF(string packageName, int address)
     {
@@ -461,22 +366,22 @@ namespace U2Pa.Lib
         throw new U2PaException("Failed to set Vcc. Transferlength: {0} ErrorCode: {1}", transferLength, errorCode);
     }
 
-    public virtual void ApplyVpp(params byte[] zipPins)
+    public virtual void ApplyVpp(PinNumberTranslator translator, params byte[] zipPins)
     {
-      ApplyPropertyToPins("Vpp", 0x14, VppPins, zipPins);
+      ApplyPropertyToPins(translator, "Vpp", 0x14, ValidVppPins, zipPins);
     }
 
-    public virtual void ApplyVcc(params byte[] zifPins)
+    public virtual void ApplyVcc(PinNumberTranslator translator, params byte[] zifPins)
     {
-      ApplyPropertyToPins("Vcc", 0x15, VccPins, zifPins);
+      ApplyPropertyToPins(translator, "Vcc", 0x15, ValidVccPins, zifPins);
     }
 
-    public virtual void ApplyGnd(params byte[] zifPins)
+    public virtual void ApplyGnd(PinNumberTranslator translator, params byte[] zifPins)
     {
-      ApplyPropertyToPins("Gnd", 0x16, GndPins, zifPins);
+      ApplyPropertyToPins(translator, "Gnd", 0x16, ValidGndPins, zifPins);
     }
 
-    protected virtual void ApplyPropertyToPins(string name, byte propCode, ICollection<byte> validPins, params byte[] zifPins)
+    protected virtual void ApplyPropertyToPins(PinNumberTranslator translator, string name, byte propCode, ICollection<byte> validPins, params byte[] dilPins)
     {
       // Always start by clearing all pins
       int transferLength;
@@ -486,8 +391,9 @@ namespace U2Pa.Lib
       else
         throw new U2PaException("Failed to clear {0} pins. Transferlength: {1} ErrorCode: {2}", name, transferLength, errorCode);
 
-      foreach (var zifPin in zifPins)
+      foreach (var dilPin in dilPins)
       {
+        var zifPin = translator.ToZIF(dilPin);
         if (!validPins.Contains(zifPin))
           throw new U2PaException("Pin {0} is not a valid {1} pin.", zifPin, name);
         errorCode = UsbEndpointWriter.Write(new byte[] { 0x0e, propCode, zifPin, 0x00 }, 1000, out transferLength);
@@ -504,9 +410,9 @@ namespace U2Pa.Lib
       DisposeSpecific();
 
       // Remove all pin assignments
-      ApplyVpp();
-      ApplyVcc();
-      ApplyGnd();
+      ApplyVpp(null);
+      ApplyVcc(null);
+      ApplyGnd(null);
       if (UsbDevice == null) return;
       if (UsbDevice.IsOpen)
       {
@@ -526,7 +432,6 @@ namespace U2Pa.Lib
       // Free usb resources
       UsbDevice.Exit();
       PA.ShoutLine(4, "USB resources freed.");
-
     }
 
     protected virtual void DisposeSpecific()

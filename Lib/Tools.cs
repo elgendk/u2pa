@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -77,6 +78,28 @@ namespace U2Pa.Lib
     public static int Pow(this int baseNumber, int exponent)
     {
       return exponent == 0 ? 1 : baseNumber * Pow(baseNumber, exponent - 1);
+    }
+
+    internal static VccLevel ParseVccLevel(string stringValue)
+    {
+      stringValue = stringValue.Trim();
+      if(String.IsNullOrEmpty(stringValue)) return VccLevel.Vcc_5_0v;
+      if (stringValue == "2.5") return VccLevel.Vcc_2_5v;
+      if (stringValue == "3.3") return VccLevel.Vcc_3_3v;
+      if (stringValue == "5") return VccLevel.Vcc_5_0v;
+      
+      throw new U2PaException("Unknown Vcc: {0}", stringValue);
+    }
+
+    internal static VppLevel ParseVppLevel(string stringValue)
+    {
+      stringValue = stringValue.Trim();
+      if (String.IsNullOrEmpty(stringValue)) return VppLevel.Vpp_Off;
+      if (stringValue == "12.5") return VppLevel.Vpp_12_61v;
+      if (stringValue == "21") return VppLevel.Vpp_21_11v;
+      if (stringValue == "25") return VppLevel.Vpp_25_59v;
+
+      throw new U2PaException("Unknown Vcc: {0}", stringValue);
     }
   }
 }
