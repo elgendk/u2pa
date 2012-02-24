@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using LibUsbDotNet;
@@ -12,7 +10,7 @@ namespace U2Pa.Lib
 {
   public abstract class TopDevice : IDisposable
   {
-    // TODO: Find out if these are the asme for all Top Programmers.
+    // TODO: Find out if these are the same for all Top Programmers.
     protected const int VendorId = 0x2471;
     protected const int ProductId = 0x0853;
     protected UsbDevice UsbDevice { get; private set; }
@@ -116,7 +114,7 @@ namespace U2Pa.Lib
       else
         throw new U2PaException("Failed to read buffer. Transferlength: {0} ErrorCode: {1}", transferLength, errorCode);
 
-      // Can we find a better stop condition than t != 0x20?
+      // Can't we find a better stop condition than t != 0x20?
       return readBuffer.TakeWhile(t => t != 0x20).Aggregate("", (current, t) => current + (char)t);
     }
 
@@ -193,7 +191,7 @@ namespace U2Pa.Lib
     {
       var readBuffer = new byte[64];
       int transferLength;
-      int timeOut = 1000;
+      const int timeOut = 1000;
       var errorCode = UsbEndpointReader.Read(readBuffer, timeOut, out transferLength);
       if (errorCode == ErrorCode.None && transferLength == readBuffer.Length)
         PA.ShoutLine(verbosity, "Read operation  success: {0}. Timeout {1}ms.", description, timeOut);
@@ -224,14 +222,15 @@ namespace U2Pa.Lib
       ApplyGnd(translator, eprom.GndPins);
 
       var zif = new ZIFSocket(40);
-      int returnAddress = fromAddress;
+      var returnAddress = fromAddress;
       PA.ShoutLine(2, "Now reading bytes...");
       progressBar.Init();
       for (var address = fromAddress; address < totalNumberOfAdresses; address++)
       {
-        returnAddress = address;
+        // Pull up all pins
         zif.SetAll(true);
-        zif.SetEpromAddress(eprom, address);
+
+        zif.SetEpromAddress(eprom, returnAddress = address);
 
         // Set enable pins low
         foreach (var p in eprom.EnablePins)

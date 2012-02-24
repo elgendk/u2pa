@@ -1,5 +1,8 @@
-﻿namespace U2Pa.Lib.Eproms
+﻿using System;
+
+namespace U2Pa.Lib.Eproms
 {
+  [Obsolete("App uses the counterpart defined in Eproms.xml instead.")]
   public class Eprom2716 : Eprom
   {
     public Eprom2716()

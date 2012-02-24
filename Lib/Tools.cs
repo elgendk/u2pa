@@ -50,6 +50,19 @@ namespace U2Pa.Lib
       return ReadSoundness.SeemsToBeAOkay;
     }
 
+    public static string Pad(this string src, int maxLength)
+    {
+      while(src.Length < maxLength)
+      {
+        src += " ";
+        if (src.Length == maxLength)
+          return src;
+        src = " " + src;
+      }
+      return src;
+    }
+
+
     public static IEnumerable<byte> ToBytes(this BitArray bits)
     {
       if (bits.Count % 8 != 0)
