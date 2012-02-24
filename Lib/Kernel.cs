@@ -11,13 +11,7 @@ namespace U2Pa.Lib
     public static int RomInfo(PublicAddress pa, string type)
     {
       var eprom = EpromXml.Specified[type];
-      Console.Write(eprom);
-      
-      if (!String.IsNullOrEmpty(eprom.Notes))
-      {
-        Console.Write(eprom.Notes);
-        Console.WriteLine();
-      }
+      Console.WriteLine(eprom);
       return 0;
     }
 

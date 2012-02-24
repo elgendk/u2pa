@@ -20,6 +20,35 @@
     <VppPins>21</VppPins>
   </Eprom>
 
+  <Eprom type = "2764" dilType = "28" placement = "0" Vcc = "5" Vpp = "12.5">
+    <AddressPins>10, 9, 8, 7, 6, 5, 4, 3, 25, 24, 21, 23, 2</AddressPins>
+    <DataPins>11, 12, 13, 15, 16, 17, 18, 19</DataPins>
+    <EnablePins>20, 22</EnablePins>
+    <ProgramPin>27</ProgramPin>
+    <VccPins>28</VccPins>
+    <GndPins>14</GndPins>
+    <VppPins>1</VppPins>
+  </Eprom>
+
+  <Eprom type = "27128" dilType = "28" placement = "0" Vcc = "5" Vpp = "12.5">
+    <AddressPins>10, 9, 8, 7, 6, 5, 4, 3, 25, 24, 21, 23, 2, 26</AddressPins>
+    <DataPins>11, 12, 13, 15, 16, 17, 18, 19</DataPins>
+    <EnablePins>20, 22</EnablePins>
+    <VccPins>28</VccPins>
+    <GndPins>14</GndPins>
+    <VppPins>1</VppPins>
+  </Eprom>
+
+  <Eprom type = "27256" dilType = "28" placement = "0" Vcc = "5" Vpp = "21">
+    <AddressPins>10, 9, 8, 7, 6, 5, 4, 3, 25, 24, 21, 23, 2, 26, 27</AddressPins>
+    <DataPins>11, 12, 13, 15, 16, 17, 18, 19</DataPins>
+    <EnablePins>20, 22</EnablePins>
+    <ProgramPin>27</ProgramPin>
+    <VccPins>28</VccPins>
+    <GndPins>14</GndPins>
+    <VppPins>1</VppPins>
+  </Eprom>
+
   <Eprom type = "27512" dilType = "28" placement = "0" Vcc = "5" Vpp = "12.5">
     <AddressPins>10, 9, 8, 7, 6, 5, 4, 3, 25, 24, 21, 23, 2, 26, 27, 1</AddressPins>
     <DataPins>11, 12, 13, 15, 16, 17, 18, 19</DataPins>

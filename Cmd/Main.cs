@@ -10,15 +10,10 @@ namespace U2Pa.Cmd
       @"USAGE: u2pa <category> <command> [arguments] [options...]
 
 Categories are:
-  rom          Commands related to roms (that is ROM/PROM/EPROM/EEPROM...);
-               including reading and writing roms
-  ram          Commands related to SRAM ICs
-  prog         Commands related to the Top Programmer device;
-               ie. reading the id string, uploading a bit stream ect
-  help         Displays detailed help for a category
-
-  dev          DON'T USE IT IF U HAVEN'T READ THE FRAKNING SRC, OR IT MIGHT TOAST YOUR IC AND/OR TOP!
-               DON'T SAY I DIDN'T WARN U!!! };-P 
+  help         displays detailed help for a category
+  prog         commands related to the Top Programmer device itself
+  ram          commands related to SRAM ICs
+  rom          commands related to roms (that is ROM/PROM/EPROM/EEPROM...)
 
 General options:
  -v   --verbosity   Verbosity; i must be in the range [0,..,5] default is 3; the higher i, the more crap on screen
@@ -32,13 +27,10 @@ alias: [NONE] (yet? };-P)
 all commands related to roms (that is ROM/PROM/EPROM/EEPROM...)
 
 arguments:
-  read
-  write
-  id
-
-    Detailed description.
-
-options:
+  id          reads the id string of the EPROM and displays it on screen
+  info        displays on screen an ASCII representation of the ERPOM inserted in to the Top
+  read        reads the contents of an EPROM to a file 
+  write       writes the contents of a file to an EPROM
 ";
 
     private const string progHelp = "";
@@ -124,7 +116,7 @@ options:
     /// Entry point for the 'rom' catagory of commands.
     /// </summary>
     /// <param name="pa">Public addresser</param>
-    /// <param name="args">Command line argumsnts</param>
+    /// <param name="args">Command line arguments</param>
     /// <returns></returns>
     private static int Rom(PublicAddress pa, string[] args)
     {
