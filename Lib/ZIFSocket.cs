@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace U2Pa.Lib
 {
@@ -35,6 +36,14 @@ namespace U2Pa.Lib
       var bitAddress = new BitArray(new[] { address });
       for (var i = 0; i < eprom.AddressPins.Length; i++)
         pins[translator.ToZIF(eprom.AddressPins[i])] = bitAddress[i];
+    }
+
+    internal void SetEpromData(Eproms.Eprom eprom, byte[] data)
+    {
+      var translator = new PinNumberTranslator(eprom.DilType, eprom.Placement);
+      var bitAddress = new BitArray(data);
+      for (var i = 0; i < eprom.DataPins.Length; i++)
+        pins[translator.ToZIF(eprom.DataPins[i])] = bitAddress[i];
     }
 
     public int GetEpromAddress(Eproms.Eprom eprom)
@@ -102,6 +111,5 @@ namespace U2Pa.Lib
       }
       return acc;
     }
-
   }
 }

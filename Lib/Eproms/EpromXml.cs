@@ -21,11 +21,12 @@ namespace U2Pa.Lib.Eproms
                  VppLevel = Tools.ParseVppLevel(x.Attribute("Vpp").Value),
                  AddressPins = x.Element("AddressPins").Value.Split(',').Select(Int32.Parse).ToArray(),
                  DataPins = x.Element("DataPins").Value.Split(',').Select(Int32.Parse).ToArray(),
-                 EnablePins = x.Element("EnablePins").Value.Split(',').Select(Int32.Parse).ToArray(),
-                 VccPins = x.Element("VccPins").Value.Split(',').Select(byte.Parse).ToArray(),
-                 GndPins = x.Element("GndPins").Value.Split(',').Select(byte.Parse).ToArray(),
-                 VppPins = x.Element("VppPins").Value.Split(',').Select(byte.Parse).ToArray(),
-                 ProgramPin = x.Element("ProgramPin") != null ? byte.Parse(x.Element("ProgramPin").Value) : (byte)0,
+                 ChipEnable = Int32.Parse(x.Element("ChipEnable").Value),
+                 OutputEnable = Int32.Parse(x.Element("OutputEnable").Value),
+                 Program = Int32.Parse(x.Element("Program").Value),
+                 VccPins = x.Element("VccPins").Value.Split(',').Select(Int32.Parse).ToArray(),
+                 GndPins = x.Element("GndPins").Value.Split(',').Select(Int32.Parse).ToArray(),
+                 VppPins = x.Element("VppPins").Value.Split(',').Select(Int32.Parse).ToArray(),
                  Notes = x.Element("Notes") != null ? x.Element("Notes").Value : null
                });
     }

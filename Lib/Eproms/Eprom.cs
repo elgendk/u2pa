@@ -12,24 +12,18 @@ namespace U2Pa.Lib.Eproms
     public int Placement;
     public int[] AddressPins;
     public int[] DataPins;
-    public int[] EnablePins;
+    public int ChipEnable;
+    public int OutputEnable;
+    public int Program;
     public VccLevel VccLevel;
     public VppLevel VppLevel;
-    public byte[] VccPins;
-    public byte[] GndPins;
-    public byte[] VppPins;
-    public byte ProgramPin;
+    public int[] VccPins;
+    public int[] GndPins;
+    public int[] VppPins;
 
     [Obsolete("We use xml-based definition on Eprom instead now.")]
     public static Eprom Create(string type)
     {
-      if (type == "2716")
-        return new Eprom2716();
-      if (type == "271024")
-        return new Eprom271024();
-      if (type == "272048")
-        return new Eprom272048();
-
       throw new U2PaException("Unsupported EPROM: {0}", type);
     }
 
@@ -44,8 +38,8 @@ namespace U2Pa.Lib.Eproms
       var zifPins = new string[41];
       for (var i = 0; i < zifPins.Length; i++)
         zifPins[i] = "";
-      for (var i = 0; i < EnablePins.Length; i++)
-        zifPins[t.ToZIF(EnablePins[i])] = String.Format("{0}", i == 0 ? "/CE" : "/OE");
+      zifPins[t.ToZIF(ChipEnable)] = (ChipEnable < 0 ? "/" : "") + "CE";
+      zifPins[t.ToZIF(OutputEnable)] = (OutputEnable < 0 ? "/" : "") + "OE";
       foreach (var t1 in VccPins)
         zifPins[t.ToZIF(t1)] = "Vcc";
       foreach (var t1 in GndPins)
@@ -55,10 +49,9 @@ namespace U2Pa.Lib.Eproms
         var tmp = zifPins[t.ToZIF(t1)];
         zifPins[t.ToZIF(t1)] = tmp + "Vpp";
       }
-      if (ProgramPin != 0)
       {
-        var tmp = zifPins[t.ToZIF(ProgramPin)];
-        zifPins[t.ToZIF(ProgramPin)] = tmp + "Prg";
+        var tmp = zifPins[t.ToZIF(Program)];
+        zifPins[t.ToZIF(Program)] = tmp + (Program < 0 ? "/" : "") + "P";
       }
       for (var i = 0; i < AddressPins.Length; i++)
         zifPins[t.ToZIF(AddressPins[i])] = String.Format("A{0}", i);

@@ -52,11 +52,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Eproms\EpromXml.cs" />
-    <Compile Include="Eproms\Eprom2732.cs" />
-    <Compile Include="Eproms\Eprom271024.cs" />
-    <Compile Include="Eproms\Eprom272048.cs" />
     <Compile Include="Eproms\Eprom.cs" />
-    <Compile Include="Eproms\Eprom2716.cs" />
     <Compile Include="Kernel.cs" />
     <Compile Include="PublicAddress.cs" />
     <Compile Include="Tools.cs" />
@@ -72,6 +68,7 @@
     <Content Include="Doc\Protocol.txt" />
     <Content Include="Eproms\Eproms.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

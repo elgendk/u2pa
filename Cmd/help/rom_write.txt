@@ -1,0 +1,6 @@
+﻿u2pa rom write TYPE FILENAME
+
+writes the contents of a file to an EPROM
+     
+    When inserting the EPROM into the ZIF socket of the Top Programmer one must
+    be careful to do it correctly; one should call 'info' if in doubt.

@@ -9,20 +9,30 @@ namespace U2Pa.Lib
 {
   public static class Tools
   {
-    internal static IEnumerable<byte> ReadBinaryFile(string fileName)
+    public static IEnumerable<byte> ReadBinaryFile(string fileName)
     {
       var buffer = new byte[1];
-      var bytes = new List<byte>();
       // Open file and read it in
       using (var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read))
       {
         using (var br = new BinaryReader(fs))
         {
           while (0 != br.Read(buffer, 0, 1))
-            bytes.Add(buffer[0]);
+            yield return buffer[0];
         }
       }
-      return bytes;
+    }
+
+    public static void WriteBinaryFile(string fileName, IList<byte> data)
+    {
+      using (var fs = new FileStream(fileName, FileMode.Create, FileAccess.Write))
+      {
+        using (var bw = new BinaryWriter(fs))
+        {
+          bw.Write(data.ToArray());
+          bw.Flush();
+        }
+      }
     }
 
     public static ReadSoundness AnalyzeEpromReadSoundness(
@@ -48,6 +58,39 @@ namespace U2Pa.Lib
 
       result = revResults[0];
       return ReadSoundness.SeemsToBeAOkay;
+    }
+
+    public static bool CanBePatched(byte byteFromEPROM, byte byteFromFile)
+    {
+      // I know there's a smarter way to do this, but I'm a bit too tired atm.
+      var eBits = new BitArray(new[] { byteFromEPROM });
+      var fBits = new BitArray(new[] { byteFromFile });
+
+      var returnValue = true;
+      for (var i = 0; i < 8; i++)
+      {
+        returnValue &= eBits[i] || (!eBits[i] && !fBits[i]);
+      }
+      return returnValue;
+    }
+
+    public static bool Enable(this int pin)
+    {
+      return pin > 0;
+    }
+
+    public static bool Disable(this int pin)
+    {
+      return pin < 0;
+    }
+
+    public static IEnumerable<int> Interval(int start, int openEnd)
+    {
+      if(start > openEnd)
+        throw new ArgumentException("start can not be larger than openEnd");
+      
+      for (var n = start; n < openEnd; n++)
+        yield return n;
     }
 
     public static string Pad(this string src, int maxLength)
@@ -104,6 +147,8 @@ namespace U2Pa.Lib
       stringValue = stringValue.Trim();
       if (String.IsNullOrEmpty(stringValue)) return VppLevel.Vpp_Off;
       if (stringValue == "12.5") return VppLevel.Vpp_12_61v;
+      if (stringValue == "13") return VppLevel.Vpp_13_10v;
+
       if (stringValue == "21") return VppLevel.Vpp_21_11v;
       if (stringValue == "25") return VppLevel.Vpp_25_59v;
 
