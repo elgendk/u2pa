@@ -1,0 +1,6 @@
+﻿u2pa rom read TYPE FILENAME
+
+reads the contents of an EPROM and saves it into a file
+     
+    When inserting the EPROM into the ZIF socket of the Top Programmer one must
+    be careful to do it correctly; one should call 'info' if in doubt.

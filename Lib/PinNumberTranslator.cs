@@ -32,6 +32,7 @@
 
     public byte ToZIF(int dilPinNumber)
     {
+      if (dilPinNumber < 0) dilPinNumber = -dilPinNumber;
       if (dilPinNumber <= dilIndex)
         return (byte)(dilPinNumber + 20 - dilIndex - placement);
       return (byte)(dilPinNumber + 20 - dilIndex + placement);

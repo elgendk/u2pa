@@ -1,0 +1,10 @@
+﻿u2pa rom <command> [arguments] [options]
+
+all commands related to roms (that is ROM/PROM/EPROM/EEPROM...)
+
+arguments:
+  id        reads the id string of the EPROM and displays it on screen
+  info      displays on screen an ASCII representation of the ERPOM inserted in to the Top
+  read      reads the contents of an EPROM to a file
+  verify    verifies the contents of an EPROM against the contents of a file 
+  write     writes the contents of a file to an EPROM

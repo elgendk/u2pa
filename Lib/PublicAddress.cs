@@ -55,7 +55,7 @@ namespace U2Pa.Lib
         pa.VerbosityLevel = -1;
         initialized = true;
         Console.WriteLine();
-        Console.WriteLine("0               1               2               3               4");
+        Console.WriteLine("0 _____________ 1 _____________ 2 _____________ 3 _____________ 4");
         currentBar = "|...............|...............|...............|...............|";
         Console.Write(String.Format("\r{0} {1}", currentBar, "(messages will be displayed here)").PadRight(120));
       }

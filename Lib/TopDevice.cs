@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using LibUsbDotNet;
@@ -210,11 +211,17 @@ namespace U2Pa.Lib
       return UsbEndpointReader.Read(buffer, timeOut, out transferLength);
     }
 
-    public int ReadEprom(Eprom eprom, PublicAddress.ProgressBar progressBar, IList<byte> bytes, int fromAddress, int totalNumberOfAdresses)
+    public int ReadEprom(
+      Eprom eprom, 
+      PublicAddress.ProgressBar progressBar, 
+      IList<byte> bytes, 
+      int fromAddress, 
+      int totalNumberOfAdresses,
+      IList<int> failedAddresses = null)
     {
       const int rewriteCount = 5;
       const int rereadCount = 5;
-      PA.ShoutLine(2, "Reading EPROM{0}.", eprom.Type);
+      PA.ShoutLine(2, "Reading EPROM{0}", eprom.Type);
       // Setting up chip...
       SetVccLevel(eprom.VccLevel);
       var translator = new PinNumberTranslator(eprom.DilType, 0);
@@ -225,16 +232,15 @@ namespace U2Pa.Lib
       var returnAddress = fromAddress;
       PA.ShoutLine(2, "Now reading bytes...");
       progressBar.Init();
-      for (var address = fromAddress; address < totalNumberOfAdresses; address++)
+      foreach (var address in failedAddresses ?? Tools.Interval(fromAddress, totalNumberOfAdresses))
       {
         // Pull up all pins
         zif.SetAll(true);
 
         zif.SetEpromAddress(eprom, returnAddress = address);
 
-        // Set enable pins low
-        foreach (var p in eprom.EnablePins)
-          zif[translator.ToZIF(p)] = false;
+        zif[translator.ToZIF(eprom.ChipEnable)] = eprom.ChipEnable.Enable();
+        zif[translator.ToZIF(eprom.OutputEnable)] = eprom.OutputEnable.Enable();
 
         ZIFSocket resultZIF = null;
         var result = ReadSoundness.TryRewrite;
@@ -264,7 +270,7 @@ namespace U2Pa.Lib
               progressBar.Shout("A: {0}; WS: {1}ms; RS: {2}ms", address.ToString("X4"), 100*i, 100*(j*i));
               Thread.Sleep(100*(j*i));
             }
-            var readZifs = ReadZIF(String.Format("for address {0}", address.ToString("X4")), address);
+            var readZifs = ReadZIF(String.Format("for address {0}", address.ToString("X4")));
             result = Tools.AnalyzeEpromReadSoundness(readZifs, eprom, address, out resultZIF);
             if (j == rereadCount - 1)
               result = ReadSoundness.TryRewrite;
@@ -284,7 +290,70 @@ namespace U2Pa.Lib
       return returnAddress + 1;
     }
 
-    public virtual ZIFSocket[] ReadZIF(string packageName, int address)
+    public void WriteEpromClassic(Eprom eprom, int pulse, IList<byte> bytes, IList<int> patch = null)
+    {
+      var totalNumberOfAdresses = eprom.AddressPins.Length == 0 ? 0 : 1 << eprom.AddressPins.Length;
+      var stopWatch = new Stopwatch();
+      var translator = new PinNumberTranslator(eprom.DilType, 0);
+
+      var zif = new ZIFSocket(40);
+      zif.SetAll(true);
+      zif[translator.ToZIF(eprom.Program)] = eprom.Program.Disable();
+
+      WriteZIF(zif, "Apply 1 to all pins");
+      SetVccLevel(eprom.VccLevel);
+      SetVppLevel(eprom.VppLevel);
+      ApplyGnd(translator, eprom.GndPins);
+      ApplyVcc(translator, eprom.VccPins);
+      ApplyVpp(translator, eprom.VppPins);
+
+      using (var progress = PA.GetProgressBar(totalNumberOfAdresses))
+      {
+        progress.Init();
+        foreach (var address in Tools.Interval(0, totalNumberOfAdresses))
+        {
+          if(patch != null)
+          {
+            if(!patch.Contains(address))
+              continue;
+            progress.Shout("Now patching address {0}", address);
+          }
+
+          // Pull up all pins
+          zif.SetAll(true);
+
+          // Set address and data
+          zif.SetEpromAddress(eprom, address);
+          var data = eprom.AddressPins.Length > 8
+            ? new[] { bytes[2 * address], bytes[2 * address + 1] } 
+            : new[] { bytes[address]}; 
+          zif.SetEpromData(eprom, data);
+
+          // Set enable pins low
+          zif[translator.ToZIF(eprom.Program)] = eprom.Program.Disable();
+
+          // Prepare ZIF in order to let it stabilize
+          WriteZIF(zif, "Write address & data to ZIF");
+
+          // Set PRG pin high for pulse
+          zif[translator.ToZIF(eprom.Program)] = eprom.Program.Enable();
+          stopWatch.Reset();
+          WriteZIF(zif, "Start pulse //E");
+          stopWatch.Start();
+
+          // Set PRG pin low again after at least 25ms
+          zif[translator.ToZIF(eprom.Program)] = eprom.Program.Disable();
+          while (stopWatch.ElapsedMilliseconds <= pulse)
+          {
+            /* Wait at least 25ms */
+          }
+          WriteZIF(zif, "End pulse //E");
+          progress.Progress();
+        }
+      }
+    }
+
+    public virtual ZIFSocket[] ReadZIF(string packageName)
     {
       var package = new List<byte>();
       for(var i = 0; i < 12; i++)
@@ -363,42 +432,45 @@ namespace U2Pa.Lib
         throw new U2PaException("Failed to set Vcc. Transferlength: {0} ErrorCode: {1}", transferLength, errorCode);
     }
 
-    public virtual void ApplyVpp(PinNumberTranslator translator, params byte[] zipPins)
+    public virtual void ApplyVpp(PinNumberTranslator translator, params int[] zipPins)
     {
       ApplyPropertyToPins(translator, "Vpp", 0x14, ValidVppPins, zipPins);
     }
 
-    public virtual void ApplyVcc(PinNumberTranslator translator, params byte[] zifPins)
+    public virtual void ApplyVcc(PinNumberTranslator translator, params int[] zifPins)
     {
       ApplyPropertyToPins(translator, "Vcc", 0x15, ValidVccPins, zifPins);
     }
 
-    public virtual void ApplyGnd(PinNumberTranslator translator, params byte[] zifPins)
+    public virtual void ApplyGnd(PinNumberTranslator translator, params int[] zifPins)
     {
       ApplyPropertyToPins(translator, "Gnd", 0x16, ValidGndPins, zifPins);
     }
 
-    protected virtual void ApplyPropertyToPins(PinNumberTranslator translator, string name, byte propCode, ICollection<byte> validPins, params byte[] dilPins)
+    protected virtual void ApplyPropertyToPins(PinNumberTranslator translator, string name, byte propCode, ICollection<byte> validPins, params int[] dilPins)
     {
       // Always start by clearing all pins
       int transferLength;
-      var errorCode = UsbEndpointWriter.Write(new byte[] { 0x0e, propCode, 0x00, 0x00 }, 1000, out transferLength);
+      var errorCode = UsbEndpointWriter.Write(new byte[] {0x0e, propCode, 0x00, 0x00}, 1000, out transferLength);
       if (errorCode == ErrorCode.None && transferLength == 4)
         PA.ShoutLine(4, "All {0} pins cleared", name);
       else
-        throw new U2PaException("Failed to clear {0} pins. Transferlength: {1} ErrorCode: {2}", name, transferLength, errorCode);
+        throw new U2PaException("Failed to clear {0} pins. Transferlength: {1} ErrorCode: {2}", name, transferLength,
+                                errorCode);
 
-      foreach (var dilPin in dilPins)
+      if (translator != null)
       {
-        var zifPin = translator.ToZIF(dilPin);
-        if (!validPins.Contains(zifPin))
-          throw new U2PaException("Pin {0} is not a valid {1} pin.", zifPin, name);
-        errorCode = UsbEndpointWriter.Write(new byte[] { 0x0e, propCode, zifPin, 0x00 }, 1000, out transferLength);
-        if (errorCode == ErrorCode.None && transferLength == 4)
-          PA.ShoutLine(4, "{0} applied to pin {1}", name, zifPin);
-        else
-          throw new U2PaException("Failed to apply {0} to pin {1}. Transferlength: {2} ErrorCode: {3}", name, zifPin, transferLength, errorCode);
-
+        foreach (var zifPin in dilPins.Select(translator.ToZIF))
+        {
+          if (!validPins.Contains(zifPin))
+            throw new U2PaException("Pin {0} is not a valid {1} pin.", zifPin, name);
+          errorCode = UsbEndpointWriter.Write(new byte[] {0x0e, propCode, zifPin, 0x00}, 1000, out transferLength);
+          if (errorCode == ErrorCode.None && transferLength == 4)
+            PA.ShoutLine(4, "{0} applied to pin {1}", name, zifPin);
+          else
+            throw new U2PaException("Failed to apply {0} to pin {1}. Transferlength: {2} ErrorCode: {3}",
+              name, zifPin, transferLength, errorCode);
+        }
       }
     }
 

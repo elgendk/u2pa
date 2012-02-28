@@ -1,0 +1,11 @@
+﻿u2pa rom info TYPE
+
+displays a graphical representation of the EPROM
+     
+    ASCII graphics displaying the EPROM (having type TYPE) correctly inserted
+    into the Top Programmer will be shown on screen.
+
+    Also the pinout of the of the EPROM is shown along with any important notes.
+
+    One should always issue this command to be aware of any notes before attempting
+    to read, write, etc. an EPROM of type TYPE.
