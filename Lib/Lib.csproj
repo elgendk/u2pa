@@ -1,4 +1,26 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+//                             u2pa
+//
+//    A command line interface for Top Universal Programmers
+//
+//    Copyright (C) Elgen };-) aka Morten Overgaard 2012
+//
+//    This file is part of u2pa.
+//
+//    u2pa is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
+//
+//    Foobar is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with u2pa. If not, see <http://www.gnu.org/licenses/>.
+-->
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -19,7 +41,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\bin\Debug\</OutputPath>
+    <OutputPath>..\bin\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -65,6 +87,9 @@
     <Compile Include="ZIFSocket.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="License.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Doc\Protocol.txt" />
     <Content Include="Eproms\Eproms.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

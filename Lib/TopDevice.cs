@@ -1,4 +1,25 @@
-﻿using System;
+﻿//                             u2pa
+//
+//    A command line interface for Top Universal Programmers
+//
+//    Copyright (C) Elgen };-) aka Morten Overgaard 2012
+//
+//    This file is part of u2pa.
+//
+//    u2pa is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
+//
+//    Foobar is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with u2pa. If not, see <http://www.gnu.org/licenses/>.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -144,6 +165,7 @@ namespace U2Pa.Lib
     protected static int CheckBitStreamHeader(IList<byte> bytes)
     {
       return 0x47;
+      // TODO: Make this alot smarter...
       //var startIndex = 0;
       //for (var i = 0; i < bytes.Count; i++)
       //{
@@ -157,24 +179,6 @@ namespace U2Pa.Lib
       //if (startIndex == 0 || startIndex == bytes.Count)
       //  throw new U2PaException("Header check of bitstream failed!");
       //return startIndex + 1 + 4;
-
-      // TODO: Make this alot smarter by using something like the below...
-      //'skip e character
-      //bitPtr = bitPtr + 1
-
-      //'Get the length of bitstream
-      //bitLen = 16777216 * fbuf(bitPtr) _
-      //    + 65536 * fbuf(bitPtr + 1) _
-      //    + 256 * fbuf(bitPtr + 2) _
-      //    + fbuf(bitPtr + 3)
-
-      //'skip pointer past length
-      //bitPtr = bitPtr + 4
-
-      //If fLen + 1 - bitPtr <> bitLen Then
-      //    MsgBox ("Mismatch in bitstream len and file data remaining")
-      //    Exit Sub
-      //End If
     }
 
     internal void SendRawPackage(int verbosity, byte[] data, string description)
@@ -330,19 +334,21 @@ namespace U2Pa.Lib
           zif.SetEpromData(eprom, data);
 
           // Set enable pins low
-          zif[translator.ToZIF(eprom.Program)] = eprom.Program.Disable();
+          zif[translator.ToZIF(eprom.Program)] = eprom.Program.Enable();
+          zif[translator.ToZIF(eprom.ChipEnable)] = eprom.ChipEnable.Disable();
+
 
           // Prepare ZIF in order to let it stabilize
           WriteZIF(zif, "Write address & data to ZIF");
 
           // Set PRG pin high for pulse
-          zif[translator.ToZIF(eprom.Program)] = eprom.Program.Enable();
+          zif[translator.ToZIF(eprom.ChipEnable)] = eprom.ChipEnable.Enable();
           stopWatch.Reset();
           WriteZIF(zif, "Start pulse //E");
           stopWatch.Start();
 
           // Set PRG pin low again after at least 25ms
-          zif[translator.ToZIF(eprom.Program)] = eprom.Program.Disable();
+          zif[translator.ToZIF(eprom.ChipEnable)] = eprom.ChipEnable.Disable();
           while (stopWatch.ElapsedMilliseconds <= pulse)
           {
             /* Wait at least 25ms */
