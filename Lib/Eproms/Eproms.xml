@@ -1,4 +1,26 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
+<!--
+//                             u2pa
+//
+//    A command line interface for Top Universal Programmers
+//
+//    Copyright (C) Elgen };-) aka Morten Overgaard 2012
+//
+//    This file is part of u2pa.
+//
+//    u2pa is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
+//
+//    Foobar is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with u2pa. If not, see <http://www.gnu.org/licenses/>.
+-->
 <Root>
   <Eprom type = "2716" dilType = "24" placement = "0" Vcc= "5" Vpp = "25">
     <AddressPins>8, 7, 6, 5, 4, 3, 2, 1, 23, 22, 19</AddressPins>
