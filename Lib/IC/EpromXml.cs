@@ -11,7 +11,7 @@
 //    the Free Software Foundation, either version 3 of the License, or
 //    (at your option) any later version.
 //
-//    Foobar is distributed in the hope that it will be useful,
+//    u2pa is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
@@ -23,21 +23,30 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
+using System.Xml.Schema;
 
-namespace U2Pa.Lib.Eproms
+namespace U2Pa.Lib.IC
 {
   public class EpromXml : Eprom
   {
     public static IDictionary<string, EpromXml> Specified { get; private set; }
     static EpromXml()
     {
-      Specified = XDocument.Load("Eproms\\Eproms.xml").Descendants("Eprom").ToDictionary(
+      var xDocument = XDocument.Load("Xml\\Eproms.xml");
+      var xSchema = new XmlSchemaSet();
+      xSchema.Add("", "Xml\\ICs.xsd");
+      xDocument.Validate(xSchema, null);
+      Specified = 
+        xDocument.Descendants("Eprom").ToDictionary(
         x => x.Attribute("type").Value,
         x => new EpromXml
                {
                  Type = x.Attribute("type").Value,
                  DilType = Int32.Parse(x.Attribute("dilType").Value),
                  Placement = Int32.Parse(x.Attribute("placement").Value),
+                 UpsideDown = x.Attribute("upsideDown") != null 
+                   ? Boolean.Parse(x.Attribute("upsideDown").Value) 
+                   : false,
                  VccLevel = Tools.ParseVccLevel(x.Attribute("Vcc").Value),
                  VppLevel = Tools.ParseVppLevel(x.Attribute("Vpp").Value),
                  AddressPins = x.Element("AddressPins").Value.Split(',').Select(Int32.Parse).ToArray(),
@@ -48,7 +57,8 @@ namespace U2Pa.Lib.Eproms
                  VccPins = x.Element("VccPins").Value.Split(',').Select(Int32.Parse).ToArray(),
                  GndPins = x.Element("GndPins").Value.Split(',').Select(Int32.Parse).ToArray(),
                  VppPins = x.Element("VppPins").Value.Split(',').Select(Int32.Parse).ToArray(),
-                 Notes = x.Element("Notes") != null ? x.Element("Notes").Value : null
+                 Notes = x.Element("Notes") != null ? x.Element("Notes").Value : null,
+                 Description = x.Element("Description") != null ? x.Element("Description").Value : null
                });
     }
   }

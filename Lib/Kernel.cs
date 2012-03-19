@@ -11,7 +11,7 @@
 //    the Free Software Foundation, either version 3 of the License, or
 //    (at your option) any later version.
 //
-//    Foobar is distributed in the hope that it will be useful,
+//    u2pa is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
@@ -21,20 +21,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using U2Pa.Lib.Eproms;
+using U2Pa.Lib.IC;
 
 namespace U2Pa.Lib
 {
   public class Kernel
   {
-    public static int RomInfo(PublicAddress pa, string type)
-    {
-      var eprom = EpromXml.Specified[type];
-      Console.WriteLine(eprom);
-      return 0;
-    }
-
     public static int ProgId(PublicAddress pa)
     {
       var v = pa.VerbosityLevel;
@@ -51,6 +43,20 @@ namespace U2Pa.Lib
       {
         pa.VerbosityLevel = v;
       }
+    }
+
+    #region Rom
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="pa"></param>
+    /// <param name="type"></param>
+    /// <returns></returns>
+    public static int RomInfo(PublicAddress pa, string type)
+    {
+      var eprom = EpromXml.Specified[type];
+      Console.WriteLine(eprom);
+      return 0;
     }
 
     /// <summary>
@@ -82,15 +88,15 @@ namespace U2Pa.Lib
 
     public static void RomWrite(PublicAddress pa, string type, IList<byte> fileData, params string[] vppLevel)
     {
-      if (type == "271024" || type == "272048")
-      {
-        Console.WriteLine("Writing EPROMS of type {0} is not yet supported, sorry }};-(", type);
-        return;
-      }
+      //if (type == "271024" || type == "272048")
+      //{
+      //  Console.WriteLine("Writing EPROMS of type {0} is not yet supported, sorry }};-(", type);
+      //  return;
+      //}
       using (var topDevice = TopDevice.Create(pa))
       {
         var eprom = EpromXml.Specified[type];
-        topDevice.WriteEpromClassic(eprom, 25, fileData);
+        topDevice.WriteEpromClassic(eprom, 10, fileData);
       }
     }
 
@@ -109,17 +115,75 @@ namespace U2Pa.Lib
       }
       return didntVerify;
     }
+    #endregion Rom
 
-    public static int Dev(PublicAddress pa, string[] args)
+    public static int Dev(PublicAddress pa)
     {
-      Console.WriteLine("Testing {0} for Erasure }};-P", args[1]);
-      var fileData = Tools.ReadBinaryFile(args[1]).ToArray();
+      var tr = new PinNumberTranslator(40, 40, 0, false);
+      var zif = new ZIFSocket(40);
+      zif.SetAll(true);
+      var v = 0;
+      while (true)
+      {
+        using (var td = TopDevice.Create(pa))
+        {
+          td.SetVccLevel((VccLevel)v);
+          td.SetVppLevel((VppLevel)v);
+          td.ApplyGnd(tr.ToZIF, 20);
+          td.ApplyVcc(tr.ToZIF, 8);
+          td.ApplyVpp(tr.ToZIF, 1);
+          td.WriteZIF(zif, String.Format("v = {0}", v));
+          Console.WriteLine("Vpp pin 1 at level {0}, Vcc pin 8 at level {0}, Gnd pin 20. Press Enter to advance, 'q' to quit.", v);
+          var input = Console.ReadLine();
+          if (input.Contains("q"))
+            break;
+        }
+        v += 10;
+        if (v >= 256) v = 0;
+      }
+      //Console.WriteLine("Testing {0} for Erasure }};-P", args[1]);
+      //var fileData = Tools.ReadBinaryFile(args[1]).ToArray();
       
-      if(fileData.Any(b => b != 0xff))
-        throw new U2PaException("No good }};-(");
-      else Console.WriteLine("File {0} filled with all nice little 0xFF's }};-P", args[1]);
+      //if(fileData.Any(b => b != 0xff))
+      //  throw new U2PaException("No good }};-(");
+      //else Console.WriteLine("File {0} filled with all nice little 0xFF's }};-P", args[1]);
 
       return 0;
+    }
+
+    public static int SRamTest(PublicAddress pa, string type)
+    {
+      var sram = SRamXml.Specified[type];
+      var totalNumberOfAdresses = sram.AddressPins.Length == 0 ? 0 : 1 << sram.AddressPins.Length;
+      List<Tuple<int, string, string>> firstPass, secondPass;
+      using (var progressBar = pa.GetProgressBar(totalNumberOfAdresses * 4))
+      {
+        using (var topDevice = TopDevice.Create(pa))
+        {
+          pa.ShoutLine(1, "Testing SRAM{0}", type);
+          progressBar.Init();
+          firstPass = topDevice.SRamTest(pa, sram, progressBar, totalNumberOfAdresses, topDevice, false);
+          secondPass = topDevice.SRamTest(pa, sram, progressBar, totalNumberOfAdresses, topDevice, true);
+        }
+      }
+      var returnValue = 0;
+      foreach (var tuple in firstPass)
+      {
+        pa.ShoutLine(1, "Bad cell found in first pass. Address: {0} Expected {1} Read {2}",
+          tuple.Item1.ToString("X4"), tuple.Item3, tuple.Item2);
+        returnValue = 1;
+      }
+      foreach (var tuple in secondPass)
+      {
+        pa.ShoutLine(1, "Bad cell found in second pass. Address: {0} Expected {1} Read {2}",
+          tuple.Item1.ToString("X4"), tuple.Item3, tuple.Item2);
+        returnValue = 1;
+      }
+
+      if(returnValue == 0)
+        pa.ShoutLine(1, "This piece of SRAM is just a'okay }};-P");
+
+      return returnValue;
     }
   }
 }

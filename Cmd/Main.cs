@@ -11,7 +11,7 @@
 //    the Free Software Foundation, either version 3 of the License, or
 //    (at your option) any later version.
 //
-//    Foobar is distributed in the hope that it will be useful,
+//    u2pa is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
@@ -66,17 +66,30 @@ namespace U2Pa.Cmd
       var pa = new PublicAddress(3);
       try
       {
-        if (args.Length == 0 || args[0] == "help")
-        {
-          return Help(pa, args);
-        }
-
+        var cleanedArgs = new List<string>();
+        var options = new Dictionary<string, string>();
         for (var i = 0; i < args.Length; i++)
         {
-          if (args[i] != "--verbosity" && args[i] != "-v") continue;
-          pa.VerbosityLevel = Int32.Parse(args[i + 1]);
-          break;
+          if (args[i].StartsWith("-"))
+          {
+            if (i == args.Length - 1 || args[i + 1].StartsWith("-"))
+              throw new U2PaException("Syntax error: option {0} provided without an argument.", args[i]);
+            options.Add(args[i].TrimStart('-'), args[i + 1]);
+            i++;
+          }
+          else
+            cleanedArgs.Add(args[i]);
         }
+
+        if (cleanedArgs.Count == 0 || cleanedArgs[0] == "help")
+        {
+          return Help(pa, cleanedArgs);
+        }
+
+        if (options.ContainsKey("v"))
+          pa.VerbosityLevel = Int32.Parse(options["v"]);
+        else if (options.ContainsKey("verbosity"))
+          pa.VerbosityLevel = Int32.Parse(options["verbosity"]);
 
         pa.ShoutLine(2, "************* U2Pa (C) Elgen 2012 }};-P ***************");
         pa.ShoutLine(2, "* Alternative software for Top Universal Programmers *");
@@ -85,26 +98,26 @@ namespace U2Pa.Cmd
         pa.ShoutLine(2, "U2Pa initiated at {0}", timestamp);
 
         var returnCode = 0;
-        switch (args[0])
+        switch (cleanedArgs[0])
         {
           case "rom":
-            returnCode = Rom(pa, args);
+            returnCode = Rom(pa, cleanedArgs);
             break;
 
           case "sram":
-            returnCode = SRam(pa, args);
+            returnCode = SRam(pa, cleanedArgs);
             break;
 
           case "prog":
-            returnCode = Prog(pa, args);
+            returnCode = Prog(pa, cleanedArgs);
             break;
 
           case "help":
-            returnCode = Help(pa, args);
+            returnCode = Help(pa, cleanedArgs);
             break;
 
           case "dev":
-            returnCode = Dev(pa, args);
+            returnCode = Dev(pa);
             break;
         }
 
@@ -126,8 +139,15 @@ namespace U2Pa.Cmd
     /// <param name="pa">Public addresser</param>
     /// <param name="args">Command line arguments</param>
     /// <returns></returns>
-    private static int Rom(PublicAddress pa, string[] args)
+    private static int Rom(PublicAddress pa, IList<string> args)
     {
+      if(args.Count == 1)
+      {
+        args.Insert(0, "help");
+        Help(pa, args);
+        return 0;
+      }
+
       switch (args[1])
       {
         case "id":
@@ -142,17 +162,11 @@ namespace U2Pa.Cmd
           Tools.WriteBinaryFile(args[3], data);
           pa.ShoutLine(2, "EPROM{0} data written to file {1}", args[2], args[3]);
           return 0;
-      
-        case "write":
-          var fileData = Tools.ReadBinaryFile(args[3]).ToArray();
-          Kernel.RomWrite(pa, args[2], fileData);
-          pa.ShoutLine(2, "Filedata from {0} written to EPROM", args[2], args[3]);
-          return 0;
 
         case "verify":
-          fileData = Tools.ReadBinaryFile(args[3]).ToArray();
+          var fileData = Tools.ReadBinaryFile(args[3]).ToArray();
           var didntVerify = Kernel.RomVerify(pa, args[2], fileData).ToArray();
-          if(didntVerify.Any())
+          if (didntVerify.Any())
           {
             foreach (var tuple in didntVerify)
             {
@@ -165,8 +179,14 @@ namespace U2Pa.Cmd
                 Tools.CanBePatched(tuple.Item2, tuple.Item3) ? "" : "'t");
             }
           }
-          if(didntVerify.Length == 0)
+          if (didntVerify.Length == 0)
             pa.ShoutLine(2, "EPROM verifies nicely }};-)");
+          return 0;
+
+        case "write":
+          fileData = Tools.ReadBinaryFile(args[3]).ToArray();
+          Kernel.RomWrite(pa, args[2], fileData);
+          pa.ShoutLine(2, "Filedata from {0} written to EPROM", args[2], args[3]);
           return 0;
 
         default:
@@ -175,17 +195,30 @@ namespace U2Pa.Cmd
       }
     }
 
-
     /// <summary>
     /// Entry point for the 'sram' catagory of commands.
     /// </summary>
     /// <param name="pa">Public addresser</param>
     /// <param name="args">Command line argumsnts</param>
     /// <returns></returns>
-    private static int SRam(PublicAddress pa, string[] args)
+    private static int SRam(PublicAddress pa, IList<string> args)
     {
-      pa.ShoutLine(1, "category sram not yet implemented!");
-      return 1;
+      if (args.Count == 1)
+      {
+        args.Insert(0, "help");
+        Help(pa, args);
+        return 0;
+      }
+
+      switch (args[1])
+      {
+        case "test":
+          return Kernel.SRamTest(pa, args[2]);
+
+        default:
+          pa.ShoutLine(1, "Unknown sram command {0}", args[1]);
+          return 1;
+      }
     }
 
     /// <summary>
@@ -194,12 +227,20 @@ namespace U2Pa.Cmd
     /// <param name="pa">Public addresser</param>
     /// <param name="args">Command line argumsnts</param>
     /// <returns></returns>
-    private static int Prog(PublicAddress pa, string[] args)
+    private static int Prog(PublicAddress pa, IList<string> args)
     {
+      if (args.Count == 1)
+      {
+        args.Insert(0, "help");
+        Help(pa, args);
+        return 0;
+      }
+      
       switch (args[1])
       {
         case "id":
-          return Kernel.ProgId(pa);
+          Kernel.ProgId(pa);
+          return 0;
       }
       pa.ShoutLine(1, "category prog not yet implemented!");
       return 1;
@@ -211,21 +252,21 @@ namespace U2Pa.Cmd
     /// <param name="pa">Public addresser</param>
     /// <param name="args">Command line argumsnts</param>
     /// <returns></returns>
-    private static int Help(PublicAddress pa, string[] args)
+    private static int Help(PublicAddress pa, IList<string> args)
     {
-      if (args.Length <= 1)
+      if (args.Count <= 1)
       {
         Console.Write(helpTexts["main"]);
         return 0;
       }
 
-      if(args.Length <= 2)
+      if(args.Count <= 2)
       {
         Console.Write(helpTexts[args[1]]);
         return 0;
       }
 
-      if(args.Length <= 3)
+      if(args.Count <= 3)
       {
         Console.Write(helpTexts[args[1] + "_" + args[2]]);
         return 0;
@@ -239,9 +280,9 @@ namespace U2Pa.Cmd
     /// <param name="pa">Public addresser</param>
     /// <param name="args">Command line argumsnts</param>
     /// <returns></returns>
-    private static int Dev(PublicAddress pa, string[] args)
+    private static int Dev(PublicAddress pa)
     {
-      return Kernel.Dev(pa, args);
+      return Kernel.Dev(pa);
     }
   }
 }

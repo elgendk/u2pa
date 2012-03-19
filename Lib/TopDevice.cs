@@ -11,7 +11,7 @@
 //    the Free Software Foundation, either version 3 of the License, or
 //    (at your option) any later version.
 //
-//    Foobar is distributed in the hope that it will be useful,
+//    u2pa is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
@@ -26,7 +26,7 @@ using System.Linq;
 using System.Threading;
 using LibUsbDotNet;
 using LibUsbDotNet.Main;
-using U2Pa.Lib.Eproms;
+using U2Pa.Lib.IC;
 
 namespace U2Pa.Lib
 {
@@ -39,11 +39,13 @@ namespace U2Pa.Lib
     protected UsbEndpointReader UsbEndpointReader { get; private set; }
     protected UsbEndpointWriter UsbEndpointWriter { get; private set; }
 
+    public abstract int ZIFType { get; }
+
     public PublicAddress PA { get; private set; }
 
-    public List<byte> ValidVccPins;
-    public List<byte> ValidVppPins;
-    public List<byte> ValidGndPins;
+    public List<int> ValidVccPins;
+    public List<int> ValidVppPins;
+    public List<int> ValidGndPins;
 
     protected TopDevice(PublicAddress pa, UsbDevice usbDevice, UsbEndpointReader usbEndpointReader, UsbEndpointWriter usbEndpointWriter)
     {
@@ -181,27 +183,29 @@ namespace U2Pa.Lib
       //return startIndex + 1 + 4;
     }
 
-    internal void SendRawPackage(int verbosity, byte[] data, string description)
+    internal void SendPackage(int verbosity, byte[] data, string description, params object[] args)
     {
+      description = String.Format(description, args);
       int transferLength;
       int timeOut = Math.Max(1000, data.Length / 10);
-      var errorCode = UsbEndpointWriter.Write(data, timeOut, out transferLength);
+      var errorCode = Write(data, timeOut, out transferLength);
       if (errorCode == ErrorCode.None && transferLength == data.Length)
-        PA.ShoutLine(verbosity, "Write operation success: {0}. Timeout {1}ms.", description, timeOut);
+        PA.ShoutLine(verbosity, "Write success: {0}. Timeout {1}ms.", description, timeOut);
       else
-        throw new U2PaException("Write operation failure. {0}. Transferlength: {1} ErrorCode: {2}", description, transferLength, errorCode);
+        throw new U2PaException("Write failure. {0}.\r\nTransferlength: {1} ErrorCode: {2}", description, transferLength, errorCode);
     }
 
-    protected byte[] RecieveRawPackage(int verbosity, string description)
+    protected byte[] RecievePackage(int verbosity, string description, params object[] args)
     {
+      description = String.Format(description, args);
       var readBuffer = new byte[64];
       int transferLength;
       const int timeOut = 1000;
-      var errorCode = UsbEndpointReader.Read(readBuffer, timeOut, out transferLength);
+      var errorCode = Read(readBuffer, timeOut, out transferLength);
       if (errorCode == ErrorCode.None && transferLength == readBuffer.Length)
-        PA.ShoutLine(verbosity, "Read operation  success: {0}. Timeout {1}ms.", description, timeOut);
+        PA.ShoutLine(verbosity, "Read success: {0}. Timeout {1}ms.", description, timeOut);
       else
-        throw new U2PaException("Read operation failure: {0}. Transferlength: {1} ErrorCode: {2}", description, transferLength, errorCode);
+        throw new U2PaException("Read failure: {0}.\r\nTransferlength: {1} ErrorCode: {2}", description, transferLength, errorCode);
       return readBuffer;
     }
 
@@ -228,9 +232,9 @@ namespace U2Pa.Lib
       PA.ShoutLine(2, "Reading EPROM{0}", eprom.Type);
       // Setting up chip...
       SetVccLevel(eprom.VccLevel);
-      var translator = new PinNumberTranslator(eprom.DilType, 0);
-      ApplyVcc(translator, eprom.VccPins);
-      ApplyGnd(translator, eprom.GndPins);
+      var translator = new PinNumberTranslator(eprom.DilType, ZIFType, 0, eprom.UpsideDown);
+      ApplyVcc(translator.ToZIF, eprom.VccPins);
+      ApplyGnd(translator.ToZIF, eprom.GndPins);
 
       var zif = new ZIFSocket(40);
       var returnAddress = fromAddress;
@@ -298,7 +302,7 @@ namespace U2Pa.Lib
     {
       var totalNumberOfAdresses = eprom.AddressPins.Length == 0 ? 0 : 1 << eprom.AddressPins.Length;
       var stopWatch = new Stopwatch();
-      var translator = new PinNumberTranslator(eprom.DilType, 0);
+      var translator = new PinNumberTranslator(eprom.DilType, ZIFType, 0, eprom.UpsideDown);
 
       var zif = new ZIFSocket(40);
       zif.SetAll(true);
@@ -307,9 +311,9 @@ namespace U2Pa.Lib
       WriteZIF(zif, "Apply 1 to all pins");
       SetVccLevel(eprom.VccLevel);
       SetVppLevel(eprom.VppLevel);
-      ApplyGnd(translator, eprom.GndPins);
-      ApplyVcc(translator, eprom.VccPins);
-      ApplyVpp(translator, eprom.VppPins);
+      ApplyGnd(translator.ToZIF, eprom.GndPins);
+      ApplyVcc(translator.ToZIF, eprom.VccPins);
+      ApplyVpp(translator.ToZIF, eprom.VppPins);
 
       using (var progress = PA.GetProgressBar(totalNumberOfAdresses))
       {
@@ -333,30 +337,106 @@ namespace U2Pa.Lib
             : new[] { bytes[address]}; 
           zif.SetEpromData(eprom, data);
 
-          // Set enable pins low
+          //  Set programming mode
           zif[translator.ToZIF(eprom.Program)] = eprom.Program.Enable();
+
+          // Set enable pins low (not writing)
           zif[translator.ToZIF(eprom.ChipEnable)] = eprom.ChipEnable.Disable();
 
-
-          // Prepare ZIF in order to let it stabilize
+          // Prepare ZIF without programming in order to let it stabilize
+          // TODO: Do we really need to do this?
           WriteZIF(zif, "Write address & data to ZIF");
 
-          // Set PRG pin high for pulse
+          // Set ChipEnable high for pulse
           zif[translator.ToZIF(eprom.ChipEnable)] = eprom.ChipEnable.Enable();
           stopWatch.Reset();
           WriteZIF(zif, "Start pulse //E");
           stopWatch.Start();
 
-          // Set PRG pin low again after at least 25ms
+          // Set ChipEnable low again after at least <pulse> ms
           zif[translator.ToZIF(eprom.ChipEnable)] = eprom.ChipEnable.Disable();
           while (stopWatch.ElapsedMilliseconds <= pulse)
           {
-            /* Wait at least 25ms */
+            /* Wait at least <pulse> ms */
           }
           WriteZIF(zif, "End pulse //E");
           progress.Progress();
         }
       }
+    }
+
+    public List<Tuple<int, string, string>> SRamTest(PublicAddress pa, SRam sram, PublicAddress.ProgressBar progressBar, int totalNumberOfAdresses, TopDevice topDevice, bool firstBit)
+    {
+      var tr = new PinNumberTranslator(sram.DilType, 40, sram.Placement, sram.UpsideDown);
+      SetVccLevel(sram.VccLevel);
+      ApplyGnd(tr.ToZIF, sram.GndPins);
+      //ApplyGnd(null,20);
+      ApplyVcc(tr.ToZIF, sram.VccPins);
+
+      var badCells = new List<Tuple<int, string, string>>();
+      var writerZif = new ZIFSocket(40);
+      var startBit = firstBit;
+      for (var address = 0; address < totalNumberOfAdresses; address++)
+      {
+        var bit = startBit;
+        writerZif.SetAll(true);
+        writerZif.SetSRamAddress(sram, address);
+        foreach (var i in sram.DataPins.Select(tr.ToZIF))
+        {
+          writerZif[i] = bit;
+          bit = !bit;
+        }
+        startBit = !startBit;
+        foreach (var pin in sram.ChipEnable)
+          writerZif[tr.ToZIF(pin)] = pin.Enable();
+        WriteZIF(writerZif, "");
+
+        writerZif[tr.ToZIF(sram.WriteEnable)] = false;
+        WriteZIF(writerZif, "");
+
+        writerZif[tr.ToZIF(sram.WriteEnable)] = true;
+        WriteZIF(writerZif, "");
+
+        progressBar.Progress();
+      }
+
+      startBit = firstBit;
+      for (var address = 0; address < totalNumberOfAdresses; address++)
+      {
+        var bit = startBit;
+        writerZif.SetAll(true);
+        writerZif.SetSRamAddress(sram, address);
+        foreach (var pin in sram.ChipEnable)
+          writerZif[tr.ToZIF(pin)] = pin.Enable();
+        writerZif[tr.ToZIF(sram.OutputEnable)] = sram.OutputEnable.Enable();
+        writerZif[tr.ToZIF(sram.WriteEnable)] = sram.WriteEnable.Disable();
+        WriteZIF(writerZif, "Writing SRam address.");
+
+        var readerZif = ReadZIF("Reading SRam data.")[0];
+        foreach (var i in sram.DataPins.Select(tr.ToZIF))
+        {
+          if (readerZif[i] != bit)
+          {
+            var expected = "";
+            var read = "";
+            bit = startBit;
+            foreach (var j in sram.DataPins.Select(tr.ToZIF))
+            {
+              expected = expected + (bit ? "1" : "0");
+              read = read + (readerZif[j] ? "1" : "0");
+              bit = !bit;
+            }
+            badCells.Add(Tuple.Create(address, read, expected));
+            progressBar.Shout("Bad cell at address {0}", address.ToString("X4"));
+            break;
+          }
+          bit = !bit;
+        }
+
+        startBit = !startBit;
+        progressBar.Progress();
+      }
+      return badCells;
     }
 
     public virtual ZIFSocket[] ReadZIF(string packageName)
@@ -368,22 +448,10 @@ namespace U2Pa.Lib
       package.Add(0x07);
 
       // Write ZIF to Top Programmer buffer
-      int transferLength;
-      var errorCode = Write(package.ToArray(), 1000, out transferLength);
-      if (errorCode == ErrorCode.None && transferLength == package.Count)
-        PA.ShoutLine(5, "12 x ZIF written to buffer.");
-      else
-        throw new U2PaException("Failed to write 12 x ZIF to buffer. Transferlength: {0} ErrorCode: {1}",
-                                transferLength, errorCode);
-
+      SendPackage(5, package.ToArray(), "Writing 12 x ZIF to buffer.");
+ 
       // Read buffer
-      var readBuffer = new byte[64];
-      errorCode = Read(readBuffer, 1000, out transferLength);
-      if (errorCode == ErrorCode.None && transferLength == readBuffer.Length)
-        PA.ShoutLine(5, "ZIF read {0}.", packageName);
-      else
-        throw new U2PaException("ZIF read failed {0}. Transferlength: {1} ErrorCode: {2}", packageName,
-                                transferLength, errorCode);
+      var readBuffer = RecievePackage(5, "Reading ZIF {0}.", packageName);
 
       var zifs = new List<ZIFSocket>();
       for(var i = 0; i + 5 <= 60; i += 5)
@@ -398,7 +466,6 @@ namespace U2Pa.Lib
 
     public virtual void WriteZIF(ZIFSocket zif, string packageName)
     {
-      int transferLength;
       var rawBytes = zif.ToTopBytes();
       var package = new byte[]
                           {
@@ -410,73 +477,47 @@ namespace U2Pa.Lib
                             0x0A, 0x15, 0xFF
                           };
 
-      var errorCode = Write(package, 1000, out transferLength);
-      if (errorCode == ErrorCode.None && transferLength == package.Length)
-        PA.ShoutLine(5, "{0} written to ZIF.", packageName);
-      else
-        throw new U2PaException("{0} write failed {0}. Transferlength: {1} ErrorCode: {2}",
-                                packageName, transferLength, errorCode);
+      SendPackage(5, package, "{0} written to ZIF.", packageName);
     }
 
     public virtual void SetVppLevel(VppLevel level)
     {
-      int transferLength;
-      var errorCode = UsbEndpointWriter.Write(new byte[] { 0x0e, 0x12, (byte)level, 0x00 }, 1000, out transferLength);
-      if (errorCode == ErrorCode.None && transferLength == 4)
-        PA.ShoutLine(4, "Vpp = {0}", level.ToString().Substring(4).Replace('_', '.'));
-      else
-        throw new U2PaException("Failed to set Vpp. Transferlength: {0} ErrorCode: {1}", transferLength, errorCode);
+      SendPackage(4, new byte[] { 0x0e, 0x12, (byte)level, 0x00 }, 
+        "Vpp = {0}", level.ToString().Substring(4).Replace('_', '.'));
     }
 
     public virtual void SetVccLevel(VccLevel level)
     {
-      int transferLength;
-      var errorCode = UsbEndpointWriter.Write(new byte[] { 0x0e, 0x13, (byte)level, 0x00 }, 1000, out transferLength);
-      if (errorCode == ErrorCode.None && transferLength == 4)
-        PA.ShoutLine(4, "Vcc = {0}", level.ToString().Substring(4).Replace('_', '.'));
-      else
-        throw new U2PaException("Failed to set Vcc. Transferlength: {0} ErrorCode: {1}", transferLength, errorCode);
+      SendPackage(4, new byte[] { 0x0e, 0x13, (byte)level, 0x00 },
+        "Vcc = {0}", level.ToString().Substring(4).Replace('_', '.'));
     }
 
-    public virtual void ApplyVpp(PinNumberTranslator translator, params int[] zipPins)
+    public virtual void ApplyVpp(Func<int, int> translate = null, params int[] dilPins)
     {
-      ApplyPropertyToPins(translator, "Vpp", 0x14, ValidVppPins, zipPins);
+      ApplyPropertyToPins("Vpp", 0x14, ValidVppPins, translate, dilPins);
     }
 
-    public virtual void ApplyVcc(PinNumberTranslator translator, params int[] zifPins)
+    public virtual void ApplyVcc(Func<int, int> translate = null, params int[] dilPins)
     {
-      ApplyPropertyToPins(translator, "Vcc", 0x15, ValidVccPins, zifPins);
+      ApplyPropertyToPins("Vcc", 0x15, ValidVccPins, translate, dilPins);
     }
 
-    public virtual void ApplyGnd(PinNumberTranslator translator, params int[] zifPins)
+    public virtual void ApplyGnd(Func<int, int> translate = null, params int[] dilPins)
     {
-      ApplyPropertyToPins(translator, "Gnd", 0x16, ValidGndPins, zifPins);
+      ApplyPropertyToPins("Gnd", 0x16, ValidGndPins, translate, dilPins);
     }
 
-    protected virtual void ApplyPropertyToPins(PinNumberTranslator translator, string name, byte propCode, ICollection<byte> validPins, params int[] dilPins)
+    protected virtual void ApplyPropertyToPins(string name, byte propCode, ICollection<int> validPins, Func<int, int> translate = null, params int[] dilPins)
     {
+      translate = translate ?? (x => x);
       // Always start by clearing all pins
-      int transferLength;
-      var errorCode = UsbEndpointWriter.Write(new byte[] {0x0e, propCode, 0x00, 0x00}, 1000, out transferLength);
-      if (errorCode == ErrorCode.None && transferLength == 4)
-        PA.ShoutLine(4, "All {0} pins cleared", name);
-      else
-        throw new U2PaException("Failed to clear {0} pins. Transferlength: {1} ErrorCode: {2}", name, transferLength,
-                                errorCode);
+      SendPackage(4, new byte[] { 0x0e, propCode, 0x00, 0x00 }, "All {0} pins cleared", name);
 
-      if (translator != null)
+      foreach (var zifPin in dilPins.Select(translate))
       {
-        foreach (var zifPin in dilPins.Select(translator.ToZIF))
-        {
-          if (!validPins.Contains(zifPin))
-            throw new U2PaException("Pin {0} is not a valid {1} pin.", zifPin, name);
-          errorCode = UsbEndpointWriter.Write(new byte[] {0x0e, propCode, zifPin, 0x00}, 1000, out transferLength);
-          if (errorCode == ErrorCode.None && transferLength == 4)
-            PA.ShoutLine(4, "{0} applied to pin {1}", name, zifPin);
-          else
-            throw new U2PaException("Failed to apply {0} to pin {1}. Transferlength: {2} ErrorCode: {3}",
-              name, zifPin, transferLength, errorCode);
-        }
+        if (!validPins.Contains(zifPin))
+          throw new U2PaException("Pin {0} is not a valid {1} pin.", zifPin, name);
+        SendPackage(4, new byte[] { 0x0e, propCode, (byte)zifPin, 0x00 }, "{0} applied to pin {1}", name, zifPin);
       }
     }
 
@@ -485,9 +526,9 @@ namespace U2Pa.Lib
       DisposeSpecific();
 
       // Remove all pin assignments
-      ApplyVpp(null);
-      ApplyVcc(null);
-      ApplyGnd(null);
+      ApplyVpp();
+      ApplyVcc();
+      ApplyGnd();
       if (UsbDevice == null) return;
       if (UsbDevice.IsOpen)
       {

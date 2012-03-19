@@ -13,7 +13,7 @@
 //    the Free Software Foundation, either version 3 of the License, or
 //    (at your option) any later version.
 //
-//    Foobar is distributed in the hope that it will be useful,
+//    u2pa is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
@@ -63,6 +63,7 @@
   <ItemGroup>
     <Reference Include="LibUsbDotNet">
       <HintPath>..\..\..\Program Files\LibUsbDotNet\LibUsbDotNet.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -73,10 +74,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Eproms\EpromXml.cs" />
-    <Compile Include="Eproms\Eprom.cs" />
+    <Compile Include="IC\EpromXml.cs" />
+    <Compile Include="IC\Eprom.cs" />
     <Compile Include="Kernel.cs" />
     <Compile Include="PublicAddress.cs" />
+    <Compile Include="IC\SRam.cs" />
+    <Compile Include="IC\SRamXml.cs" />
     <Compile Include="Tools.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="PinNumberTranslator.cs" />
@@ -91,10 +94,20 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Doc\Protocol.txt" />
-    <Content Include="Eproms\Eproms.xml">
+    <Content Include="xml\SRams.xml">
+      <SubType>Designer</SubType>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="xml\Eproms.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <SubType>Designer</SubType>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="xml\ICs.xsd">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

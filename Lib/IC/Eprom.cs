@@ -11,7 +11,7 @@
 //    the Free Software Foundation, either version 3 of the License, or
 //    (at your option) any later version.
 //
-//    Foobar is distributed in the hope that it will be useful,
+//    u2pa is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
@@ -23,14 +23,16 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace U2Pa.Lib.Eproms
+namespace U2Pa.Lib.IC
 {
   public abstract class Eprom
   {
     public string Type;
     public int DilType;
     public string Notes;
+    public string Description;
     public int Placement;
+    public bool UpsideDown;
     public int[] AddressPins;
     public int[] DataPins;
     public int ChipEnable;
@@ -53,7 +55,7 @@ namespace U2Pa.Lib.Eproms
       // DIL pin, ZIF pin, description.
       var left = new List<Tuple<int, int>>();
       var right = new List<Tuple<int, int>>();
-      var t = new PinNumberTranslator(DilType, Placement);
+      var t = new PinNumberTranslator(DilType, 40, Placement, UpsideDown);
 
       // First blank all fields.
       var zifPins = new string[41];
@@ -92,11 +94,11 @@ namespace U2Pa.Lib.Eproms
       }
       string display = "\r\n";
       display += "  +---------------------------------------+\r\n";
-      display += "  |   +------------------------------+    |\r\n";
-      display += "  |   |  POWER    O      O    READY  |    |\r\n";
-      display += "  |=  |   TOP               TOP2005+ |   =|\r\n";
-      display += "  |   |      Universal Programmer    |    |\r\n";
-      display += "  |   +------------------------------+    |\r\n";
+      display += "  |   +-------------------------------+   |\r\n";
+      display += "  |   |  POWER    O       O    READY  |   |\r\n";
+      display += "  |=  |   TOP                TOP2005+ |  =|\r\n";
+      display += "  |   |     Universal Programmer      |   |\r\n";
+      display += "  |   +-------------------------------+   |\r\n";
       display += "  +---------------------------------------+\r\n";
       display += "  |          +-----------------+          |\r\n";
       for (var i = 0; i < 20; i++)
@@ -104,7 +106,7 @@ namespace U2Pa.Lib.Eproms
         string middle;
         if (left[i].Item2 == 0) middle = " | | ";
         else if (left[i].Item1 == 21) middle = " +-----------+ ";
-        else if (right[i].Item2 == 1) middle = " +-----O-----+ ";
+        else if (!UpsideDown && right[i].Item2 == 1) middle = " +-----O-----+ ";
         else if (right[i].Item2 == (DilType/4) + 1)
           middle = String.Format(" |{0}| ",
                                  Type.Pad(11));

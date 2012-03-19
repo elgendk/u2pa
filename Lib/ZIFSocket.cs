@@ -11,7 +11,7 @@
 //    the Free Software Foundation, either version 3 of the License, or
 //    (at your option) any later version.
 //
-//    Foobar is distributed in the hope that it will be useful,
+//    u2pa is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
@@ -19,15 +19,17 @@
 //    You should have received a copy of the GNU General Public License
 //    along with u2pa. If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
+using U2Pa.Lib.IC;
 
 namespace U2Pa.Lib
 {
   public class ZIFSocket
   {
     private readonly BitArray pins;
+    private readonly int size;
 
     public ZIFSocket(int size, byte[] initialTopbytes)
     : this(size)
@@ -37,6 +39,7 @@ namespace U2Pa.Lib
 
     public ZIFSocket(int size)
     {
+      this.size = size;
       pins = new BitArray(size + 1);
     }
 
@@ -51,40 +54,98 @@ namespace U2Pa.Lib
       pins.SetAll(value);
     }
 
-    public void SetEpromAddress(Eproms.Eprom eprom, int address)
+    public void SetSRamAddress(SRam sram, int address)
     {
-      var translator = new PinNumberTranslator(eprom.DilType, eprom.Placement);
-      var bitAddress = new BitArray(new[] { address });
-      for (var i = 0; i < eprom.AddressPins.Length; i++)
-        pins[translator.ToZIF(eprom.AddressPins[i])] = bitAddress[i];
+      SetPins(address, sram.AddressPins, new PinNumberTranslator(sram.DilType, size, sram.Placement, sram.UpsideDown).ToZIF);
     }
 
-    internal void SetEpromData(Eproms.Eprom eprom, byte[] data)
+    public void SetSRamData(SRam sram, byte[] data)
     {
-      var translator = new PinNumberTranslator(eprom.DilType, eprom.Placement);
-      var bitAddress = new BitArray(data);
-      for (var i = 0; i < eprom.DataPins.Length; i++)
-        pins[translator.ToZIF(eprom.DataPins[i])] = bitAddress[i];
+      SetPins(data, sram.DataPins, new PinNumberTranslator(sram.DilType, size, sram.Placement, sram.UpsideDown).ToZIF);
     }
 
-    public int GetEpromAddress(Eproms.Eprom eprom)
+    public void SetEpromAddress(Eprom eprom, int address)
     {
-      var translator = new PinNumberTranslator(eprom.DilType, eprom.Placement);
+      SetPins(address, eprom.AddressPins, new PinNumberTranslator(eprom.DilType, size, eprom.Placement, eprom.UpsideDown).ToZIF);
+    }
+
+    public void SetEpromData(Eprom eprom, byte[] data)
+    {
+      SetPins(data, eprom.DataPins, new PinNumberTranslator(eprom.DilType, size, eprom.Placement, eprom.UpsideDown).ToZIF);
+    }
+
+    public void SetPins(int data, int[] dilMask, Func<int, int> translate = null)
+    {
+      translate = translate ?? (x => x);
+      var bitData = new BitArray(new[] {data});
+      SetPins(bitData, dilMask, translate);
+    }
+
+    public void SetPins(byte[] data, int[] dilMask, Func<int, int> translate = null)
+    {
+      translate = translate ?? (x => x);
+      var bitData = new BitArray(data);
+      SetPins(bitData, dilMask, translate);
+    }
+
+    public void SetPins(BitArray bitData, int[] dilMask, Func<int,int> translate = null)
+    {
+      translate = translate ?? (x => x);
+      for (var i = 0; i < dilMask.Length; i++)
+        pins[translate(dilMask[i])] = bitData[i];      
+    } 
+
+    public int GetDataAsInt(int[] dilMask, Func<int, int> translate = null)
+    {
+      translate = translate ?? (x => x);
       var acc = 0;
-      for (var i = 0; i < eprom.AddressPins.Length; i++)
+      for (var i = 0; i < dilMask.Length; i++)
       {
-        acc |= pins[translator.ToZIF(eprom.AddressPins[i])] ? 1 << i : 0;
+        acc |= pins[translate(dilMask[i])] ? 1 << i : 0;
       }
       return acc;
     }
 
-    public IEnumerable<byte> GetEpromData(Eproms.Eprom eprom)
+    public int GetEpromAddress(Eprom eprom)
     {
-      var translator = new PinNumberTranslator(eprom.DilType, eprom.Placement);
-      var readByte = new BitArray(eprom.DataPins.Length);
-      for (var i = 0; i < eprom.DataPins.Length; i++)
-        readByte[i] = pins[translator.ToZIF(eprom.DataPins[i])];
+      return GetDataAsInt(eprom.AddressPins, new PinNumberTranslator(eprom.DilType, size, eprom.Placement, eprom.UpsideDown).ToZIF);
+    }
+
+    public IEnumerable<byte> GetDataAsBytes(int[] dilMask, Func<int, int> translate = null)
+    {
+      translate = translate ?? (x => x);
+      var readByte = new BitArray(dilMask.Length);
+      for (var i = 0; i < dilMask.Length; i++)
+        readByte[i] = pins[translate(dilMask[i])];
       return readByte.ToBytes();
+    }
+
+    public IEnumerable<byte> GetEpromData(Eprom eprom)
+    {
+      return GetDataAsBytes(eprom.DataPins, new PinNumberTranslator(eprom.DilType, size, eprom.Placement, eprom.UpsideDown).ToZIF);
+    }
+
+    public string ToString(Func<int, int> translate = null)
+    {
+      translate = translate ?? (x => x);
+      string accZif = "";
+      string accDil = "";
+      string acc = "";
+      for(var i = 1; i < pins.Length; i++)
+      {
+        var enereZif = i%10;
+        accZif += enereZif.ToString();
+
+        acc += pins[i] ? "1" : "0";
+        
+        var dilPin = translate(i);
+        var enereDil = dilPin%10;
+        accDil += dilPin == 0 ? "." : enereDil.ToString();
+      }
+      return 
+        "zif: " + accZif + Environment.NewLine + 
+        "bit: " + acc + Environment.NewLine + 
+        "dil: " + accDil;
     }
 
     private void SwallowTopBytes(byte[] bytes)
