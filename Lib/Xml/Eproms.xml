@@ -13,7 +13,7 @@
 //    the Free Software Foundation, either version 3 of the License, or
 //    (at your option) any later version.
 //
-//    Foobar is distributed in the hope that it will be useful,
+//    u2pa is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
@@ -22,7 +22,7 @@
 //    along with u2pa. If not, see <http://www.gnu.org/licenses/>.
 -->
 <Root>
-  <Eprom type = "2716" dilType = "24" placement = "0" Vcc= "5" Vpp = "25">
+  <Eprom type = "2716" dilType = "24" placement = "0" Vcc= "5" Vpp = "25" >
     <AddressPins>8, 7, 6, 5, 4, 3, 2, 1, 23, 22, 19</AddressPins>
     <DataPins>9, 10, 11, 13, 14, 15, 16, 17</DataPins>
     <ChipEnable>-18</ChipEnable>
@@ -88,7 +88,7 @@
     <VppPins>22</VppPins>
   </Eprom>
 
-  <Eprom type = "271024" dilType = "40" placement = "0" Vcc = "5" Vpp = "13">
+  <Eprom type = "271024" dilType = "40" placement = "0" Vcc = "5" Vpp = "12.5">
     <Notes>
 On a Top2005+, pins 11 and 30 can't be GND'ed.
 Therefore GND is applied to pin 20 (/OE) instead of logical 0.
@@ -98,14 +98,14 @@ in order to get a proper GND feed for the IC.
     <AddressPins>21, 22, 23, 24, 25, 26, 27, 28, 29, 31, 32, 33, 34, 35, 36, 37</AddressPins>
     <DataPins>19, 18, 17, 16, 15, 14, 13, 12, 10, 9, 8, 7, 6, 5, 4, 3</DataPins>
     <ChipEnable>-2</ChipEnable>
-    <OutputEnable>0</OutputEnable>
+    <OutputEnable>-11</OutputEnable>
     <Program>-39</Program>
     <VccPins>40</VccPins>
     <GndPins>20</GndPins>
     <VppPins>1</VppPins>
   </Eprom>
   
-  <Eprom type = "272048" dilType = "40" placement = "0" Vcc = "5" Vpp = "13">
+  <Eprom type = "272048" dilType = "40" placement = "0" Vcc = "5" Vpp = "12.5">
     <Notes>
 On a Top2005+, pins 11 and 30 can't be GND'ed.
 Therefore GND is applied to pin 20 (/OE) instead of logical 0.
@@ -115,7 +115,7 @@ in order to get a proper GND feed for the IC.
     <AddressPins>21, 22, 23, 24, 25, 26, 27, 28, 29, 31, 32, 33, 34, 35, 36, 37, 38</AddressPins>
     <DataPins>19, 18, 17, 16, 15, 14, 13, 12, 10, 9, 8, 7, 6, 5, 4, 3</DataPins>
     <ChipEnable>-2</ChipEnable>
-    <OutputEnable>0</OutputEnable>
+    <OutputEnable>-11</OutputEnable>
     <Program>-39</Program>
     <VccPins>40</VccPins>
     <GndPins>20</GndPins>

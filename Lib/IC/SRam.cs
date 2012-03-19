@@ -18,10 +18,24 @@
 //
 //    You should have received a copy of the GNU General Public License
 //    along with u2pa. If not, see <http://www.gnu.org/licenses/>.
-~~~
-u2pa rom read TYPE FILENAME
 
-reads the contents of an EPROM and saves it into a file
-     
-    When inserting the EPROM into the ZIF socket of the Top Programmer one must
-    be careful to do it correctly; one should call 'info' if in doubt.
+namespace U2Pa.Lib.IC
+{
+  public abstract class SRam
+  {
+    public string Type;
+    public int DilType;
+    public string Notes;
+    public string Description;
+    public int Placement;
+    public bool UpsideDown;
+    public int[] AddressPins;
+    public int[] DataPins;
+    public int[] ChipEnable;
+    public int OutputEnable;
+    public int WriteEnable;
+    public VccLevel VccLevel;
+    public int[] VccPins;
+    public int[] GndPins;
+  }
+}

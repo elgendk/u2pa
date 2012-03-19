@@ -11,7 +11,7 @@
 //    the Free Software Foundation, either version 3 of the License, or
 //    (at your option) any later version.
 //
-//    Foobar is distributed in the hope that it will be useful,
+//    u2pa is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
@@ -24,7 +24,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using U2Pa.Lib.Eproms;
+using U2Pa.Lib.IC;
 
 namespace U2Pa.Lib
 {
@@ -81,10 +81,10 @@ namespace U2Pa.Lib
       return ReadSoundness.SeemsToBeAOkay;
     }
 
-    public static bool CanBePatched(byte byteFromEPROM, byte byteFromFile)
+    public static bool CanBePatched(byte byteFromEprom, byte byteFromFile)
     {
       // I know there's a smarter way to do this, but I'm a bit too tired atm.
-      var eBits = new BitArray(new[] { byteFromEPROM });
+      var eBits = new BitArray(new[] { byteFromEprom });
       var fBits = new BitArray(new[] { byteFromFile });
 
       var returnValue = true;
