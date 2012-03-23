@@ -19,23 +19,25 @@
 //    You should have received a copy of the GNU General Public License
 //    along with u2pa. If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+
 namespace U2Pa.Lib.IC
 {
-  public abstract class SRam
+  public class Pin
   {
-    public string Type;
-    public int DilType;
-    public string Notes;
-    public string Description;
-    public int Placement;
-    public bool UpsideDown;
-    public int[] AddressPins;
-    public int[] DataPins;
-    public int[] ChipEnable;
-    public int[] OutputEnable;
-    public int[] WriteEnable;
-    public VccLevel VccLevel;
-    public int[] VccPins;
-    public int[] GndPins;
+    public bool EnableLow { get; internal set; }
+    public int Number { get; internal set; }
+    public bool Enable { get{ return !EnableLow; } }
+    public bool Disable { get{ return EnableLow; } }
+    public bool TrueZIF { get; internal set; }
+    public static Pin Parse(string pinRep)
+    {
+      pinRep = pinRep.Trim();
+      var enableLow = pinRep.StartsWith("/");
+      pinRep = pinRep.Replace("/", "");
+      var trueZIF = pinRep.EndsWith("Z");
+      pinRep = pinRep.Replace("Z", "");
+      return new Pin { EnableLow = enableLow, TrueZIF = trueZIF, Number = Int32.Parse(pinRep) };
+    }
   }
 }

@@ -76,6 +76,7 @@
   <ItemGroup>
     <Compile Include="IC\EpromXml.cs" />
     <Compile Include="IC\Eprom.cs" />
+    <Compile Include="IC\Pin.cs" />
     <Compile Include="Kernel.cs" />
     <Compile Include="PublicAddress.cs" />
     <Compile Include="IC\SRam.cs" />

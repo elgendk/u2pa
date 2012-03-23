@@ -35,9 +35,9 @@ namespace U2Pa.Lib.IC
     public bool UpsideDown;
     public int[] AddressPins;
     public int[] DataPins;
-    public int ChipEnable;
-    public int OutputEnable;
-    public int Program;
+    public int[] ChipEnable;
+    public int[] OutputEnable;
+    public int[] Program;
     public VccLevel VccLevel;
     public VppLevel VppLevel;
     public int[] VccPins;
@@ -61,20 +61,23 @@ namespace U2Pa.Lib.IC
       var zifPins = new string[41];
       for (var i = 0; i < zifPins.Length; i++)
         zifPins[i] = "";
-      zifPins[t.ToZIF(ChipEnable)] = (ChipEnable < 0 ? "/" : "") + "CE";
-      zifPins[t.ToZIF(OutputEnable)] = (OutputEnable < 0 ? "/" : "") + "OE";
-      foreach (var t1 in VccPins)
-        zifPins[t.ToZIF(t1)] = "Vcc";
-      foreach (var t1 in GndPins)
-        zifPins[t.ToZIF(t1)] = "Gnd";
-      foreach (var t1 in VppPins)
+      foreach (var p in ChipEnable)
+        zifPins[t.ToZIF(p)] = (p < 0 ? "/" : "") + "CE";
+      foreach (var p in OutputEnable)
+        zifPins[t.ToZIF(p)] = (p < 0 ? "/" : "") + "OE";
+      foreach (var p in VccPins)
+        zifPins[t.ToZIF(p)] = "Vcc";
+      foreach (var p in GndPins)
+        zifPins[t.ToZIF(p)] = "Gnd";
+      foreach (var p in VppPins)
       {
-        var tmp = zifPins[t.ToZIF(t1)];
-        zifPins[t.ToZIF(t1)] = tmp + "Vpp";
+        var tmp = zifPins[t.ToZIF(p)];
+        zifPins[t.ToZIF(p)] = tmp + "Vpp";
       }
+      foreach (var p in Program)
       {
-        var tmp = zifPins[t.ToZIF(Program)];
-        zifPins[t.ToZIF(Program)] = tmp + (Program < 0 ? "/" : "") + "P";
+        var tmp = zifPins[t.ToZIF(p)];
+        zifPins[t.ToZIF(p)] = tmp + (p < 0 ? "/" : "") + "P";
       }
       for (var i = 0; i < AddressPins.Length; i++)
         zifPins[t.ToZIF(AddressPins[i])] = String.Format("A{0}", i);
