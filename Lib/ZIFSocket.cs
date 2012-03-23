@@ -125,6 +125,20 @@ namespace U2Pa.Lib
       return GetDataAsBytes(eprom.DataPins, new PinNumberTranslator(eprom.DilType, size, eprom.Placement, eprom.UpsideDown).ToZIF);
     }
 
+    public void Enable(int[] enablePins, Func<int, int> translate = null)
+    {
+      translate = translate ?? (x => x);
+      foreach(var p in enablePins)
+        pins[translate(p)] = p.Enable();
+    }
+
+    public void Disable(int[] disablePins, Func<int, int> translate = null)
+    {
+      translate = translate ?? (x => x);
+      foreach(var p in disablePins)
+        pins[translate(p)] = p.Disable();
+    }
+
     public string ToString(Func<int, int> translate = null)
     {
       translate = translate ?? (x => x);

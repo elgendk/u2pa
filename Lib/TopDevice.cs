@@ -247,8 +247,8 @@ namespace U2Pa.Lib
 
         zif.SetEpromAddress(eprom, returnAddress = address);
 
-        zif[translator.ToZIF(eprom.ChipEnable)] = eprom.ChipEnable.Enable();
-        zif[translator.ToZIF(eprom.OutputEnable)] = eprom.OutputEnable.Enable();
+        zif.Enable(eprom.ChipEnable, translator.ToZIF);
+        zif.Enable(eprom.OutputEnable, translator.ToZIF);
 
         ZIFSocket resultZIF = null;
         var result = ReadSoundness.TryRewrite;
@@ -306,7 +306,7 @@ namespace U2Pa.Lib
 
       var zif = new ZIFSocket(40);
       zif.SetAll(true);
-      zif[translator.ToZIF(eprom.Program)] = eprom.Program.Disable();
+      zif.Disable(eprom.Program, translator.ToZIF);
 
       WriteZIF(zif, "Apply 1 to all pins");
       SetVccLevel(eprom.VccLevel);
@@ -338,28 +338,26 @@ namespace U2Pa.Lib
           zif.SetEpromData(eprom, data);
 
           //  Set programming mode
-          zif[translator.ToZIF(eprom.Program)] = eprom.Program.Enable();
+          zif.Enable(eprom.Program, translator.ToZIF);
 
-          // Set enable pins low (not writing)
-          zif[translator.ToZIF(eprom.ChipEnable)] = eprom.ChipEnable.Disable();
+          zif.Disable(eprom.ChipEnable, translator.ToZIF);
 
           // Prepare ZIF without programming in order to let it stabilize
           // TODO: Do we really need to do this?
           WriteZIF(zif, "Write address & data to ZIF");
 
-          // Set ChipEnable high for pulse
-          zif[translator.ToZIF(eprom.ChipEnable)] = eprom.ChipEnable.Enable();
+          zif.Enable(eprom.ChipEnable, translator.ToZIF);
           stopWatch.Reset();
-          WriteZIF(zif, "Start pulse //E");
+          WriteZIF(zif, "Start pulse E");
           stopWatch.Start();
 
           // Set ChipEnable low again after at least <pulse> ms
-          zif[translator.ToZIF(eprom.ChipEnable)] = eprom.ChipEnable.Disable();
+          zif.Disable(eprom.ChipEnable, translator.ToZIF);
           while (stopWatch.ElapsedMilliseconds <= pulse)
           {
             /* Wait at least <pulse> ms */
           }
-          WriteZIF(zif, "End pulse //E");
+          WriteZIF(zif, "End pulse E");
           progress.Progress();
         }
       }
@@ -387,14 +385,13 @@ namespace U2Pa.Lib
           bit = !bit;
         }
         startBit = !startBit;
-        foreach (var pin in sram.ChipEnable)
-          writerZif[tr.ToZIF(pin)] = pin.Enable();
+        writerZif.Enable(sram.ChipEnable, tr.ToZIF);
         WriteZIF(writerZif, "");
 
-        writerZif[tr.ToZIF(sram.WriteEnable)] = false;
+        writerZif.Enable(sram.WriteEnable, tr.ToZIF);
         WriteZIF(writerZif, "");
 
-        writerZif[tr.ToZIF(sram.WriteEnable)] = true;
+        writerZif.Disable(sram.WriteEnable, tr.ToZIF);
         WriteZIF(writerZif, "");
 
         progressBar.Progress();
@@ -406,10 +403,9 @@ namespace U2Pa.Lib
         var bit = startBit;
         writerZif.SetAll(true);
         writerZif.SetSRamAddress(sram, address);
-        foreach (var pin in sram.ChipEnable)
-          writerZif[tr.ToZIF(pin)] = pin.Enable();
-        writerZif[tr.ToZIF(sram.OutputEnable)] = sram.OutputEnable.Enable();
-        writerZif[tr.ToZIF(sram.WriteEnable)] = sram.WriteEnable.Disable();
+        writerZif.Enable(sram.ChipEnable, tr.ToZIF);
+        writerZif.Enable(sram.OutputEnable, tr.ToZIF);
+        writerZif.Disable(sram.WriteEnable, tr.ToZIF);
         WriteZIF(writerZif, "Writing SRam address.");
 
         var readerZif = ReadZIF("Reading SRam data.")[0];
