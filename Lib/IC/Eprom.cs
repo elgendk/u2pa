@@ -33,38 +33,33 @@ namespace U2Pa.Lib.IC
     public string Description;
     public int Placement;
     public bool UpsideDown;
-    public int[] AddressPins;
-    public int[] DataPins;
-    public int[] ChipEnable;
-    public int[] OutputEnable;
-    public int[] Program;
     public VccLevel VccLevel;
     public VppLevel VppLevel;
-    public int[] VccPins;
-    public int[] GndPins;
-    public int[] VppPins;
-
-    [Obsolete("We use xml-based definition on Eprom instead now.")]
-    public static Eprom Create(string type)
-    {
-      throw new U2PaException("Unsupported EPROM: {0}", type);
-    }
+    public Pin[] AddressPins;
+    public Pin[] DataPins;
+    public Pin[] ChipEnable;
+    public Pin[] OutputEnable;
+    public Pin[] Program;
+    public Pin[] Constants;
+    public Pin[] VccPins;
+    public Pin[] GndPins;
+    public Pin[] VppPins;
 
     public override string ToString()
     {
       // DIL pin, ZIF pin, description.
       var left = new List<Tuple<int, int>>();
       var right = new List<Tuple<int, int>>();
-      var t = new PinNumberTranslator(DilType, 40, Placement, UpsideDown);
+      var t = new PinTranslator(DilType, 40, Placement, UpsideDown);
 
       // First blank all fields.
       var zifPins = new string[41];
       for (var i = 0; i < zifPins.Length; i++)
         zifPins[i] = "";
       foreach (var p in ChipEnable)
-        zifPins[t.ToZIF(p)] = (p < 0 ? "/" : "") + "CE";
+        zifPins[t.ToZIF(p)] = (p.EnableLow ? "/" : "") + "CE";
       foreach (var p in OutputEnable)
-        zifPins[t.ToZIF(p)] = (p < 0 ? "/" : "") + "OE";
+        zifPins[t.ToZIF(p)] = (p.EnableLow ? "/" : "") + "OE";
       foreach (var p in VccPins)
         zifPins[t.ToZIF(p)] = "Vcc";
       foreach (var p in GndPins)
@@ -77,7 +72,7 @@ namespace U2Pa.Lib.IC
       foreach (var p in Program)
       {
         var tmp = zifPins[t.ToZIF(p)];
-        zifPins[t.ToZIF(p)] = tmp + (p < 0 ? "/" : "") + "P";
+        zifPins[t.ToZIF(p)] = tmp + (p.EnableLow ? "/" : "") + "P";
       }
       for (var i = 0; i < AddressPins.Length; i++)
         zifPins[t.ToZIF(AddressPins[i])] = String.Format("A{0}", i);

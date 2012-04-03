@@ -25,19 +25,20 @@
   <SRam type = "6148" dilType = "18" placement = "1" Vcc= "5">
     <AddressPins>5, 6, 7, 4, 3, 2, 1, 17, 16, 15</AddressPins>
     <DataPins>14, 13, 12, 11</DataPins>
-    <ChipEnable>-8</ChipEnable>
+    <ChipEnable>/8</ChipEnable>
     <OutputEnable></OutputEnable>
-    <WriteEnable>-10</WriteEnable>
+    <WriteEnable>/10</WriteEnable>
+    <Constants>/9</Constants>
     <VccPins>18</VccPins>
-    <GndPins></GndPins>
+    <GndPins>20Z</GndPins>
   </SRam>
 
   <SRam type = "6116" dilType = "24" placement = "0" Vcc= "5">
     <AddressPins>8, 7, 6, 5, 4, 3, 2, 1, 23, 22, 19</AddressPins>
     <DataPins>9, 10, 11, 13, 14, 15, 16, 17</DataPins>
-    <ChipEnable>-18</ChipEnable>
-    <OutputEnable>-20</OutputEnable>
-    <WriteEnable>-21</WriteEnable>
+    <ChipEnable>/18</ChipEnable>
+    <OutputEnable>/20</OutputEnable>
+    <WriteEnable>/21</WriteEnable>
     <VccPins>24</VccPins>
     <GndPins>12</GndPins>
   </SRam>
@@ -45,9 +46,9 @@
   <SRam type = "6264" dilType = "28" placement = "0" Vcc= "5">
     <AddressPins>10, 9, 8, 7, 6, 5, 4, 3, 25, 24, 21, 23, 2</AddressPins>
     <DataPins>11, 12, 13, 15, 16, 17, 18, 19</DataPins>
-    <ChipEnable>-20, 26</ChipEnable>
-    <OutputEnable>-22</OutputEnable>
-    <WriteEnable>-27</WriteEnable>
+    <ChipEnable>/20, 26</ChipEnable>
+    <OutputEnable>/22</OutputEnable>
+    <WriteEnable>/27</WriteEnable>
     <VccPins>28</VccPins>
     <GndPins>14</GndPins>
   </SRam>
