@@ -35,9 +35,11 @@ namespace U2Pa.Lib
     // TODO: Find out if these are the same for all Top Programmers.
     protected const int VendorId = 0x2471;
     protected const int ProductId = 0x0853;
-    protected UsbDevice UsbDevice { get; private set; }
-    protected UsbEndpointReader UsbEndpointReader { get; private set; }
-    protected UsbEndpointWriter UsbEndpointWriter { get; private set; }
+    protected const int Configuration = 1;
+    protected const byte Interface = 0;
+    protected const ReadEndpointID ReadEndpointId = ReadEndpointID.Ep02;
+    protected const WriteEndpointID WriteEndpointId = WriteEndpointID.Ep02;
+    protected UsbBulkDevice BulkDevice;
 
     public abstract int ZIFType { get; }
 
@@ -47,96 +49,35 @@ namespace U2Pa.Lib
     public List<int> ValidVppPins;
     public List<int> ValidGndPins;
 
-    protected TopDevice(PublicAddress pa, UsbDevice usbDevice, UsbEndpointReader usbEndpointReader, UsbEndpointWriter usbEndpointWriter)
+    protected TopDevice(PublicAddress pa, UsbBulkDevice bulkDevice)
     {
-      UsbDevice = usbDevice;
-      UsbEndpointReader = usbEndpointReader;
-      UsbEndpointWriter = usbEndpointWriter;
+      BulkDevice = bulkDevice;
       PA = pa;
     }
 
     public static TopDevice Create(PublicAddress pa)
     {
-      var usbDevice = UsbDevice.OpenUsbDevice(new UsbDeviceFinder(VendorId, ProductId));
+      var bulkDevice = new UsbBulkDevice(pa, VendorId, ProductId, Configuration, Interface, ReadEndpointId, WriteEndpointId);
 
-      // If the device is open and ready
-      if (usbDevice == null)
-        throw new U2PaException(
-          "Top Universal Programmer with VendorId: 0x{0} and ProductId: 0x{1} not found.", 
-          VendorId.ToString("X4"), 
-          ProductId.ToString("X4"));
-
-      pa.ShoutLine(4,
-                   "Top Universal Programmer with VendorId: 0x{0} and ProductId: 0x{1} found.",
-                   usbDevice.UsbRegistryInfo.Vid.ToString("X2"),
-                   usbDevice.UsbRegistryInfo.Pid.ToString("X2"));
-
-      var wholeUsbDevice = usbDevice as IUsbDevice;
-      if (!ReferenceEquals(wholeUsbDevice, null))
-      {
-        // Select config #1
-        wholeUsbDevice.SetConfiguration(1);
-        byte temp;
-        if (wholeUsbDevice.GetConfiguration(out temp))
-          pa.ShoutLine(4, "Configuration with id: {0} selected.", temp.ToString("X2"));
-        else
-          throw new U2PaException("Failed to set configuration id: {0}", 1);
-
-        // Claim interface #0.
-        if (wholeUsbDevice.ClaimInterface(0))
-          pa.ShoutLine(4, "Interface with id: {0} claimed.", 0);
-        else
-          throw new U2PaException("Failed to claim interface with id: {0}", 1);
-      }
-
-      // Open read endpoint $82 aka ReadEndPoint.Ep02.
-      var usbEndpointReader = usbDevice.OpenEndpointReader(ReadEndpointID.Ep02);
-      if (usbEndpointReader == null)
-        throw new U2PaException("Unable to open read endpoint ${0}", "82");
-      pa.ShoutLine(4, "Reader endpoint ${0} opened.", usbEndpointReader.EndpointInfo.Descriptor.EndpointID.ToString("X2"));
-
-
-      // Open write endpoint $02 aka WriteEndPoint.Ep02
-      var usbEndpointWriter = usbDevice.OpenEndpointWriter(WriteEndpointID.Ep02);
-      if (usbEndpointWriter == null)
-        throw new U2PaException("Unable to open write endpoint ${0}", "02");
-      pa.ShoutLine(4, "Writer endpoint ${0} opened.", usbEndpointWriter.EndpointInfo.Descriptor.EndpointID.ToString("X2"));
-
-      var idString = ReadTopDeviceIdString(pa, usbEndpointReader, usbEndpointWriter);
+      var idString = ReadTopDeviceIdString(pa, bulkDevice);
       pa.ShoutLine(2, "Connected Top device is: {0}.", idString);
 
       if (idString.StartsWith("top2005+"))
-        return new Top2005Plus(pa, usbDevice, usbEndpointReader, usbEndpointWriter);
+        return new Top2005Plus(pa, bulkDevice);
 
       throw new U2PaException("Not supported Top Programmer {0}", idString);
     }
 
     public string ReadTopDeviceIdString()
     {
-      return ReadTopDeviceIdString(PA, UsbEndpointReader, UsbEndpointWriter);
+      return ReadTopDeviceIdString(PA, BulkDevice);
     }
 
-    protected static string ReadTopDeviceIdString(PublicAddress pa, UsbEndpointReader usbEndpointReader, UsbEndpointWriter usbEndpointWriter)
+    protected static string ReadTopDeviceIdString(PublicAddress pa, UsbBulkDevice bulkDevice)
     {
-      int transferLength;
-      var errorCode = usbEndpointWriter.Write(new byte[] { 0x0E, 0x11, 0x00, 0x00 }, 1000, out transferLength);
-      if (errorCode == ErrorCode.None && transferLength == 4)
-        pa.ShoutLine(4, "Send write-version-string-to-buffer command.");
-      else
-        throw new U2PaException("Failed to send write-version-string-to-buffer command. Transferlength: {0} ErrorCode: {1}", transferLength, errorCode);
-
-      errorCode = usbEndpointWriter.Write(new byte[] { 0x07 }, 1000, out transferLength);
-      if (errorCode == ErrorCode.None && transferLength == 1)
-        pa.ShoutLine(4, "Send 07 command.");
-      else
-        throw new U2PaException("Failed to send 07 command. Transferlength: {0} ErrorCode: {1}", transferLength, errorCode);
-
-      var readBuffer = new byte[64];
-      errorCode = usbEndpointReader.Read(readBuffer, 1000, out transferLength);
-      if (errorCode == ErrorCode.None && transferLength == readBuffer.Length)
-        pa.ShoutLine(4, "Buffer read.");
-      else
-        throw new U2PaException("Failed to read buffer. Transferlength: {0} ErrorCode: {1}", transferLength, errorCode);
+      bulkDevice.SendPackage(4, new byte[] { 0x0E, 0x11, 0x00, 0x00 }, "Write version string to buffer");
+      bulkDevice.SendPackage(4, new byte[] { 0x07 }, "07 command");
+      var readBuffer = bulkDevice.RecievePackage(4, "Reading buffer");
 
       // Can't we find a better stop condition than t != 0x20?
       return readBuffer.TakeWhile(t => t != 0x20).Aggregate("", (current, t) => current + (char)t);
@@ -183,42 +124,6 @@ namespace U2Pa.Lib
       //return startIndex + 1 + 4;
     }
 
-    internal void SendPackage(int verbosity, byte[] data, string description, params object[] args)
-    {
-      description = String.Format(description, args);
-      int transferLength;
-      int timeOut = Math.Max(1000, data.Length / 10);
-      var errorCode = Write(data, timeOut, out transferLength);
-      if (errorCode == ErrorCode.None && transferLength == data.Length)
-        PA.ShoutLine(verbosity, "Write success: {0}. Timeout {1}ms.", description, timeOut);
-      else
-        throw new U2PaException("Write failure. {0}.\r\nTransferlength: {1} ErrorCode: {2}", description, transferLength, errorCode);
-    }
-
-    protected byte[] RecievePackage(int verbosity, string description, params object[] args)
-    {
-      description = String.Format(description, args);
-      var readBuffer = new byte[64];
-      int transferLength;
-      const int timeOut = 1000;
-      var errorCode = Read(readBuffer, timeOut, out transferLength);
-      if (errorCode == ErrorCode.None && transferLength == readBuffer.Length)
-        PA.ShoutLine(verbosity, "Read success: {0}. Timeout {1}ms.", description, timeOut);
-      else
-        throw new U2PaException("Read failure: {0}.\r\nTransferlength: {1} ErrorCode: {2}", description, transferLength, errorCode);
-      return readBuffer;
-    }
-
-    public ErrorCode Write(byte[] package, int timeOut, out int transferLength)
-    {
-      return UsbEndpointWriter.Write(package, timeOut, out transferLength);
-    }
-
-    public ErrorCode Read(byte[] buffer, int timeOut, out int transferLength)
-    {
-      return UsbEndpointReader.Read(buffer, timeOut, out transferLength);
-    }
-
     public int ReadEprom(
       Eprom eprom, 
       PublicAddress.ProgressBar progressBar, 
@@ -232,7 +137,7 @@ namespace U2Pa.Lib
       PA.ShoutLine(2, "Reading EPROM{0}", eprom.Type);
       // Setting up chip...
       SetVccLevel(eprom.VccLevel);
-      var translator = new PinNumberTranslator(eprom.DilType, ZIFType, 0, eprom.UpsideDown);
+      var translator = new PinTranslator(eprom.DilType, ZIFType, 0, eprom.UpsideDown);
       ApplyVcc(translator.ToZIF, eprom.VccPins);
       ApplyGnd(translator.ToZIF, eprom.GndPins);
 
@@ -242,13 +147,14 @@ namespace U2Pa.Lib
       progressBar.Init();
       foreach (var address in failedAddresses ?? Tools.Interval(fromAddress, totalNumberOfAdresses))
       {
-        // Pull up all pins
         zif.SetAll(true);
+        zif.Disable(eprom.GndPins, translator.ToZIF);
+        zif.Enable(eprom.Constants, translator.ToZIF);
+        zif.Enable(eprom.ChipEnable, translator.ToZIF);
+        zif.Enable(eprom.OutputEnable, translator.ToZIF);
 
         zif.SetEpromAddress(eprom, returnAddress = address);
 
-        zif.Enable(eprom.ChipEnable, translator.ToZIF);
-        zif.Enable(eprom.OutputEnable, translator.ToZIF);
 
         ZIFSocket resultZIF = null;
         var result = ReadSoundness.TryRewrite;
@@ -302,7 +208,7 @@ namespace U2Pa.Lib
     {
       var totalNumberOfAdresses = eprom.AddressPins.Length == 0 ? 0 : 1 << eprom.AddressPins.Length;
       var stopWatch = new Stopwatch();
-      var translator = new PinNumberTranslator(eprom.DilType, ZIFType, 0, eprom.UpsideDown);
+      var translator = new PinTranslator(eprom.DilType, ZIFType, 0, eprom.UpsideDown);
 
       var zif = new ZIFSocket(40);
       zif.SetAll(true);
@@ -365,10 +271,9 @@ namespace U2Pa.Lib
 
     public List<Tuple<int, string, string>> SRamTest(PublicAddress pa, SRam sram, PublicAddress.ProgressBar progressBar, int totalNumberOfAdresses, TopDevice topDevice, bool firstBit)
     {
-      var tr = new PinNumberTranslator(sram.DilType, 40, sram.Placement, sram.UpsideDown);
+      var tr = new PinTranslator(sram.DilType, 40, sram.Placement, sram.UpsideDown);
       SetVccLevel(sram.VccLevel);
       ApplyGnd(tr.ToZIF, sram.GndPins);
-      //ApplyGnd(null,20);
       ApplyVcc(tr.ToZIF, sram.VccPins);
 
       var badCells = new List<Tuple<int, string, string>>();
@@ -378,6 +283,9 @@ namespace U2Pa.Lib
       {
         var bit = startBit;
         writerZif.SetAll(true);
+        writerZif.Disable(sram.GndPins, tr.ToZIF);
+        writerZif.Enable(sram.Constants, tr.ToZIF);
+        writerZif.Enable(sram.ChipEnable, tr.ToZIF);
         writerZif.SetSRamAddress(sram, address);
         foreach (var i in sram.DataPins.Select(tr.ToZIF))
         {
@@ -385,7 +293,6 @@ namespace U2Pa.Lib
           bit = !bit;
         }
         startBit = !startBit;
-        writerZif.Enable(sram.ChipEnable, tr.ToZIF);
         WriteZIF(writerZif, "");
 
         writerZif.Enable(sram.WriteEnable, tr.ToZIF);
@@ -402,10 +309,12 @@ namespace U2Pa.Lib
       {
         var bit = startBit;
         writerZif.SetAll(true);
-        writerZif.SetSRamAddress(sram, address);
+        writerZif.Disable(sram.GndPins, tr.ToZIF);
+        writerZif.Enable(sram.Constants, tr.ToZIF);
         writerZif.Enable(sram.ChipEnable, tr.ToZIF);
         writerZif.Enable(sram.OutputEnable, tr.ToZIF);
         writerZif.Disable(sram.WriteEnable, tr.ToZIF);
+        writerZif.SetSRamAddress(sram, address);
         WriteZIF(writerZif, "Writing SRam address.");
 
         var readerZif = ReadZIF("Reading SRam data.")[0];
@@ -444,10 +353,10 @@ namespace U2Pa.Lib
       package.Add(0x07);
 
       // Write ZIF to Top Programmer buffer
-      SendPackage(5, package.ToArray(), "Writing 12 x ZIF to buffer.");
+      BulkDevice.SendPackage(5, package.ToArray(), "Writing 12 x ZIF to buffer.");
  
       // Read buffer
-      var readBuffer = RecievePackage(5, "Reading ZIF {0}.", packageName);
+      var readBuffer = BulkDevice.RecievePackage(5, "Reading ZIF {0}.", packageName);
 
       var zifs = new List<ZIFSocket>();
       for(var i = 0; i + 5 <= 60; i += 5)
@@ -473,47 +382,47 @@ namespace U2Pa.Lib
                             0x0A, 0x15, 0xFF
                           };
 
-      SendPackage(5, package, "{0} written to ZIF.", packageName);
+      BulkDevice.SendPackage(5, package, "{0} written to ZIF.", packageName);
     }
 
     public virtual void SetVppLevel(VppLevel level)
     {
-      SendPackage(4, new byte[] { 0x0e, 0x12, (byte)level, 0x00 }, 
+      BulkDevice.SendPackage(4, new byte[] { 0x0e, 0x12, (byte)level, 0x00 }, 
         "Vpp = {0}", level.ToString().Substring(4).Replace('_', '.'));
     }
 
     public virtual void SetVccLevel(VccLevel level)
     {
-      SendPackage(4, new byte[] { 0x0e, 0x13, (byte)level, 0x00 },
+      BulkDevice.SendPackage(4, new byte[] { 0x0e, 0x13, (byte)level, 0x00 },
         "Vcc = {0}", level.ToString().Substring(4).Replace('_', '.'));
     }
 
-    public virtual void ApplyVpp(Func<int, int> translate = null, params int[] dilPins)
+    public virtual void ApplyVpp(Func<Pin, int> translate = null, params Pin[] dilPins)
     {
       ApplyPropertyToPins("Vpp", 0x14, ValidVppPins, translate, dilPins);
     }
 
-    public virtual void ApplyVcc(Func<int, int> translate = null, params int[] dilPins)
+    public virtual void ApplyVcc(Func<Pin, int> translate = null, params Pin[] dilPins)
     {
       ApplyPropertyToPins("Vcc", 0x15, ValidVccPins, translate, dilPins);
     }
 
-    public virtual void ApplyGnd(Func<int, int> translate = null, params int[] dilPins)
+    public virtual void ApplyGnd(Func<Pin, int> translate = null, params Pin[] dilPins)
     {
       ApplyPropertyToPins("Gnd", 0x16, ValidGndPins, translate, dilPins);
     }
 
-    protected virtual void ApplyPropertyToPins(string name, byte propCode, ICollection<int> validPins, Func<int, int> translate = null, params int[] dilPins)
+    protected virtual void ApplyPropertyToPins(string name, byte propCode, ICollection<int> validPins, Func<Pin, int> translate = null, params Pin[] dilPins)
     {
-      translate = translate ?? (x => x);
+      translate = translate ?? (x => x.Number);
       // Always start by clearing all pins
-      SendPackage(4, new byte[] { 0x0e, propCode, 0x00, 0x00 }, "All {0} pins cleared", name);
+      BulkDevice.SendPackage(4, new byte[] { 0x0e, propCode, 0x00, 0x00 }, "All {0} pins cleared", name);
 
       foreach (var zifPin in dilPins.Select(translate))
       {
         if (!validPins.Contains(zifPin))
           throw new U2PaException("Pin {0} is not a valid {1} pin.", zifPin, name);
-        SendPackage(4, new byte[] { 0x0e, propCode, (byte)zifPin, 0x00 }, "{0} applied to pin {1}", name, zifPin);
+        BulkDevice.SendPackage(4, new byte[] { 0x0e, propCode, (byte)zifPin, 0x00 }, "{0} applied to pin {1}", name, zifPin);
       }
     }
 
@@ -525,25 +434,8 @@ namespace U2Pa.Lib
       ApplyVpp();
       ApplyVcc();
       ApplyGnd();
-      if (UsbDevice == null) return;
-      if (UsbDevice.IsOpen)
-      {
-        var wholeUsbDevice = UsbDevice as IUsbDevice;
-        if (!ReferenceEquals(wholeUsbDevice, null))
-        {
-          // Release interface #0.
-          wholeUsbDevice.ReleaseInterface(0);
-          PA.ShoutLine(4, "Interface released.");
-        }
-
-        UsbDevice.Close();
-        PA.ShoutLine(4, "Device closed.");
-      }
-      UsbDevice = null;
-
-      // Free usb resources
-      UsbDevice.Exit();
-      PA.ShoutLine(4, "USB resources freed.");
+      if (BulkDevice == null) return;
+      BulkDevice.Dispose();
     }
 
     protected virtual void DisposeSpecific()

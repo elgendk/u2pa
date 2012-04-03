@@ -119,7 +119,7 @@ namespace U2Pa.Lib
 
     public static int Dev(PublicAddress pa)
     {
-      var tr = new PinNumberTranslator(40, 40, 0, false);
+      var tr = new PinTranslator(40, 40, 0, false);
       var zif = new ZIFSocket(40);
       zif.SetAll(true);
       var v = 0;
@@ -129,9 +129,9 @@ namespace U2Pa.Lib
         {
           td.SetVccLevel((VccLevel)v);
           td.SetVppLevel((VppLevel)v);
-          td.ApplyGnd(tr.ToZIF, 20);
-          td.ApplyVcc(tr.ToZIF, 8);
-          td.ApplyVpp(tr.ToZIF, 1);
+          td.ApplyGnd(tr.ToZIF, new Pin { Number = 20 });
+          td.ApplyVcc(tr.ToZIF, new Pin { Number = 8 });
+          td.ApplyVpp(tr.ToZIF, new Pin { Number = 1 });
           td.WriteZIF(zif, String.Format("v = {0}", v));
           Console.WriteLine("Vpp pin 1 at level {0}, Vcc pin 8 at level {0}, Gnd pin 20. Press Enter to advance, 'q' to quit.", v);
           var input = Console.ReadLine();

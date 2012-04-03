@@ -29,13 +29,14 @@ namespace U2Pa.Lib.IC
     public string Description;
     public int Placement;
     public bool UpsideDown;
-    public int[] AddressPins;
-    public int[] DataPins;
-    public int[] ChipEnable;
-    public int[] OutputEnable;
-    public int[] WriteEnable;
     public VccLevel VccLevel;
-    public int[] VccPins;
-    public int[] GndPins;
+    public Pin[] AddressPins;
+    public Pin[] DataPins;
+    public Pin[] ChipEnable;
+    public Pin[] OutputEnable;
+    public Pin[] WriteEnable;
+    public Pin[] Constants;
+    public Pin[] VccPins;
+    public Pin[] GndPins;
   }
 }

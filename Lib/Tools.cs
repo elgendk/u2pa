@@ -24,6 +24,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Xml.Linq;
 using U2Pa.Lib.IC;
 
 namespace U2Pa.Lib
@@ -150,6 +151,12 @@ namespace U2Pa.Lib
         mainIndex++;
         accIndex++;
       }
+    }
+
+    internal static Pin[] ToPinArray(this XElement x, string name)
+    {
+      if (x.Element(name) == null) return new Pin[0];
+      return x.Element(name).Value.Split(',').Where(y => !String.IsNullOrEmpty(y)).Select(Pin.Parse).ToArray();
     }
 
     internal static VccLevel ParseVccLevel(string stringValue)

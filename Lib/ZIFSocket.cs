@@ -56,48 +56,48 @@ namespace U2Pa.Lib
 
     public void SetSRamAddress(SRam sram, int address)
     {
-      SetPins(address, sram.AddressPins, new PinNumberTranslator(sram.DilType, size, sram.Placement, sram.UpsideDown).ToZIF);
+      SetPins(address, sram.AddressPins, new PinTranslator(sram.DilType, size, sram.Placement, sram.UpsideDown).ToZIF);
     }
 
     public void SetSRamData(SRam sram, byte[] data)
     {
-      SetPins(data, sram.DataPins, new PinNumberTranslator(sram.DilType, size, sram.Placement, sram.UpsideDown).ToZIF);
+      SetPins(data, sram.DataPins, new PinTranslator(sram.DilType, size, sram.Placement, sram.UpsideDown).ToZIF);
     }
 
     public void SetEpromAddress(Eprom eprom, int address)
     {
-      SetPins(address, eprom.AddressPins, new PinNumberTranslator(eprom.DilType, size, eprom.Placement, eprom.UpsideDown).ToZIF);
+      SetPins(address, eprom.AddressPins, new PinTranslator(eprom.DilType, size, eprom.Placement, eprom.UpsideDown).ToZIF);
     }
 
     public void SetEpromData(Eprom eprom, byte[] data)
     {
-      SetPins(data, eprom.DataPins, new PinNumberTranslator(eprom.DilType, size, eprom.Placement, eprom.UpsideDown).ToZIF);
+      SetPins(data, eprom.DataPins, new PinTranslator(eprom.DilType, size, eprom.Placement, eprom.UpsideDown).ToZIF);
     }
 
-    public void SetPins(int data, int[] dilMask, Func<int, int> translate = null)
+    public void SetPins(int data, Pin[] dilMask, Func<Pin, int> translate = null)
     {
-      translate = translate ?? (x => x);
+      translate = translate ?? (x => x.Number);
       var bitData = new BitArray(new[] {data});
       SetPins(bitData, dilMask, translate);
     }
 
-    public void SetPins(byte[] data, int[] dilMask, Func<int, int> translate = null)
+    public void SetPins(byte[] data, Pin[] dilMask, Func<Pin, int> translate = null)
     {
-      translate = translate ?? (x => x);
+      translate = translate ?? (x => x.Number);
       var bitData = new BitArray(data);
       SetPins(bitData, dilMask, translate);
     }
 
-    public void SetPins(BitArray bitData, int[] dilMask, Func<int,int> translate = null)
+    public void SetPins(BitArray bitData, Pin[] dilMask, Func<Pin,int> translate = null)
     {
-      translate = translate ?? (x => x);
+      translate = translate ?? (x => x.Number);
       for (var i = 0; i < dilMask.Length; i++)
         pins[translate(dilMask[i])] = bitData[i];      
     } 
 
-    public int GetDataAsInt(int[] dilMask, Func<int, int> translate = null)
+    public int GetDataAsInt(Pin[] dilMask, Func<Pin, int> translate = null)
     {
-      translate = translate ?? (x => x);
+      translate = translate ?? (x => x.Number);
       var acc = 0;
       for (var i = 0; i < dilMask.Length; i++)
       {
@@ -108,12 +108,12 @@ namespace U2Pa.Lib
 
     public int GetEpromAddress(Eprom eprom)
     {
-      return GetDataAsInt(eprom.AddressPins, new PinNumberTranslator(eprom.DilType, size, eprom.Placement, eprom.UpsideDown).ToZIF);
+      return GetDataAsInt(eprom.AddressPins, new PinTranslator(eprom.DilType, size, eprom.Placement, eprom.UpsideDown).ToZIF);
     }
 
-    public IEnumerable<byte> GetDataAsBytes(int[] dilMask, Func<int, int> translate = null)
+    public IEnumerable<byte> GetDataAsBytes(Pin[] dilMask, Func<Pin, int> translate = null)
     {
-      translate = translate ?? (x => x);
+      translate = translate ?? (x => x.Number);
       var readByte = new BitArray(dilMask.Length);
       for (var i = 0; i < dilMask.Length; i++)
         readByte[i] = pins[translate(dilMask[i])];
@@ -122,26 +122,26 @@ namespace U2Pa.Lib
 
     public IEnumerable<byte> GetEpromData(Eprom eprom)
     {
-      return GetDataAsBytes(eprom.DataPins, new PinNumberTranslator(eprom.DilType, size, eprom.Placement, eprom.UpsideDown).ToZIF);
+      return GetDataAsBytes(eprom.DataPins, new PinTranslator(eprom.DilType, size, eprom.Placement, eprom.UpsideDown).ToZIF);
     }
 
-    public void Enable(int[] enablePins, Func<int, int> translate = null)
+    public void Enable(Pin[] enablePins, Func<Pin, int> translate = null)
     {
-      translate = translate ?? (x => x);
+      translate = translate ?? (x => x.Number);
       foreach(var p in enablePins)
-        pins[translate(p)] = p.Enable();
+        pins[translate(p)] = p.Enable;
     }
 
-    public void Disable(int[] disablePins, Func<int, int> translate = null)
+    public void Disable(Pin[] disablePins, Func<Pin, int> translate = null)
     {
-      translate = translate ?? (x => x);
+      translate = translate ?? (x => x.Number);
       foreach(var p in disablePins)
-        pins[translate(p)] = p.Disable();
+        pins[translate(p)] = p.Disable;
     }
 
-    public string ToString(Func<int, int> translate = null)
+    public string ToString(Func<Pin, int> translate = null)
     {
-      translate = translate ?? (x => x);
+      translate = translate ?? (x => x.Number);
       string accZif = "";
       string accDil = "";
       string acc = "";
@@ -151,8 +151,8 @@ namespace U2Pa.Lib
         accZif += enereZif.ToString();
 
         acc += pins[i] ? "1" : "0";
-        
-        var dilPin = translate(i);
+
+        var dilPin = translate(new Pin { Number = i });
         var enereDil = dilPin%10;
         accDil += dilPin == 0 ? "." : enereDil.ToString();
       }

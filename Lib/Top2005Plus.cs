@@ -29,8 +29,8 @@ namespace U2Pa.Lib
   public class Top2005Plus : TopDevice
   {
 
-    public Top2005Plus(PublicAddress pa, UsbDevice usbDevice, UsbEndpointReader usbEndpointReader, UsbEndpointWriter usbEndpointWriter)
-      : base(pa, usbDevice, usbEndpointReader, usbEndpointWriter)
+    public Top2005Plus(PublicAddress pa, UsbBulkDevice bulkDevice)
+      : base(pa, bulkDevice)
     {
       ValidVccPins = new List<int> {0, 8, 13, 17, 24, 25, 26, 27, 28, 30, 32, 34, 36, 40};
       ValidVppPins = new List<int> {0, 1, 5, 7, 9, 10, 11, 12, 14, 15, 20, 26, 28, 29, 30, 31, 34, 40};
@@ -44,32 +44,32 @@ namespace U2Pa.Lib
     public void UpLoadBitStreamTopWin6Style(string fileName)
     {
       // Prelude of black magic
-      SendPackage(5, new byte[] { 0x0A, 0x1B, 0x00 }, "???");
-      SendPackage(5, new byte[] { 0x0E, 0x21, 0x00, 0x00 }, "Start bitstream upload");
-      SendPackage(5, new byte[] { 0x07 }, "Some kind of finish-up/execute command?");
-      RecievePackage(5, "Some values that maby should be validated in some way");
+      BulkDevice.SendPackage(5, new byte[] { 0x0A, 0x1B, 0x00 }, "???");
+      BulkDevice.SendPackage(5, new byte[] { 0x0E, 0x21, 0x00, 0x00 }, "Start bitstream upload");
+      BulkDevice.SendPackage(5, new byte[] { 0x07 }, "Some kind of finish-up/execute command?");
+      BulkDevice.RecievePackage(5, "Some values that maby should be validated in some way");
 
       var bytes = Tools.ReadBinaryFile(fileName).ToList();
       var range = CheckBitStreamHeader(bytes);
       bytes.RemoveRange(0, range);
 
       var bytesToSend = PackBytes(bytes).SelectMany(x => x).ToArray();
-      SendPackage(5, bytesToSend, "Uploading file: {0}", fileName);
+      BulkDevice.SendPackage(5, bytesToSend, "Uploading file: {0}", fileName);
 
       // Postlude of black magic
-      SendPackage(5, new byte[] { 0x0E, 0x12, 0x00, 0x00 }, "Set Vpp boost off");
-      SendPackage(5, new byte[] { 0x1B }, "???");
+      BulkDevice.SendPackage(5, new byte[] { 0x0E, 0x12, 0x00, 0x00 }, "Set Vpp boost off");
+      BulkDevice.SendPackage(5, new byte[] { 0x1B }, "???");
       // Why 2 times???
-      SendPackage(5, new byte[] { 0x0E, 0x12, 0x00, 0x00 }, "Set Vpp boost off");
-      SendPackage(5, new byte[] { 0x1B }, "???");
-      SendPackage(5, new byte[] { 0x0E, 0x13, 0x32, 0x00 }, "Set Vcc = 5V");
-      SendPackage(5, new byte[] { 0x1B }, "???");
-      SendPackage(5, new byte[] { 0x0E, 0x15, 0x00, 0x00 }, "Clear all Vcc assignments");
+      BulkDevice.SendPackage(5, new byte[] { 0x0E, 0x12, 0x00, 0x00 }, "Set Vpp boost off");
+      BulkDevice.SendPackage(5, new byte[] { 0x1B }, "???");
+      BulkDevice.SendPackage(5, new byte[] { 0x0E, 0x13, 0x32, 0x00 }, "Set Vcc = 5V");
+      BulkDevice.SendPackage(5, new byte[] { 0x1B }, "???");
+      BulkDevice.SendPackage(5, new byte[] { 0x0E, 0x15, 0x00, 0x00 }, "Clear all Vcc assignments");
       // Why no 0x1B here???
-      SendPackage(5, new byte[] { 0x0E, 0x17, 0x00, 0x00 }, "Clear all ??? assignments");
+      BulkDevice.SendPackage(5, new byte[] { 0x0E, 0x17, 0x00, 0x00 }, "Clear all ??? assignments");
       // Why no 0x1B here???
-      SendPackage(5, new byte[] { 0x0A, 0x1D, 0x86 }, "???");
-      SendPackage(5, new byte[] { 0x0E, 0x16, 0x00, 0x00 }, "Clear all Gnd assignments");
+      BulkDevice.SendPackage(5, new byte[] { 0x0A, 0x1D, 0x86 }, "???");
+      BulkDevice.SendPackage(5, new byte[] { 0x0E, 0x16, 0x00, 0x00 }, "Clear all Gnd assignments");
       var clueless = new byte[]
                        {
                          0x3E, 0x00, 0x3E, 0x01, 0x3E, 0x02, 0x3E, 0x03, 0x3E, 0x04, 0x3E, 0x05, 0x3E, 0x06, 0x3E, 0x07,
@@ -77,13 +77,13 @@ namespace U2Pa.Lib
                          0x3E, 0x10, 0x3E, 0x11, 0x3E, 0x12, 0x3E, 0x13, 0x3E, 0x14, 0x3E, 0x15, 0x3E, 0x16, 0x3E, 0x17,
                          0x07
                        };
-      SendPackage(5, clueless, "I´m clueless on this one atm");
-      RecievePackage(5, "Properly answer to clueless that maby should be validated in some way");
+      BulkDevice.SendPackage(5, clueless, "I´m clueless on this one atm");
+      BulkDevice.RecievePackage(5, "Properly answer to clueless that maby should be validated in some way");
       // Again?
-      SendPackage(5, new byte[] { 0x0E, 0x12, 0x00, 0x00 }, "Set Vpp boost off");
-      SendPackage(5, new byte[] { 0x1B }, "???");
+      BulkDevice.SendPackage(5, new byte[] { 0x0E, 0x12, 0x00, 0x00 }, "Set Vpp boost off");
+      BulkDevice.SendPackage(5, new byte[] { 0x1B }, "???");
       // Again, again???
-      SendPackage(5, new byte[] { 0x0E, 0x12, 0x00, 0x00 }, "Set Vpp boost off");
+      BulkDevice.SendPackage(5, new byte[] { 0x0E, 0x12, 0x00, 0x00 }, "Set Vpp boost off");
     }
   }
 }

@@ -48,13 +48,14 @@ namespace U2Pa.Lib.IC
             ? Boolean.Parse(x.Attribute("upsideDown").Value)
             : false,
           VccLevel = Tools.ParseVccLevel(x.Attribute("Vcc").Value),
-          AddressPins = x.Element("AddressPins").Value.Split(',').Select(Int32.Parse).ToArray(),
-          DataPins = x.Element("DataPins").Value.Split(',').Select(Int32.Parse).ToArray(),
-          ChipEnable = x.Element("ChipEnable").Value.Split(',').Select(Int32.Parse).ToArray(),
-          OutputEnable = x.Element("OutputEnable").Value.Split(',').Select(Int32.Parse).ToArray(),
-          WriteEnable = x.Element("WriteEnable").Value.Split(',').Select(Int32.Parse).ToArray(),
-          VccPins = x.Element("VccPins").Value.Split(',').Select(Int32.Parse).ToArray(),
-          GndPins = x.Element("GndPins").Value.Split(',').Select(Int32.Parse).ToArray(),
+          AddressPins = x.ToPinArray("AddressPins"),
+          DataPins = x.ToPinArray("DataPins"),
+          ChipEnable = x.ToPinArray("ChipEnable"),
+          OutputEnable = x.ToPinArray("OutputEnable"),
+          WriteEnable = x.ToPinArray("WriteEnable"),
+          Constants = x.ToPinArray("Constants"),
+          VccPins = x.ToPinArray("VccPins"),
+          GndPins = x.ToPinArray("GndPins"),
           Notes = x.Element("Notes") != null ? x.Element("Notes").Value : null,
           Description = x.Element("Description") != null ? x.Element("Description").Value : null
         });
