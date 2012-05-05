@@ -19,9 +19,6 @@
 //    You should have received a copy of the GNU General Public License
 //    along with u2pa. If not, see <http://www.gnu.org/licenses/>.
 ~~~
-u2pa rom write TYPE FILENAME
+u2pa help CATEGORY
 
-writes the contents of a file to an EPROM of type TYPE
-     
-    When inserting the EPROM into the ZIF socket of the Top Programmer one must
-    be careful to do it correctly; one should call 'info' if in doubt.
+displays detailed help about CATEGORY

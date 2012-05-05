@@ -1,4 +1,4 @@
-﻿Commands
+﻿Commands (work in progress)
 ========
 
 0E XX 00 00 commands
@@ -6,3 +6,49 @@
 
 0E 11 00 00		Used to put the id string of the programmer into the buffer. 
 				Seems to the be followed by a write of 07 before the read of the buffer.
+
+
+
+Vpp:
+====
+Pins: 1, 5, 7, 9, 10, 11, 12, 14, 15, 20, 26, 28, 29, 30, 31, 34, 35
+----
+0x00 ->  4.82V
+0x41 ->  6.87V
+0x46 ->  7.33V
+0x4B ->  7.46V
+0x50 ->  8.83V
+0x5A ->  9.01V
+0x5F ->  9.46V
+0x64 ->  9.91V
+0x69 -> 10.38V
+0x6E ->  4.81V
+0x78 -> 12.02V
+0x7D -> 12.44V
+0x82 -> 12.94V
+0x87 -> 13.40v
+0x8C -> 14.04V
+0x91 -> 14.50V
+0x96 -> 15.02V
+0x9B -> 15.53V
+0xA0 -> 16.22V
+0xAA ->  4.82V
+0xD2 -> 20.9V
+0xD3 ->  4.8V
+0xFA -> 20.9V
+0xFB ->  4.8V
+
+Vcc:
+====
+Pins: 8, 13, 16, 17, 24, 25, 26?, 27, 28?, 30?, 32, 34?, 36, 40
+----
+0x00 ->  3.06V
+0x01 ->  4.94V
+0x19 ->  3.06V
+0x1F ->  3.64V
+0x28 ->  4.28V
+0x2D ->  4.94V
+
+Gnd:
+====
+Pins: 10, 14, 16, 20, 24, 25, 31

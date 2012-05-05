@@ -24,40 +24,84 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using LibUsbDotNet;
-using LibUsbDotNet.Main;
 using U2Pa.Lib.IC;
+using LibUsbDotNet.Main;
 
 namespace U2Pa.Lib
 {
+  /// <summary>
+  /// An abstract representation of the connected Top Programmer. 
+  /// </summary>
   public abstract class TopDevice : IDisposable
   {
-    // TODO: Find out if these are the same for all Top Programmers.
+    // TODO: Find out if these values are the same for all Top Programmers.
     protected const int VendorId = 0x2471;
     protected const int ProductId = 0x0853;
     protected const int Configuration = 1;
     protected const byte Interface = 0;
     protected const ReadEndpointID ReadEndpointId = ReadEndpointID.Ep02;
     protected const WriteEndpointID WriteEndpointId = WriteEndpointID.Ep02;
+    
     protected UsbBulkDevice BulkDevice;
 
+    /// <summary>
+    /// The number of pins in the ZIF socket.
+    /// </summary>
     public abstract int ZIFType { get; }
 
+    /// <summary>
+    /// The public address instance.
+    /// </summary>
     public PublicAddress PA { get; private set; }
 
+    /// <summary>
+    /// The list of pins in the ZIF socket that can be used as Vcc.
+    /// </summary>
     public List<int> ValidVccPins;
+
+    /// <summary>
+    /// The list of pins in the ZIF socket that can be used as Vpp.
+    /// </summary>
     public List<int> ValidVppPins;
+
+    /// <summary>
+    /// The list of pins in the ZIF socket that can be used as Gnd.
+    /// </summary>
     public List<int> ValidGndPins;
 
+    public List<Tuple<double, byte>> VccLevels;
+    public List<Tuple<double, byte>> VppLevels;
+
+    /// <summary>
+    /// ctor.
+    /// </summary>
+    /// <param name="pa">The public address instance.</param>
+    /// <param name="bulkDevice">The bulk device instance.</param>
     protected TopDevice(PublicAddress pa, UsbBulkDevice bulkDevice)
     {
       BulkDevice = bulkDevice;
       PA = pa;
     }
 
+    /// <summary>
+    /// Opens a new instace of a bulk device using the constants specified for this Top Device.
+    /// </summary>
+    /// <param name="pa">The public address instance.</param>
+    /// <returns>The created instace of the bulk device.</returns>
+    public static UsbBulkDevice OpenBulkDevice(PublicAddress pa)
+    {
+      return new UsbBulkDevice(pa, VendorId, ProductId, Configuration, Interface, ReadEndpointId, WriteEndpointId);
+    }
+
+    /// <summary>
+    /// Creates a new instance of the Top Device connected to the Top Programmer.
+    /// <remarks>Atm. only works for model Top2005+.</remarks>
+    /// </summary>
+    /// <param name="pa">The public address instance.</param>
+    /// <returns>The created instance of the Top Device.</returns>
     public static TopDevice Create(PublicAddress pa)
     {
-      var bulkDevice = new UsbBulkDevice(pa, VendorId, ProductId, Configuration, Interface, ReadEndpointId, WriteEndpointId);
+      var bulkDevice = OpenBulkDevice(pa);
 
       var idString = ReadTopDeviceIdString(pa, bulkDevice);
       pa.ShoutLine(2, "Connected Top device is: {0}.", idString);
@@ -68,22 +112,50 @@ namespace U2Pa.Lib
       throw new U2PaException("Not supported Top Programmer {0}", idString);
     }
 
+    /// <summary>
+    /// Reads the id string of the connected Top Programmer.
+    /// </summary>
+    /// <returns>The read id string.</returns>
     public string ReadTopDeviceIdString()
     {
       return ReadTopDeviceIdString(PA, BulkDevice);
     }
 
-    protected static string ReadTopDeviceIdString(PublicAddress pa, UsbBulkDevice bulkDevice)
+    /// <summary>
+    /// Reads the id string of the connected Top Programmer.
+    /// </summary>
+    /// <param name="pa">The public address instance.</param>
+    /// <returns>The read id string.</returns>
+    public static string ReadTopDeviceIdString(PublicAddress pa)
+    {
+      using (var bulkDevice = OpenBulkDevice(pa))
+      {
+        return ReadTopDeviceIdString(pa, bulkDevice);
+      }
+    }
+
+    /// <summary>
+    /// Reads the id string of the connected Top Programmer.
+    /// </summary>
+    /// <param name="pa">The public address instance.</param>
+    /// <param name="bulkDevice">The bulk device instance.</param>
+    /// <returns>The read id string.</returns>
+    public static string ReadTopDeviceIdString(PublicAddress pa, UsbBulkDevice bulkDevice)
     {
       bulkDevice.SendPackage(4, new byte[] { 0x0E, 0x11, 0x00, 0x00 }, "Write version string to buffer");
       bulkDevice.SendPackage(4, new byte[] { 0x07 }, "07 command");
       var readBuffer = bulkDevice.RecievePackage(4, "Reading buffer");
 
-      // Can't we find a better stop condition than t != 0x20?
-      return readBuffer.TakeWhile(t => t != 0x20).Aggregate("", (current, t) => current + (char)t);
+      return readBuffer.Take(16).Aggregate("", (current, t) => current + (char)t).TrimEnd();
     }
 
-    protected static IEnumerable<byte[]> PackBytes(IEnumerable<byte> bytes)
+    /// <summary>
+    /// Packs the provided data into packages of size 64;
+    /// including a 4 byte header. These are used when programming the FPGA.
+    /// </summary>
+    /// <param name="bytes">The data to pack.</param>
+    /// <returns>The packed packages ready for shipping.</returns>
+    protected static IEnumerable<byte[]> PackFPGABytes(IEnumerable<byte> bytes)
     {
       var package = new List<byte> { 0x0e, 0x22, 0x00, 0x00 };
       foreach (var dataByte in bytes)
@@ -105,6 +177,13 @@ namespace U2Pa.Lib
       }
     }
 
+    /// <summary>
+    /// Given a byte represenation of a FPGA-program, returns the index of the
+    /// first byte in the 'real' program; that is when we're past the header.
+    /// <remarks>This implementation is harcoded and ONLY works for the file ictest.bin.</remarks>
+    /// </summary>
+    /// <param name="bytes">The bytes representing the FPGA-program.</param>
+    /// <returns>The index of the first byte in the program code.</returns>
     protected static int CheckBitStreamHeader(IList<byte> bytes)
     {
       return 0x47;
@@ -129,23 +208,22 @@ namespace U2Pa.Lib
       PublicAddress.ProgressBar progressBar, 
       IList<byte> bytes, 
       int fromAddress, 
-      int totalNumberOfAdresses,
-      IList<int> failedAddresses = null)
+      int totalNumberOfAdresses)
     {
       const int rewriteCount = 5;
       const int rereadCount = 5;
       PA.ShoutLine(2, "Reading EPROM{0}", eprom.Type);
-      // Setting up chip...
       SetVccLevel(eprom.VccLevel);
       var translator = new PinTranslator(eprom.DilType, ZIFType, 0, eprom.UpsideDown);
       ApplyVcc(translator.ToZIF, eprom.VccPins);
       ApplyGnd(translator.ToZIF, eprom.GndPins);
+      PullUpsEnable(true);
 
       var zif = new ZIFSocket(40);
       var returnAddress = fromAddress;
       PA.ShoutLine(2, "Now reading bytes...");
       progressBar.Init();
-      foreach (var address in failedAddresses ?? Tools.Interval(fromAddress, totalNumberOfAdresses))
+      foreach (var address in Enumerable.Range(fromAddress, totalNumberOfAdresses - fromAddress))
       {
         zif.SetAll(true);
         zif.Disable(eprom.GndPins, translator.ToZIF);
@@ -189,7 +267,7 @@ namespace U2Pa.Lib
             if (j == rereadCount - 1)
               result = ReadSoundness.TryRewrite;
             if (result == ReadSoundness.SeemsToBeAOkay && j > 0)
-              progressBar.Shout("Address: {0} read }};-P", address);
+              progressBar.Shout("Address: {0} read }};-P", address.ToString("X4"));
           }
         }
 
@@ -207,7 +285,78 @@ namespace U2Pa.Lib
     public void WriteEpromClassic(Eprom eprom, int pulse, IList<byte> bytes, IList<int> patch = null)
     {
       var totalNumberOfAdresses = eprom.AddressPins.Length == 0 ? 0 : 1 << eprom.AddressPins.Length;
-      var stopWatch = new Stopwatch();
+      var translator = new PinTranslator(eprom.DilType, ZIFType, 0, eprom.UpsideDown);
+
+      SetVccLevel(eprom.VccLevel);
+      ApplyGnd(translator.ToZIF, eprom.GndPins);
+      ApplyVcc(translator.ToZIF, eprom.VccPins);
+
+      var initZif = new ZIFSocket(40);
+      initZif.SetAll(true);
+      initZif.Disable(eprom.GndPins, translator.ToZIF);
+      initZif.Enable(eprom.Constants, translator.ToZIF);
+      initZif.Disable(eprom.ChipEnable, translator.ToZIF);
+      initZif.Disable(eprom.OutputEnable, translator.ToZIF);
+      initZif.Disable(eprom.Program, translator.ToZIF);
+      WriteZIF(initZif, "Apply 1 to all data and address pins");
+
+      SetVppLevel(eprom.VppLevel);
+      ApplyVpp(translator.ToZIF, eprom.VppPins);
+      PullUpsEnable(true);
+
+      using (var progress = PA.GetProgressBar(totalNumberOfAdresses))
+      {
+        progress.Init();
+        foreach (var address in Enumerable.Range(0, totalNumberOfAdresses))
+        {
+          if(patch != null)
+          {
+            if(!patch.Contains(address))
+              continue;
+            progress.Shout("Now patching address {0}", address);
+          }
+
+          var zif = new ZIFSocket(40);
+
+          // Pull up all pins
+          zif.SetAll(true);
+
+          zif.Disable(eprom.GndPins, translator.ToZIF);
+          zif.Enable(eprom.Constants, translator.ToZIF);
+          zif.Disable(eprom.Program, translator.ToZIF);
+          zif.Disable(eprom.ChipEnable, translator.ToZIF);
+          zif.Disable(eprom.OutputEnable, translator.ToZIF);
+
+          // Set address and data
+          zif.SetEpromAddress(eprom, address);
+          var data = eprom.DataPins.Length > 8
+            ? new[] { bytes[2 * address], bytes[2 * address + 1] } 
+            : new[] { bytes[address]}; 
+          zif.SetEpromData(eprom, data);
+
+          // Prepare ZIF without programming in order to let it stabilize
+          // TODO: Do we really need to do this?
+          WriteZIF(zif, "Write address & data to ZIF");
+
+          // Enter programming mode
+          zif.Enable(eprom.Program, translator.ToZIF);
+          zif.Enable(eprom.ChipEnable, translator.ToZIF);
+          WriteZIF(zif, "Start pulse E");
+
+          // Exit programming mode after at least <pulse> ms
+          zif.Disable(eprom.Program, translator.ToZIF);
+          zif.Disable(eprom.ChipEnable, translator.ToZIF);
+          BulkDevice.Delay(pulse);
+          WriteZIF(zif, "End pulse E");
+
+          progress.Progress();
+        }
+      }
+    }
+
+    public void WriteEpromFast(Eprom eprom, IList<byte> bytes)
+    {
+      var totalNumberOfAdresses = eprom.AddressPins.Length == 0 ? 0 : 1 << eprom.AddressPins.Length;
       var translator = new PinTranslator(eprom.DilType, ZIFType, 0, eprom.UpsideDown);
 
       var zif = new ZIFSocket(40);
@@ -224,46 +373,79 @@ namespace U2Pa.Lib
       using (var progress = PA.GetProgressBar(totalNumberOfAdresses))
       {
         progress.Init();
-        foreach (var address in Tools.Interval(0, totalNumberOfAdresses))
+        foreach (var address in Enumerable.Range(0, totalNumberOfAdresses))
         {
-          if(patch != null)
+          var pulse = 1;
+          while (pulse <= 32)
           {
-            if(!patch.Contains(address))
-              continue;
-            progress.Shout("Now patching address {0}", address);
+            // Writing
+            var writerZif = new ZIFSocket(40);
+            writerZif.SetAll(true);
+            writerZif.Disable(eprom.GndPins, translator.ToZIF);
+            writerZif.Enable(eprom.Constants, translator.ToZIF);
+            writerZif.Disable(eprom.ChipEnable, translator.ToZIF);
+            writerZif.Disable(eprom.OutputEnable, translator.ToZIF);
+            writerZif.Disable(eprom.Program, translator.ToZIF);
+
+            writerZif.SetEpromAddress(eprom, address);
+            
+            var data = eprom.DataPins.Length > 8
+              ? new[] { bytes[2 * address], bytes[2 * address + 1] }
+              : new[] { bytes[address] };
+            writerZif.SetEpromData(eprom, data);
+
+            WriteZIF(zif, "Write address & data to ZIF");
+            writerZif.Enable(eprom.ChipEnable, translator.ToZIF);
+            writerZif.Enable(eprom.Program, translator.ToZIF);
+            WriteZIF(zif, "Start pulse E");
+            writerZif.Disable(eprom.ChipEnable, translator.ToZIF);
+            writerZif.Disable(eprom.Program, translator.ToZIF);
+            BulkDevice.Delay(pulse);
+            WriteZIF(zif, "End pulse E");
+            
+            // Reading
+            var addressZif = new ZIFSocket(40);
+            addressZif.SetAll(true);
+            addressZif.Disable(eprom.GndPins, translator.ToZIF);
+            addressZif.Enable(eprom.Constants, translator.ToZIF);
+            addressZif.Enable(eprom.ChipEnable, translator.ToZIF);
+            addressZif.Enable(eprom.OutputEnable, translator.ToZIF);
+            addressZif.Disable(eprom.Program, translator.ToZIF);
+            addressZif.SetEpromAddress(eprom, address);
+
+            WriteZIF(addressZif, "Write address");
+            var dataZifs = ReadZIF("Read data");
+            ZIFSocket resultZif;
+            if (Tools.AnalyzeEpromReadSoundness(dataZifs, eprom, address, out resultZif) == ReadSoundness.SeemsToBeAOkay)
+            {
+              if (resultZif.GetEpromData(eprom).SequenceEqual(data))
+              {
+                // Data validates; now we overprogram
+                writerZif.Enable(eprom.ChipEnable, translator.ToZIF);
+                writerZif.Enable(eprom.Program, translator.ToZIF);
+                WriteZIF(writerZif, "Overprogram");
+                BulkDevice.Delay(3 * pulse);
+                writerZif.Disable(eprom.ChipEnable, translator.ToZIF);
+                writerZif.Disable(eprom.Program, translator.ToZIF);
+                WriteZIF(zif, "End pulse E");
+                break;
+              }
+              else
+              {
+                Console.WriteLine("Pulse: {0}", pulse);
+                Console.WriteLine("Address: {0}", address.ToString("X4"));
+                Console.WriteLine(writerZif.GetEpromData(eprom).First());
+                Console.WriteLine(resultZif.GetEpromData(eprom).First());
+              }
+            }
+
+
+            pulse *= 2;
           }
-
-          // Pull up all pins
-          zif.SetAll(true);
-
-          // Set address and data
-          zif.SetEpromAddress(eprom, address);
-          var data = eprom.AddressPins.Length > 8
-            ? new[] { bytes[2 * address], bytes[2 * address + 1] } 
-            : new[] { bytes[address]}; 
-          zif.SetEpromData(eprom, data);
-
-          //  Set programming mode
-          zif.Enable(eprom.Program, translator.ToZIF);
-
-          zif.Disable(eprom.ChipEnable, translator.ToZIF);
-
-          // Prepare ZIF without programming in order to let it stabilize
-          // TODO: Do we really need to do this?
-          WriteZIF(zif, "Write address & data to ZIF");
-
-          zif.Enable(eprom.ChipEnable, translator.ToZIF);
-          stopWatch.Reset();
-          WriteZIF(zif, "Start pulse E");
-          stopWatch.Start();
-
-          // Set ChipEnable low again after at least <pulse> ms
-          zif.Disable(eprom.ChipEnable, translator.ToZIF);
-          while (stopWatch.ElapsedMilliseconds <= pulse)
+          if (pulse > 32)
           {
-            /* Wait at least <pulse> ms */
+            progress.Shout("Address {0} doesn't validate! }};-(", address.ToString("X4"));
           }
-          WriteZIF(zif, "End pulse E");
           progress.Progress();
         }
       }
@@ -385,16 +567,53 @@ namespace U2Pa.Lib
       BulkDevice.SendPackage(5, package, "{0} written to ZIF.", packageName);
     }
 
-    public virtual void SetVppLevel(VppLevel level)
+    public virtual void PullUpsEnable(bool enable)
     {
-      BulkDevice.SendPackage(4, new byte[] { 0x0e, 0x12, (byte)level, 0x00 }, 
-        "Vpp = {0}", level.ToString().Substring(4).Replace('_', '.'));
+      BulkDevice.SendPackage(4, new byte[] { 0x0e, 0x28, (byte)(enable ? 0x01 : 0x00), 0x00 },
+        "PullUps are {0}", enable ? "enabled" : "disabled");
     }
 
-    public virtual void SetVccLevel(VccLevel level)
+    public virtual void SetVppLevel(byte level)
     {
-      BulkDevice.SendPackage(4, new byte[] { 0x0e, 0x13, (byte)level, 0x00 },
-        "Vcc = {0}", level.ToString().Substring(4).Replace('_', '.'));
+      BulkDevice.SendPackage(4, new byte[] { 0x0e, 0x12, level, 0x00 },
+        "Vpp = {0}", level.ToString("X4"));
+    }
+
+    internal virtual void SetVppLevel(double rawLevel)
+    {
+      string stringLevel;
+      var level = TranslateVppLevel(rawLevel, out stringLevel);
+      BulkDevice.SendPackage(4, new byte[] { 0x0e, 0x12, level, 0x00 }, "Vpp = {0}", stringLevel);
+    }
+
+    private byte TranslateVppLevel(double rawLevel, out string stringLevel)
+    {
+      return TranslateLevel(VppLevels, rawLevel, out stringLevel);
+    }
+
+    private byte TranslateVccLevel(double rawLevel, out string stringLevel)
+    {
+      return TranslateLevel(VccLevels, rawLevel, out stringLevel);
+    }
+
+    private byte TranslateLevel(IList<Tuple<double, byte>> levels, double rawLevel, out string stringLevel)
+    {
+      var foundLevel = levels.OrderBy(x => x.Item1).TakeWhile(x => x.Item1 <= rawLevel).Last();
+      stringLevel = foundLevel.Item1.ToString("F1");
+      return foundLevel.Item2;
+    }
+
+    public virtual void SetVccLevel(double rawLevel)
+    {
+      string stringLevel;
+      var level = TranslateVppLevel(rawLevel, out stringLevel);
+      BulkDevice.SendPackage(4, new byte[] { 0x0e, 0x13, level, 0x00 }, "Vcc = {0}", stringLevel);
+    }
+
+    internal virtual void SetVccLevel(byte level)
+    {
+      BulkDevice.SendPackage(4, new byte[] { 0x0e, 0x13, level, 0x00 },
+        "Vcc = {0}", level.ToString("X4"));
     }
 
     public virtual void ApplyVpp(Func<Pin, int> translate = null, params Pin[] dilPins)
@@ -426,18 +645,31 @@ namespace U2Pa.Lib
       }
     }
 
+    /// <summary>
+    /// Removes all pin assingments from the physical device and
+    /// disposes all unmanaged resources.<s
+    /// </summary>
     public void Dispose()
     {
       DisposeSpecific();
 
-      // Remove all pin assignments
+      SetVppLevel(0x00);
+      SetVccLevel(0x00);
+
       ApplyVpp();
       ApplyVcc();
       ApplyGnd();
-      if (BulkDevice == null) return;
+
+      PullUpsEnable(false);
+      // Remove all pin assignments
+       if (BulkDevice == null) return;
       BulkDevice.Dispose();
     }
 
+    /// <summary>
+    /// Disposes unmanaged resources specific to derived classes.
+    /// <remarks>The first thing <seealso cref="Dispose"/>does, is call this.</remarks>
+    /// </summary>
     protected virtual void DisposeSpecific()
     {}
   }

@@ -23,8 +23,16 @@ using System;
 
 namespace U2Pa.Lib
 {
+  /// <summary>
+  /// The main exception that this app throws.
+  /// </summary>
   public class U2PaException : Exception
   {
+    /// <summary>
+    /// ctor.
+    /// </summary>
+    /// <param name="message">The error message.</param>
+    /// <param name="obj">Arguments for the error message string.</param>
     public U2PaException(string message, params object[] obj) 
       : base(String.Format(message, obj))
     {

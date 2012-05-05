@@ -19,9 +19,11 @@
 //    You should have received a copy of the GNU General Public License
 //    along with u2pa. If not, see <http://www.gnu.org/licenses/>.
 ~~~
-u2pa rom write TYPE FILENAME
+u2pa sram test TYPE
 
-writes the contents of a file to an EPROM of type TYPE
+tests an SRAM of type TYPE by alternating between writing the patterns 0101... and 1010... to every address of
+the DUT; then verifies that the expected pattern can be read from every address; then does the same again but with 
+the patterns reversed; that is 1010... first, then 0101...
      
     When inserting the EPROM into the ZIF socket of the Top Programmer one must
     be careful to do it correctly; one should call 'info' if in doubt.

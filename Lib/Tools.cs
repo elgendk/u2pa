@@ -34,7 +34,7 @@ namespace U2Pa.Lib
     public static IEnumerable<byte> ReadBinaryFile(string fileName)
     {
       var buffer = new byte[1];
-      // Open file and read it in
+      // Open file and read it
       using (var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read))
       {
         using (var br = new BinaryReader(fs))
@@ -106,15 +106,6 @@ namespace U2Pa.Lib
       return pin < 0;
     }
 
-    public static IEnumerable<int> Interval(int start, int openEnd)
-    {
-      if(start > openEnd)
-        throw new ArgumentException("start can not be larger than openEnd");
-      
-      for (var n = start; n < openEnd; n++)
-        yield return n;
-    }
-
     public static string Pad(this string src, int maxLength)
     {
       while(src.Length < maxLength)
@@ -157,30 +148,6 @@ namespace U2Pa.Lib
     {
       if (x.Element(name) == null) return new Pin[0];
       return x.Element(name).Value.Split(',').Where(y => !String.IsNullOrEmpty(y)).Select(Pin.Parse).ToArray();
-    }
-
-    internal static VccLevel ParseVccLevel(string stringValue)
-    {
-      stringValue = stringValue.Trim();
-      if(String.IsNullOrEmpty(stringValue)) return VccLevel.Vcc_5_0v;
-      if (stringValue == "2.5") return VccLevel.Vcc_2_5v;
-      if (stringValue == "3.3") return VccLevel.Vcc_3_3v;
-      if (stringValue == "5") return VccLevel.Vcc_5_0v;
-      
-      throw new U2PaException("Unknown Vcc: {0}", stringValue);
-    }
-
-    internal static VppLevel ParseVppLevel(string stringValue)
-    {
-      stringValue = stringValue.Trim();
-      if (String.IsNullOrEmpty(stringValue)) return VppLevel.Vpp_Off;
-      if (stringValue == "12.5") return VppLevel.Vpp_12_61v;
-      if (stringValue == "13") return VppLevel.Vpp_13_10v;
-
-      if (stringValue == "21") return VppLevel.Vpp_21_11v;
-      if (stringValue == "25") return VppLevel.Vpp_25_59v;
-
-      throw new U2PaException("Unknown Vpp: {0}", stringValue);
     }
   }
 }

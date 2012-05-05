@@ -23,32 +23,50 @@ using System;
 
 namespace U2Pa.Lib
 {
+  /// <summary>
+  /// A class that wraps output from the app.
+  /// </summary>
   public class PublicAddress
   {
+    /// <summary>
+    /// Verbosity.
+    /// </summary>
     public int VerbosityLevel { get; set; }
 
+    /// <summary>
+    /// ctor.
+    /// </summary>
+    /// <param name="verbosityLevel">Verbosity.</param>
     public PublicAddress(int verbosityLevel)
     {
       VerbosityLevel = verbosityLevel;
     }
 
     /// <summary>
-    /// 
+    /// Outputs a line.
     /// </summary>
-    /// <param name="verbosity"></param>
-    /// <param name="message"></param>
-    /// <param name="obj"></param>
+    /// <param name="verbosity">Verbosity.</param>
+    /// <param name="message">The message (may contain String.Format mark-ups).</param>
+    /// <param name="obj">Parameters to the message.</param>
     public void ShoutLine(int verbosity, string message, params object[] obj)
     {
       if (verbosity <= VerbosityLevel)
         Console.WriteLine((VerbosityLevel == 5 ? "V" + verbosity + ": " : "") + message, obj);
     }
 
+    /// <summary>
+    /// Creates a new instance of the <see cref="ProgressBar"/>.
+    /// </summary>
+    /// <param name="size">The total number of progresses before finished.</param>
+    /// <returns>The created <see cref="ProgressBar"/>.</returns>
     public ProgressBar GetProgressBar(int size)
     {
       return new ProgressBar(this, size);
     }
 
+    /// <summary>
+    /// Progress bar.
+    /// </summary>
     public class ProgressBar : IDisposable
     {
       private PublicAddress pa;
@@ -60,6 +78,11 @@ namespace U2Pa.Lib
       private int savedVerbosity;
       private bool initialized = false;
 
+      /// <summary>
+      /// ctor.
+      /// </summary>
+      /// <param name="pa">Public addresser.</param>
+      /// <param name="size">The total number of progresses before finished.</param>
       public ProgressBar(PublicAddress pa, int size)
       {
         this.pa = pa;
@@ -68,6 +91,12 @@ namespace U2Pa.Lib
         savedVerbosity = pa.VerbosityLevel;
       }
 
+      /// <summary>
+      /// Initiallizes the proressbar.
+      /// <remarks>
+      /// Can be called multiple times.
+      /// </remarks>
+      /// </summary>
       public void Init()
       {
         if (initialized || savedVerbosity == 0)
@@ -81,6 +110,9 @@ namespace U2Pa.Lib
         Console.Write(String.Format("\r{0} {1}", currentBar, "(messages will be displayed here)").PadRight(120));
       }
 
+      /// <summary>
+      /// Disposes the progress bar.
+      /// </summary>
       public void Dispose()
       {
         if (!initialized) return;
@@ -91,6 +123,9 @@ namespace U2Pa.Lib
           pa.VerbosityLevel = savedVerbosity;
       }
 
+      /// <summary>
+      /// Progress oe step.
+      /// </summary>
       public void Progress()
       {
         if (!initialized) return;
@@ -131,6 +166,11 @@ namespace U2Pa.Lib
         totalCount++;
       }
 
+      /// <summary>
+      /// Writes a message at the end of the progress bar.
+      /// </summary>
+      /// <param name="message">The message (may contain String.Format mark-ups).</param>
+      /// <param name="obj">Parameters to the message.</param>
       internal void Shout(string message, params object[] obj)
       {
         var m = String.Format(message, obj);

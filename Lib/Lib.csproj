@@ -69,6 +69,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Config.cs" />
+    <Compile Include="FPGAProgram.cs" />
     <Compile Include="IC\EpromXml.cs" />
     <Compile Include="IC\Eprom.cs" />
     <Compile Include="IC\Pin.cs" />
@@ -93,6 +95,10 @@
     <Content Include="Doc\Protocol.txt" />
     <Content Include="Resources\LibUsbDotNet.dll" />
     <Content Include="Resources\LibUsbDotNet.xml" />
+    <Content Include="xml\Config.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="xml\SRams.xml">
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -103,6 +109,10 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <None Include="xml\Config.xsd">
+      <SubType>Designer</SubType>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="xml\ICs.xsd">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <SubType>Designer</SubType>

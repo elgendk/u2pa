@@ -43,7 +43,7 @@
             <xs:attribute name="type" type="xs:string" />
             <xs:attribute name="dilType" type="xs:string" />
             <xs:attribute name="placement" type="xs:string" />
-            <xs:attribute name="upsideDown" type="xs:boolean" use="optional" />
+            <!--<xs:attribute name="upsideDown" type="xs:boolean" use="optional" />-->
             <xs:attribute name="Vcc" type="xs:string" />
             <xs:attribute name="Vpp" type="xs:string" />
           </xs:complexType>
@@ -65,7 +65,7 @@
             <xs:attribute name="type" type="xs:string" />
             <xs:attribute name="dilType" type="xs:string" />
             <xs:attribute name="placement" type="xs:string" />
-            <xs:attribute name="upsideDown" type="xs:boolean" use="optional" />
+            <!--<xs:attribute name="upsideDown" type="xs:boolean" use="optional" />-->
             <xs:attribute name="Vcc" type="xs:string" />
           </xs:complexType>
         </xs:element>

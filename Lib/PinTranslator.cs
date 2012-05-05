@@ -24,6 +24,10 @@ using U2Pa.Lib.IC;
 
 namespace U2Pa.Lib
 {
+  /// <summary>
+  /// A class for translating between pin numbers with respect
+  /// <to either the ZIF-socket og the DIL-package
+  /// </summary>
   public class PinTranslator
   {
     private readonly int dilIndex;
@@ -33,6 +37,16 @@ namespace U2Pa.Lib
     private readonly int placement;
     private readonly bool upsideDown;
 
+    /// <summary>
+    /// ctor.
+    /// </summary>
+    /// <param name="dilType">Number of pins on the DIL-package.</param>
+    /// <param name="zifType">Number of pins in the ZIF-socket.</param>
+    /// <param name="placement">Placement/offset of the DIL-package in the ZIF socket.</param>
+    /// <param name="upsideDown">
+    /// True if the DIL-package is placed upside-down
+    /// instead of the drawing on Top-programmers frontcover.
+    /// </param>
     public PinTranslator(int dilType, int zifType, int placement, bool upsideDown)
     {
       if (dilType % 2 != 0)
@@ -66,6 +80,11 @@ namespace U2Pa.Lib
       return dilPinNumber > dilIndex ? dilPinNumber - dilIndex : dilPinNumber + dilIndex; 
     }
 
+    /// <summary>
+    /// Translates a ZIF-pinnumber to DIL-pinnumber.
+    /// </summary>
+    /// <param name="zifPinNumer">The ZIF-pinnumber.</param>
+    /// <returns>The DIL-pinnumber.</returns>
     public int ToDIL(int zifPinNumer)
     {
       if (zifPinNumer == 0) return 0;
@@ -82,14 +101,19 @@ namespace U2Pa.Lib
         returnValue <= dilIndex || returnValue > dilType ? 0 : Turn180DegIfNeeded(returnValue);
     }
 
-    public int ToZIF(Pin pin)
+    /// <summary>
+    /// Translates from DIL-pin to ZIF-pinnumber.
+    /// </summary>
+    /// <param name="dilPin">The DIL-pin.</param>
+    /// <returns>The ZIF-pinumber.</returns>
+    public int ToZIF(Pin dilPin)
     {
-      if (pin.TrueZIF) return pin.Number;
-      if (pin.Number == 0) return 0;
-      pin = Turn180DegIfNeeded(pin);
-      if (pin.Number <= dilIndex)
-        return pin.Number + zifIndex - dilIndex - placement;
-      return pin.Number + zifIndex - dilIndex + placement;
+      if (dilPin.TrueZIF) return dilPin.Number;
+      if (dilPin.Number == 0) return 0;
+      dilPin = Turn180DegIfNeeded(dilPin);
+      if (dilPin.Number <= dilIndex)
+        return dilPin.Number + zifIndex - dilIndex - placement;
+      return dilPin.Number + zifIndex - dilIndex + placement;
     }
   }
 }
