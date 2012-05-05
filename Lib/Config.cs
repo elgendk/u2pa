@@ -19,15 +19,40 @@
 //    You should have received a copy of the GNU General Public License
 //    along with u2pa. If not, see <http://www.gnu.org/licenses/>.
 
+using System.Linq;
+using System.Xml.Linq;
+using System.Xml.Schema;
+using System.Collections.Generic;
+
 namespace U2Pa.Lib
 {
   /// <summary>
-  /// Indicates the presumed soundness of a read.
+  /// Wraps the values defined in the file Config.xml.
   /// </summary>
-  public enum ReadSoundness
+  public static class Config
   {
-    SeemsToBeAOkay,
-    TryReread,
-    TryRewrite
+    /// <summary>
+    /// Static ctor.
+    /// </summary>
+    static Config()
+    {
+      var xDocument = XDocument.Load(@"Xml\Config.xml");
+      var xSchema = new XmlSchemaSet();
+      xSchema.Add("", @"Xml\Config.xsd");
+      xDocument.Validate(xSchema, null);
+      ICTestBinPath = xDocument
+        .Descendants("Config")
+        .Single()
+        .Element("Files")
+        .Element("ICTestBinPath")
+        .Attribute("path")
+        .Value;
+    }
+
+    /// <summary>
+    /// Path to the "bit-bashing" FPGA-program ictest.bin
+    /// that comes with the software TopWin6.
+    /// </summary>
+    public static string ICTestBinPath { get; private set; }
   }
 }

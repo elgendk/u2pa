@@ -21,22 +21,26 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using U2Pa.Lib.IC;
 
 namespace U2Pa.Lib
 {
   public class Kernel
   {
+    #region Prog
+    /// <summary>
+    /// Writes the id of the connected Top Programmer.
+    /// </summary>
+    /// <param name="pa">The public address instance.</param>
+    /// <returns>Exit code. 0 is fine; all other is bad.</returns>
     public static int ProgId(PublicAddress pa)
     {
       var v = pa.VerbosityLevel;
       try
       {
         pa.VerbosityLevel = 0;
-        using (var topDevice = TopDevice.Create(pa))
-        {
-          pa.ShoutLine(0, topDevice.ReadTopDeviceIdString());
-        }
+        pa.ShoutLine(0, "Connected Top Programmer has id: {0}", TopDevice.ReadTopDeviceIdString(pa));
         return 0;
       }
       finally
@@ -44,14 +48,15 @@ namespace U2Pa.Lib
         pa.VerbosityLevel = v;
       }
     }
+    #endregion Prog
 
     #region Rom
     /// <summary>
-    /// 
+    /// Displays the EPROM inserted into the Top-programmer.
     /// </summary>
-    /// <param name="pa"></param>
+    /// <param name="pa">The public address instance.</param>
     /// <param name="type"></param>
-    /// <returns></returns>
+    /// <returns>Exit code. 0 is fine; all other is bad.</returns>
     public static int RomInfo(PublicAddress pa, string type)
     {
       var eprom = EpromXml.Specified[type];
@@ -62,9 +67,9 @@ namespace U2Pa.Lib
     /// <summary>
     /// The main method for reading a rom that is defined in the Eproms.xml file.
     /// </summary>
-    /// <param name="pa">Public addresser.</param>
-    /// <param name="type">The of the rom the be read.</param>
-    /// <returns>Exit code.</returns>
+    /// <param name="pa">The public address instance.</param>
+    /// <param name="type">The type of the rom the be read.</param>
+    /// <returns>Exit code. 0 is fine; all other is bad.</returns>
     public static IList<byte> RomRead(PublicAddress pa, string type)
     {
       IList<byte> bytes = new List<byte>();
@@ -86,20 +91,43 @@ namespace U2Pa.Lib
       return bytes;
     }
 
+    /// <summary>
+    /// Programs an EPROM.
+    /// </summary>
+    /// <param name="pa">The public address instance.</param>
+    /// <param name="type">The type of the rom the be programmed.</param>
+    /// <param name="fileData">The data to be written.</param>
+    /// <param name="vppLevel">The Vpp-level; if not present, the one from the EPROM definition is used.
+    /// <remarks>Not yet used!</remarks>
+    /// </param>
     public static void RomWrite(PublicAddress pa, string type, IList<byte> fileData, params string[] vppLevel)
     {
-      //if (type == "271024" || type == "272048")
-      //{
-      //  Console.WriteLine("Writing EPROMS of type {0} is not yet supported, sorry }};-(", type);
-      //  return;
-      //}
+      if (type == "271024" || type == "272048")
+      {
+        Console.WriteLine("Writing EPROMS of type {0} is not yet supported, sorry }};-(", type);
+        return;
+      }
       using (var topDevice = TopDevice.Create(pa))
       {
         var eprom = EpromXml.Specified[type];
-        topDevice.WriteEpromClassic(eprom, 10, fileData);
+        topDevice.WriteEpromClassic(eprom, 40, fileData);
+        //topDevice.WriteEpromFast(eprom, fileData);
       }
     }
 
+    /// <summary>
+    /// Verifies an EPROM against a list of bytes.
+    /// </summary>
+    /// <remarks>
+    /// At present only works for 8-bit roms!
+    /// </remarks>
+    /// <param name="pa">The public address instance.</param>
+    /// <param name="type">The type of the rom the be verified.</param>
+    /// <param name="fileData">The list of data to verify against.</param>
+    /// <returns>
+    /// A list of tuples representing bytes that didn't verify.
+    /// The tupeles has the form (address, actual_byte_on_EPROM, expected_byte).
+    /// </returns>
     public static List<Tuple<int, byte, byte>> RomVerify(PublicAddress pa, string type, IList<byte> fileData)
     {
       var didntVerify = new List<Tuple<int, byte, byte>>();
@@ -117,40 +145,328 @@ namespace U2Pa.Lib
     }
     #endregion Rom
 
-    public static int Dev(PublicAddress pa)
+    #region Dev
+    public static int DevVppLevels(PublicAddress pa)
     {
-      var tr = new PinTranslator(40, 40, 0, false);
-      var zif = new ZIFSocket(40);
-      zif.SetAll(true);
-      var v = 0;
-      while (true)
+      var onScreen = "n/f = increase Vpp by 1/10; p/b = decrease Vpp by 1/10; q = quit!";
+      byte b = 0x00;
+      var quit = false;
+      while(!quit)
       {
+        var tr = new PinTranslator(40, 40, 0, false);
+        var zif = new ZIFSocket(40);
+        zif.SetAll(true);
         using (var td = TopDevice.Create(pa))
         {
-          td.SetVccLevel((VccLevel)v);
-          td.SetVppLevel((VppLevel)v);
+          td.SetVppLevel(b);
+          td.ApplyGnd(tr.ToZIF, new Pin { Number = 20 });
+          td.ApplyVpp(tr.ToZIF, new Pin { Number = 1 });
+          td.PullUpsEnable(true);
+          td.WriteZIF(zif, "");
+          Console.WriteLine(onScreen);
+          switch (Console.ReadKey().Key)
+          {
+            case ConsoleKey.N:
+              b++;
+              break;
+             
+            case ConsoleKey.F:
+              b += 10;
+              break;
+
+            case ConsoleKey.P:
+              b--;
+              break;
+
+            case ConsoleKey.B:
+              b -= 10;
+              break;
+
+            case ConsoleKey.Q:
+              quit = true;
+              break;
+
+            default:
+              Console.WriteLine(onScreen);
+              break;
+          }
+        }
+      }
+      return 0;
+    }
+
+    public static int DevVppPins(PublicAddress pa)
+    {
+      var onScreen = "n/f = increase pinnumber by 1/10; p/b = decrease pinnumber by 1/10; q = quit!";
+      byte p = 20;
+      var quit = false;
+      while (!quit)
+      {
+        var tr = new PinTranslator(40, 40, 0, false);
+        var zif = new ZIFSocket(40);
+        zif.SetAll(true);
+        using (var td = TopDevice.Create(pa))
+        {
+          td.SetVppLevel(0x7D);
+          td.ApplyGnd(tr.ToZIF, new Pin { Number = 10 });
+          td.ApplyVpp(tr.ToZIF, new Pin { Number = p });
+          td.PullUpsEnable(true);
+          td.WriteZIF(zif, "");
+          Console.WriteLine(onScreen);
+          switch (Console.ReadKey().Key)
+          {
+            case ConsoleKey.N:
+              p++;
+              break;
+
+            case ConsoleKey.F:
+              p += 10;
+              break;
+
+            case ConsoleKey.P:
+              p--;
+              break;
+
+            case ConsoleKey.B:
+              p -= 10;
+              break;
+
+            case ConsoleKey.Q:
+              quit = true;
+              break;
+
+            default:
+              Console.WriteLine(onScreen);
+              break;
+          }
+        }
+      }
+      return 0;
+    }
+ 
+    public static int DevVccPins(PublicAddress pa)
+    {
+      var onScreen = "n/f = increase pinnumber by 1/10; p/b = decrease pinnumber by 1/10; q = quit!";
+      byte p = 20;
+      var quit = false;
+      while (!quit)
+      {
+        var tr = new PinTranslator(40, 40, 0, false);
+        var zif = new ZIFSocket(40);
+        zif.SetAll(true);
+        using (var td = TopDevice.Create(pa))
+        {
+          td.SetVccLevel(0x2D);
+          td.ApplyGnd(tr.ToZIF, new Pin { Number = 10 });
+          td.ApplyVcc(tr.ToZIF, new Pin { Number = p });
+          td.PullUpsEnable(true);
+          td.WriteZIF(zif, "");
+          Console.WriteLine(onScreen);
+          switch (Console.ReadKey().Key)
+          {
+            case ConsoleKey.N:
+              p++;
+              break;
+
+            case ConsoleKey.F:
+              p += 10;
+              break;
+
+            case ConsoleKey.P:
+              p--;
+              break;
+
+            case ConsoleKey.B:
+              p -= 10;
+              break;
+
+            case ConsoleKey.Q:
+              quit = true;
+              break;
+
+            default:
+              Console.WriteLine(onScreen);
+              break;
+          }
+        }
+      }
+      return 0;
+    }
+    
+    public static int DevVccLevels(PublicAddress pa)
+    {
+      var onScreen = "n/f = increase Vcc by 1/10; p/b = decrease Vcc by 1/10; q = quit!";
+      byte b = 0x00;
+      var quit = false;
+      while (!quit)
+      {
+        var tr = new PinTranslator(40, 40, 0, false);
+        var zif = new ZIFSocket(40);
+        zif.SetAll(true);
+        using (var td = TopDevice.Create(pa))
+        {
+          td.SetVccLevel(b);
           td.ApplyGnd(tr.ToZIF, new Pin { Number = 20 });
           td.ApplyVcc(tr.ToZIF, new Pin { Number = 8 });
-          td.ApplyVpp(tr.ToZIF, new Pin { Number = 1 });
-          td.WriteZIF(zif, String.Format("v = {0}", v));
-          Console.WriteLine("Vpp pin 1 at level {0}, Vcc pin 8 at level {0}, Gnd pin 20. Press Enter to advance, 'q' to quit.", v);
-          var input = Console.ReadLine();
-          if (input.Contains("q"))
-            break;
+          td.PullUpsEnable(true);
+          td.WriteZIF(zif, "");
+          Console.WriteLine(onScreen);
+          switch (Console.ReadKey().Key)
+          {
+            case ConsoleKey.N:
+              b++;
+              break;
+
+            case ConsoleKey.F:
+              b += 10;
+              break;
+
+            case ConsoleKey.P:
+              b--;
+              break;
+
+            case ConsoleKey.B:
+              b -= 10;
+              break;
+
+            case ConsoleKey.Q:
+              quit = true;
+              break;
+
+            default:
+              Console.WriteLine(onScreen);
+              break;
+          }
         }
-        v += 10;
-        if (v >= 256) v = 0;
       }
+      return 0;
+    }
+
+    public static int DevGndPins(PublicAddress pa)
+    {
+      var onScreen = "n/f = increase pinnumber by 1/10; p/b = decrease pinnumber by 1/10; q = quit!";
+      byte p = 0;
+      var quit = false;
+      while (!quit)
+      {
+        var tr = new PinTranslator(40, 40, 0, false);
+        var zif = new ZIFSocket(40);
+        zif.SetAll(true);
+        using (var td = TopDevice.Create(pa))
+        {
+          td.SetVccLevel(0x2D);
+          td.ApplyGnd(tr.ToZIF, new Pin { Number = 40 });
+          td.ApplyVcc(tr.ToZIF, new Pin { Number = 20 });
+          td.PullUpsEnable(true);
+          td.WriteZIF(zif, "");
+          Console.WriteLine(onScreen);
+          switch (Console.ReadKey().Key)
+          {
+            case ConsoleKey.N:
+              p++;
+              break;
+
+            case ConsoleKey.F:
+              p += 10;
+              break;
+
+            case ConsoleKey.P:
+              p--;
+              break;
+
+            case ConsoleKey.B:
+              p -= 10;
+              break;
+
+            case ConsoleKey.Q:
+              quit = true;
+              break;
+
+            default:
+              Console.WriteLine(onScreen);
+              break;
+          }
+        }
+      }
+      return 0;
+    }
+
+    /// <summary>
+    /// For dev.
+    /// </summary>
+    /// <param name="pa">The public address instance.</param>
+    /// <returns>Exit code. 0 is fine; all other is bad.</returns>
+    public static int Dev(PublicAddress pa)
+    {
+      //var fpgaFile = new FPGAProgram(@"C:\Top\Topwin6\Blib2\ictest.bit");
+      //Console.WriteLine(fpgaFile);
+      {
+        var tr = new PinTranslator(40, 40, 0, false);
+        var zif = new ZIFSocket(40);
+        zif.SetAll(true);
+        using (var td = TopDevice.Create(pa))
+        {
+          td.SetVccLevel(0x00);
+          td.SetVppLevel(0x00);
+          td.ApplyGnd(tr.ToZIF, new Pin { Number = 20 });
+          td.ApplyVcc(tr.ToZIF, new Pin { Number = 40 });
+          td.ApplyVpp(tr.ToZIF, new Pin { Number = 1 });
+          td.PullUpsEnable(true);
+          td.WriteZIF(zif, "");
+          var input = Console.ReadLine();
+        }
+      }
+      {
+        var tr = new PinTranslator(40, 40, 0, false);
+        var zif = new ZIFSocket(40);
+        zif.SetAll(true);
+        using (var td = TopDevice.Create(pa))
+        {
+          td.SetVccLevel(0x00);
+          td.SetVppLevel(0x00);
+          td.ApplyGnd(tr.ToZIF, new Pin { Number = 20 });
+          td.ApplyVcc(tr.ToZIF, new Pin { Number = 40 });
+          td.ApplyVpp(tr.ToZIF, new Pin { Number = 1 });
+          td.PullUpsEnable(true);
+          td.WriteZIF(zif, "");
+          var input = Console.ReadLine();
+        }
+      }
+      {
+        var tr = new PinTranslator(40, 40, 0, false);
+        var zif = new ZIFSocket(40);
+        zif.SetAll(true);
+        using (var td = TopDevice.Create(pa))
+        {
+          td.SetVccLevel(0x00);
+          td.SetVppLevel(0x00);
+          td.ApplyGnd(tr.ToZIF, new Pin { Number = 20 });
+          td.ApplyVcc(tr.ToZIF, new Pin { Number = 40 });
+          td.ApplyVpp(tr.ToZIF, new Pin { Number = 1 });
+          td.PullUpsEnable(true);
+          td.WriteZIF(zif, "");
+          var input = Console.ReadLine();
+        }
+      }
+
       //Console.WriteLine("Testing {0} for Erasure }};-P", args[1]);
       //var fileData = Tools.ReadBinaryFile(args[1]).ToArray();
-      
+
       //if(fileData.Any(b => b != 0xff))
       //  throw new U2PaException("No good }};-(");
       //else Console.WriteLine("File {0} filled with all nice little 0xFF's }};-P", args[1]);
 
       return 0;
     }
+    #endregion Dev
 
+    #region SRam
+    /// <summary>
+    /// A simple SRAM-test.
+    /// </summary>
+    /// <param name="pa">The public address instance.</param>
+    /// <param name="type">The type of SRAM.</param>
+    /// <returns>Exit code. 0 is fine; all other is bad.</returns>
     public static int SRamTest(PublicAddress pa, string type)
     {
       var sram = SRamXml.Specified[type];
@@ -185,5 +501,19 @@ namespace U2Pa.Lib
 
       return returnValue;
     }
+
+    /// <summary>
+    /// Displays the SRAM inserted into the Top-programmer.
+    /// </summary>
+    /// <param name="pa">The public address instance.</param>
+    /// <param name="type">The type of SRAM.</param>
+    /// <returns>Exit code. 0 is fine; all other is bad.</returns>
+    public static int SRamInfo(PublicAddress pa, string type)
+    {
+      var sram = SRamXml.Specified[type];
+      Console.WriteLine(sram);
+      return 0;
+    }
+    #endregion SRam
   }
 }

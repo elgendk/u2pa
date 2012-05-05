@@ -23,13 +23,49 @@ using System;
 
 namespace U2Pa.Lib.IC
 {
+  /// <summary>
+  /// Abstraction of an IC-pin.
+  /// </summary>
   public class Pin
   {
+    /// <summary>
+    /// True if the pin is enabled by a TTL-low signal.
+    /// <remarks>
+    /// In the xml-file, this is indicated by putting
+    /// a '/'-sign in front of the pin number.
+    /// </remarks>
+    /// </summary>
     public bool EnableLow { get; internal set; }
+
+    /// <summary>
+    /// The number of the pin with respect to DIL-package.
+    /// <remarks>
+    /// If <see cref="TrueZIF"/> is true, the number is
+    /// to be with respect to the ZIF-socket.
+    /// </remarks>
+    /// </summary>
     public int Number { get; internal set; }
+
+    /// <summary>
+    /// The boolean value that will enable this pin.
+    /// </summary>
     public bool Enable { get{ return !EnableLow; } }
-    public bool Disable { get{ return EnableLow; } }
+
+    /// <summary>
+    /// The boolean value that will disable this pin.
+    /// </summary>
+    public bool Disable { get { return EnableLow; } }
+
+    /// <summary>
+    /// If true, <see cref="Number"/> to be with respect to the ZIF-socket.
+    /// </summary>
     public bool TrueZIF { get; internal set; }
+
+    /// <summary>
+    /// Parses a pin-string from the xml-file.
+    /// </summary>
+    /// <param name="pinRep">The pin-string found in the xml-file.</param>
+    /// <returns>The created instance of the <see cref="Pin"/>-class.</returns>
     public static Pin Parse(string pinRep)
     {
       pinRep = pinRep.Trim();

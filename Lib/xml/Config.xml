@@ -1,4 +1,6 @@
-﻿//                             u2pa
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!--
+//                             u2pa
 //
 //    A command line interface for Top Universal Programmers
 //
@@ -18,10 +20,12 @@
 //
 //    You should have received a copy of the GNU General Public License
 //    along with u2pa. If not, see <http://www.gnu.org/licenses/>.
-~~~
-u2pa rom write TYPE FILENAME
+-->
 
-writes the contents of a file to an EPROM of type TYPE
-     
-    When inserting the EPROM into the ZIF socket of the Top Programmer one must
-    be careful to do it correctly; one should call 'info' if in doubt.
+<Root>
+  <Config>
+    <Files>
+      <ICTestBinPath path="C:\Top\Topwin6\Blib2\ictest.bit"/>
+    </Files>
+  </Config>
+</Root>

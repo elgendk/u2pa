@@ -19,9 +19,14 @@
 //    You should have received a copy of the GNU General Public License
 //    along with u2pa. If not, see <http://www.gnu.org/licenses/>.
 ~~~
-u2pa rom write TYPE FILENAME
+u2pa sram info TYPE
 
-writes the contents of a file to an EPROM of type TYPE
+displays a graphical representation of the SRAM
      
-    When inserting the EPROM into the ZIF socket of the Top Programmer one must
-    be careful to do it correctly; one should call 'info' if in doubt.
+    ASCII graphics displaying the SRAM (having type TYPE) correctly inserted
+    into the Top Programmer will be shown on screen.
+
+    Also the pinout of the of the SRAM is shown along with any important notes.
+
+    One should always issue this command to be aware of any notes before attempting
+    to read, write, etc. an SRAM of type TYPE.

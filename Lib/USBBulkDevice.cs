@@ -22,9 +22,13 @@
 using System;
 using LibUsbDotNet;
 using LibUsbDotNet.Main;
+using System.Diagnostics;
 
 namespace U2Pa.Lib
 {
+  /// <summary>
+  /// A wrapper class for the key methods in LibUsbDotNet we use.
+  /// </summary>
   public class UsbBulkDevice : IDisposable
   {
     public int VendorId { get; private set; }
@@ -37,9 +41,27 @@ namespace U2Pa.Lib
     private UsbEndpointReader UsbEndpointReader { get; set; }
     private UsbEndpointWriter UsbEndpointWriter { get; set; }
     private PublicAddress PA { get; set; }
+    private int currentDelay = 0;
+    private Stopwatch stopWatch = new Stopwatch();
 
-    public UsbBulkDevice(PublicAddress pa, int vendorId, int productId, byte configuration, int nterface,
-      ReadEndpointID readEndpointID, WriteEndpointID writeEndpointID)
+    /// <summary>
+    /// ctor.
+    /// </summary>
+    /// <param name="pa">The public address instance.</param>
+    /// <param name="vendorId">The vendor id.</param>
+    /// <param name="productId">The product id.</param>
+    /// <param name="configuration">The configuration id.</param>
+    /// <param name="nterface">The interface id.</param>
+    /// <param name="readEndpointID">The read endpoint id.</param>
+    /// <param name="writeEndpointID">The write end point id.</param>
+    public UsbBulkDevice(
+      PublicAddress pa, 
+      int vendorId, 
+      int productId, 
+      byte configuration, 
+      int nterface,
+      ReadEndpointID readEndpointID, 
+      WriteEndpointID writeEndpointID)
     {
       PA = pa;
       VendorId = vendorId;
@@ -51,11 +73,14 @@ namespace U2Pa.Lib
       Init();
     }
 
+    /// <summary>
+    /// Initiates the instance.
+    /// <remarks>Greatly inspired by the examples in the LibUsbDotNet documentation.</remarks>
+    /// </summary>
     private void Init()
     {
       UsbDevice = UsbDevice.OpenUsbDevice(new UsbDeviceFinder(VendorId, ProductId));
 
-      // If the device is open and ready
       if (UsbDevice == null)
         throw new U2PaException(
           "Top Universal Programmer with VendorId: 0x{0} and ProductId: 0x{1} not found.",
@@ -92,27 +117,59 @@ namespace U2Pa.Lib
       if (UsbEndpointWriter == null)
         throw new U2PaException("Unable to open write endpoint ${0}", WriteEndpointID.ToString());
       PA.ShoutLine(4, "Writer endpoint ${0} opened.", UsbEndpointWriter.EndpointInfo.Descriptor.EndpointID.ToString("X2"));
+      stopWatch.Start();
     }
 
+    public void Delay(int milliseconds)
+    {
+      currentDelay += milliseconds;
+    }
+
+    private void DoWait()
+    {
+      while (stopWatch.ElapsedMilliseconds <= currentDelay)
+      {
+        // Wait };-P
+      }
+      currentDelay = 0;
+      stopWatch.Restart();
+    }
+
+    /// <summary>
+    /// Sends a data package to the Top Programmer.
+    /// </summary>
+    /// <param name="verbosity">The verbosity to use when displaying messages.</param>
+    /// <param name="data">The data to send.</param>
+    /// <param name="description">The description to use when displaying messages.</param>
+    /// <param name="args">Arguments for the description string.</param>
     public void SendPackage(int verbosity, byte[] data, string description, params object[] args)
     {
       description = String.Format(description, args);
       int transferLength;
       int timeOut = Math.Max(1000, data.Length / 10);
-      var errorCode = Write(data, timeOut, out transferLength);
+      DoWait();
+      var errorCode = UsbEndpointWriter.Write(data, timeOut, out transferLength);
       if (errorCode == ErrorCode.None && transferLength == data.Length)
         PA.ShoutLine(verbosity, "Write success: {0}. Timeout {1}ms.", description, timeOut);
       else
         throw new U2PaException("Write failure. {0}.\r\nTransferlength: {1} ErrorCode: {2}", description, transferLength, errorCode);
     }
 
+    /// <summary>
+    /// Reads a data package from the device.
+    /// </summary>
+    /// <param name="verbosity">The verbosity to use when displaying messages.</param>
+    /// <param name="description">The description to use when displaying messages.</param>
+    /// <param name="args">Arguments for the description string.</param>
+    /// <returns>The read data.</returns>
     public byte[] RecievePackage(int verbosity, string description, params object[] args)
     {
       description = String.Format(description, args);
       var readBuffer = new byte[64];
       int transferLength;
       const int timeOut = 1000;
-      var errorCode = Read(readBuffer, timeOut, out transferLength);
+      DoWait();
+      var errorCode = UsbEndpointReader.Read(readBuffer, timeOut, out transferLength);
       if (errorCode == ErrorCode.None && transferLength == readBuffer.Length)
         PA.ShoutLine(verbosity, "Read  success: {0}. Timeout {1}ms.", description, timeOut);
       else
@@ -120,20 +177,13 @@ namespace U2Pa.Lib
       return readBuffer;
     }
 
-    public ErrorCode Write(byte[] package, int timeOut, out int transferLength)
-    {
-      return UsbEndpointWriter.Write(package, timeOut, out transferLength);
-    }
-
-    public ErrorCode Read(byte[] buffer, int timeOut, out int transferLength)
-    {
-      return UsbEndpointReader.Read(buffer, timeOut, out transferLength);
-    }
-
-
-
+    /// <summary>
+    /// Disposes any unmanaged resources.
+    /// <remarks>Greatly inspired by the examples in the LibUsbDotNet documentation.</remarks>
+    /// </summary>
     public void Dispose()
     {
+      DoWait();
       if (UsbDevice == null) return;
       if (UsbDevice.IsOpen)
       {

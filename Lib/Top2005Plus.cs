@@ -32,11 +32,28 @@ namespace U2Pa.Lib
     public Top2005Plus(PublicAddress pa, UsbBulkDevice bulkDevice)
       : base(pa, bulkDevice)
     {
-      ValidVccPins = new List<int> {0, 8, 13, 17, 24, 25, 26, 27, 28, 30, 32, 34, 36, 40};
-      ValidVppPins = new List<int> {0, 1, 5, 7, 9, 10, 11, 12, 14, 15, 20, 26, 28, 29, 30, 31, 34, 40};
-      ValidGndPins = new List<int> {0, 10, 14, 16, 20, 25, 31};
+      Func<double, byte, Tuple<double, byte>> t = Tuple.Create<double,byte>;
+      // In doubt about pins: 26, 28, 30...
+      ValidVccPins = new List<int> {0, 8, 13, 16, 17, 24, 25, 26, 27, 28, 30, 32, 34, 36, 40};
+      ValidVppPins = new List<int> {0, 1, 5, 7, 9, 10, 11, 12, 14, 15, 20, 26, 28, 29, 30, 31, 34, 35};
+      ValidGndPins = new List<int> {0, 10, 14, 16, 20, 25, 25, 31};
+      VppLevels = new List<Tuple<double, byte>> 
+      {
+        t(4.8, 0x00),
+        t(6.9, 0x41), t(7.3, 0x46), t(7.5, 0x4B), t(8.8, 0x50), t(9.0, 0x5A), t(9.5, 0x5F), t(9.9, 0x64), t(10.4, 0x69),
+        //t(4.8, 0x6E),
+        t(12.0, 0x78), t(12.4, 0x7D), t(12.9, 0x82), t(13.4, 0x87), t(14.0, 0x8C), t(14.5, 0x91), t(15.0, 0x96), t(15.5, 0x9B), t(16.2, 0xA0),
+        //t(4.8, 0xAA),
+        t(20.9, 0xD2),
+        //t(4.8, 0xD3), t(20.9, 0xFA), t(4.8, 0xFB)
+      };
+      VccLevels = new List<Tuple<double, byte>> 
+      {
+        //t(3.1, 0x00), t(4.9, 0x01),
+        t(3.1, 0x19), t(3.6, 0x1F), t(4.3, 0x28), t(4.9, 0x2D)
+      };
 
-      UpLoadBitStreamTopWin6Style(@"C:\Top\Topwin6\Blib2\ictest.bit");
+      UpLoadBitStreamTopWin6Style(Config.ICTestBinPath);
     }
 
     public override int ZIFType { get { return 40; } }
@@ -49,11 +66,9 @@ namespace U2Pa.Lib
       BulkDevice.SendPackage(5, new byte[] { 0x07 }, "Some kind of finish-up/execute command?");
       BulkDevice.RecievePackage(5, "Some values that maby should be validated in some way");
 
-      var bytes = Tools.ReadBinaryFile(fileName).ToList();
-      var range = CheckBitStreamHeader(bytes);
-      bytes.RemoveRange(0, range);
-
-      var bytesToSend = PackBytes(bytes).SelectMany(x => x).ToArray();
+      var fpgaProgram = new FPGAProgram(fileName);
+      var bytesToSend = PackFPGABytes(fpgaProgram.Payload).SelectMany(x => x).ToArray();
+      PA.ShoutLine(5, fpgaProgram.ToString());
       BulkDevice.SendPackage(5, bytesToSend, "Uploading file: {0}", fileName);
 
       // Postlude of black magic

@@ -27,23 +27,34 @@ using U2Pa.Lib;
 
 namespace U2Pa.Cmd
 {
+  /// <summary>
+  /// The main command interpreter class.
+  /// </summary>
   internal static class U2PaCmd
   {
-    private static IDictionary<string, string> helpTexts = new Dictionary<string, string>(); 
-    static U2PaCmd()
+    private static IDictionary<string, string> helpTexts;
+    private static IDictionary<string, string> HelpTexts
     {
-      foreach (var fileName in Directory.GetFiles("help", "*.txt"))
-      {
-        using(var file = File.OpenText(fileName))
+      get
+      { 
+        if(helpTexts == null)
         {
-          while(!file.EndOfStream)
-            if(file.ReadLine().StartsWith("~~~"))
-              break;
+          helpTexts = new Dictionary<string, string>();
+          foreach (var fileName in Directory.GetFiles("help", "*.txt"))
+          {
+            using(var file = File.OpenText(fileName))
+            {
+              while(!file.EndOfStream)
+                if(file.ReadLine().StartsWith("~~~"))
+                  break;
          
-          helpTexts.Add(
-            Path.GetFileNameWithoutExtension(fileName),
-            file.ReadToEnd());
+              helpTexts.Add(
+                Path.GetFileNameWithoutExtension(fileName),
+                file.ReadToEnd());
+            }
+          }
         }
+        return helpTexts;
       }
     }
 
@@ -117,7 +128,7 @@ namespace U2Pa.Cmd
             break;
 
           case "dev":
-            returnCode = Dev(pa);
+            returnCode = Dev(pa, cleanedArgs);
             break;
         }
 
@@ -136,9 +147,9 @@ namespace U2Pa.Cmd
     /// <summary>
     /// Entry point for the 'rom' catagory of commands.
     /// </summary>
-    /// <param name="pa">Public addresser</param>
+    /// <param name="pa">The public address instance.</param>
     /// <param name="args">Command line arguments</param>
-    /// <returns></returns>
+    /// <returns>Exit code. 0 is fine; all other is bad.</returns>
     private static int Rom(PublicAddress pa, IList<string> args)
     {
       if(args.Count == 1)
@@ -198,9 +209,9 @@ namespace U2Pa.Cmd
     /// <summary>
     /// Entry point for the 'sram' catagory of commands.
     /// </summary>
-    /// <param name="pa">Public addresser</param>
+    /// <param name="pa">The public address instance.</param>
     /// <param name="args">Command line argumsnts</param>
-    /// <returns></returns>
+    /// <returns>Exit code. 0 is fine; all other is bad.</returns>
     private static int SRam(PublicAddress pa, IList<string> args)
     {
       if (args.Count == 1)
@@ -215,6 +226,9 @@ namespace U2Pa.Cmd
         case "test":
           return Kernel.SRamTest(pa, args[2]);
 
+        case "info":
+          return Kernel.SRamInfo(pa, args[2]);
+
         default:
           pa.ShoutLine(1, "Unknown sram command {0}", args[1]);
           return 1;
@@ -222,11 +236,11 @@ namespace U2Pa.Cmd
     }
 
     /// <summary>
-    /// Entry point for the 'prog' catagory of commands.
+    /// Entry point for the 'prog' category of commands.
     /// </summary>
-    /// <param name="pa">Public addresser</param>
+    /// <param name="pa">The public address instance.</param>
     /// <param name="args">Command line argumsnts</param>
-    /// <returns></returns>
+    /// <returns>Exit code. 0 is fine; all other is bad.</returns>
     private static int Prog(PublicAddress pa, IList<string> args)
     {
       if (args.Count == 1)
@@ -241,48 +255,61 @@ namespace U2Pa.Cmd
         case "id":
           Kernel.ProgId(pa);
           return 0;
+
+        default:
+          pa.ShoutLine(1, "Unknown prog command {0}", args[1]);
+          return 1;
       }
-      pa.ShoutLine(1, "category prog not yet implemented!");
-      return 1;
     }
 
     /// <summary>
     /// Entry point for the 'help' catagory of commands.
     /// </summary>
-    /// <param name="pa">Public addresser</param>
-    /// <param name="args">Command line argumsnts</param>
-    /// <returns></returns>
+    /// <param name="pa">The public address instance.</param>
+    /// <param name="args">Command line arguments</param>
+    /// <returns>Exit code. 0 is fine; all other is bad.</returns>
     private static int Help(PublicAddress pa, IList<string> args)
     {
       if (args.Count <= 1)
       {
-        Console.Write(helpTexts["main"]);
+        Console.Write(HelpTexts["main"]);
         return 0;
       }
 
-      if(args.Count <= 2)
+      if (args.Count <= 2)
       {
-        Console.Write(helpTexts[args[1]]);
+        if (!HelpTexts.ContainsKey(args[1]))
+          throw new U2PaException("No help entry for {0}", args[1]);
+
+        Console.Write(HelpTexts[args[1]]);
         return 0;
       }
 
-      if(args.Count <= 3)
-      {
-        Console.Write(helpTexts[args[1] + "_" + args[2]]);
-        return 0;
-      }
+      var arg = args[1] + "_" + args[2];
+      if (!HelpTexts.ContainsKey(arg))
+        throw new U2PaException("No help entry for {0}", arg);
+    
+      Console.Write(HelpTexts[arg]);
       return 0;
+
+      pa.ShoutLine(1, "Unknown prog command {0}", args[1]);
     }
 
     /// <summary>
-    /// Entry point for the 'ram' catagory of commands.
+    /// Entry point for the 'dev' catagory of commands.
     /// </summary>
-    /// <param name="pa">Public addresser</param>
+    /// <param name="pa">The public address instance.</param>
     /// <param name="args">Command line argumsnts</param>
-    /// <returns></returns>
-    private static int Dev(PublicAddress pa)
+    /// <returns>Exit code. 0 is fine; all other is bad.</returns>
+    private static int Dev(PublicAddress pa, IList<string> args)
     {
-      return Kernel.Dev(pa);
+      pa.VerbosityLevel = 5;
+      //return Kernel.Dev(pa);
+      //return Kernel.DevVppLevels(pa);
+      //return Kernel.DevVccLevels(pa);
+      //return Kernel.DevVppPins(pa);
+      //return Kernel.DevVccPins(pa);
+      return Kernel.DevGndPins(pa);
     }
   }
 }

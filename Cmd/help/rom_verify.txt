@@ -19,9 +19,10 @@
 //    You should have received a copy of the GNU General Public License
 //    along with u2pa. If not, see <http://www.gnu.org/licenses/>.
 ~~~
-u2pa rom write TYPE FILENAME
+u2pa rom verify TYPE FILENAME
 
-writes the contents of a file to an EPROM of type TYPE
+reads the contents of an EPROM of type TYPE and compares it to the contents of a file;
+the result will be displayed on screen
      
     When inserting the EPROM into the ZIF socket of the Top Programmer one must
     be careful to do it correctly; one should call 'info' if in doubt.

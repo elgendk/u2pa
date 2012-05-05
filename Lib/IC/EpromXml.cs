@@ -24,17 +24,31 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
 using System.Xml.Schema;
+using System.Globalization;
 
 namespace U2Pa.Lib.IC
 {
+  /// <summary>
+  /// Abstraction of an EPROM with definitions in xml.
+  /// </summary>
   public class EpromXml : Eprom
   {
+    /// <summary>
+    /// Dictionary of the EPROMs specified in xml.
+    /// <remarks>
+    /// The keys are the 'Type' of the EPROM.
+    /// </remarks>
+    /// </summary>
     public static IDictionary<string, EpromXml> Specified { get; private set; }
+    
+    /// <summary>
+    /// Static ctor.
+    /// </summary>
     static EpromXml()
     {
-      var xDocument = XDocument.Load("Xml\\Eproms.xml");
+      var xDocument = XDocument.Load(@"Xml\Eproms.xml");
       var xSchema = new XmlSchemaSet();
-      xSchema.Add("", "Xml\\ICs.xsd");
+      xSchema.Add("", @"Xml\ICs.xsd");
       xDocument.Validate(xSchema, null);
       Specified = 
         xDocument.Descendants("Eprom").ToDictionary(
@@ -47,8 +61,8 @@ namespace U2Pa.Lib.IC
                  UpsideDown = x.Attribute("upsideDown") != null 
                    ? Boolean.Parse(x.Attribute("upsideDown").Value) 
                    : false,
-                 VccLevel = Tools.ParseVccLevel(x.Attribute("Vcc").Value),
-                 VppLevel = Tools.ParseVppLevel(x.Attribute("Vpp").Value),
+                 VccLevel = Double.Parse(x.Attribute("Vcc").Value, CultureInfo.InvariantCulture),
+                 VppLevel = Double.Parse(x.Attribute("Vpp").Value, CultureInfo.InvariantCulture),
                  AddressPins = x.ToPinArray("AddressPins"),
                  DataPins = x.ToPinArray("DataPins"),
                  ChipEnable = x.ToPinArray("ChipEnable"),

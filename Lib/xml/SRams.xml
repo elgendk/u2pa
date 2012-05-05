@@ -23,6 +23,12 @@
 -->
 <Root>
   <SRam type = "6148" dilType = "18" placement = "1" Vcc= "5">
+    <Notes>
+      On a Top2005+, pin 19 can't be GND'ed.
+      Therefore GND is applied to zif-pin 20 instead of logical 0.
+      You then have to manually connect pins 20 and 19,
+      in order to get a proper GND feed for the IC.
+    </Notes>
     <AddressPins>5, 6, 7, 4, 3, 2, 1, 17, 16, 15</AddressPins>
     <DataPins>14, 13, 12, 11</DataPins>
     <ChipEnable>/8</ChipEnable>

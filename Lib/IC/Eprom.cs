@@ -25,26 +25,101 @@ using System.Globalization;
 
 namespace U2Pa.Lib.IC
 {
+  /// <summary>
+  /// Abstraction of an EPROM.
+  /// </summary>
   public abstract class Eprom
   {
+    /// <summary>
+    /// The 'name' of the EPROM i.e. '2764'. 
+    /// </summary>
     public string Type;
+
+    /// <summary>
+    /// The number of pins.
+    /// </summary>
     public int DilType;
+
+    /// <summary>
+    /// Important notes about the EPROM.
+    /// </summary>
     public string Notes;
+
+    /// <summary>
+    /// Description.
+    /// </summary>
     public string Description;
+
+    /// <summary>
+    /// Placement/offset of the EPROM in the ZIF socket.
+    /// </summary>
     public int Placement;
+
+    /// <summary>
+    /// True if the EPROM should be placed upside-down instead
+    /// of the drawing on Top-programmers frontcover
+    /// </summary>
     public bool UpsideDown;
-    public VccLevel VccLevel;
-    public VppLevel VppLevel;
+
+    /// <summary>
+    /// The VccLevel.
+    /// </summary>
+    public double VccLevel;
+
+    /// <summary>
+    /// The VppLevel.
+    /// </summary>
+    public double VppLevel;
+
+    /// <summary>
+    /// The ordered sequence of the address pins.
+    /// </summary>
     public Pin[] AddressPins;
+
+    /// <summary>
+    /// The ordered sequence of the data pins.
+    /// </summary>
     public Pin[] DataPins;
+
+    /// <summary>
+    /// The ChipEnable pin.
+    /// </summary>
     public Pin[] ChipEnable;
+
+    /// <summary>
+    /// The OutputEnable pin.
+    /// </summary>
     public Pin[] OutputEnable;
+
+    /// <summary>
+    /// The Program pin.
+    /// </summary>
     public Pin[] Program;
+    
+    /// <summary>
+    /// The sequence of pins that should remain at constant TTL-level.
+    /// </summary>
     public Pin[] Constants;
+
+    /// <summary>
+    /// The pins that should be connected to Vcc.
+    /// </summary>
     public Pin[] VccPins;
+
+    /// <summary>
+    /// The pins that should be connected to GND.
+    /// </summary>
     public Pin[] GndPins;
+
+    /// <summary>
+    /// The pins the should be connected to Vpp. 
+    /// </summary>
     public Pin[] VppPins;
 
+    /// <summary>
+    /// Displays the EPROM inserted correctly into the Top-programmer.
+    /// </summary>
+    /// <returns>The string representation of the EPROM.</returns>
     public override string ToString()
     {
       // DIL pin, ZIF pin, description.
@@ -78,6 +153,10 @@ namespace U2Pa.Lib.IC
         zifPins[t.ToZIF(AddressPins[i])] = String.Format("A{0}", i);
       for (var i = 0; i < DataPins.Length; i++)
         zifPins[t.ToZIF(DataPins[i])] = String.Format("D{0}", i);
+      foreach (var p in Constants)
+      {
+        zifPins[t.ToZIF(p)] = "C" + (p.EnableLow ? "0" : "1");
+      }
 
       // ASCII Graphics FTW };-P
       for (var i = 1; i <= 20; i++)
@@ -103,11 +182,9 @@ namespace U2Pa.Lib.IC
       {
         string middle;
         if (left[i].Item2 == 0) middle = " | | ";
-        else if (left[i].Item1 == 21) middle = " +-----------+ ";
-        else if (!UpsideDown && right[i].Item2 == 1) middle = " +-----O-----+ ";
-        else if (right[i].Item2 == (DilType/4) + 1)
-          middle = String.Format(" |{0}| ",
-                                 Type.Pad(11));
+        else if (right[i].Item1 == 20 - Placement) middle = String.Format(" +-----{0}-----+ ", UpsideDown ? "O" : "-");
+        else if (right[i].Item1 == 20 - Placement - (DilType / 2) + 1) middle = String.Format(" +-----{0}-----+ ", UpsideDown ? "-" : "O");
+        else if (right[i].Item2 == (DilType/4) + 1) middle = String.Format(" |{0}| ", Type.Pad(11));
         else middle = " |".PadRight(13) + "| ";
 
         display += String.Format("  |{0} {1} {2}{3}{4} {5} {6}|\r\n",
