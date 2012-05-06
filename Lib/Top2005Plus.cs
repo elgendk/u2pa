@@ -26,9 +26,16 @@ using LibUsbDotNet;
 
 namespace U2Pa.Lib
 {
+  /// <summary>
+  /// Abstraction of the Top2005+ Universal Programmer.
+  /// </summary>
   public class Top2005Plus : TopDevice
   {
-
+    /// <summary>
+    /// ctor.
+    /// </summary>
+    /// <param name="pa">Public adresser.</param>
+    /// <param name="bulkDevice">The bulk device.</param>
     public Top2005Plus(PublicAddress pa, UsbBulkDevice bulkDevice)
       : base(pa, bulkDevice)
     {
@@ -53,12 +60,23 @@ namespace U2Pa.Lib
         t(3.1, 0x19), t(3.6, 0x1F), t(4.3, 0x28), t(4.9, 0x2D)
       };
 
-      UpLoadBitStreamTopWin6Style(Config.ICTestBinPath);
+      UpLoadFPGAProgramTopWin6Style(Config.ICTestBinPath);
     }
 
+    /// <summary>
+    /// Number of pins in the ZIF-socket.
+    /// </summary>
     public override int ZIFType { get { return 40; } }
 
-    public void UpLoadBitStreamTopWin6Style(string fileName)
+    /// <summary>
+    /// Uploads the ictest.bin FPGA-program to the device.
+    /// </summary>
+    /// <param name="fileName">The name of the file.</param>
+    /// <remarks>
+    /// I don't fully understand all of the stuff going on in this method, as I have
+    /// just used an USB-sniffer to see what TopWin6 does when uploading ictest.bin.
+    /// </remarks>
+    private void UpLoadFPGAProgramTopWin6Style(string fileName)
     {
       // Prelude of black magic
       BulkDevice.SendPackage(5, new byte[] { 0x0A, 0x1B, 0x00 }, "???");

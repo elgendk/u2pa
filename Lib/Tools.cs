@@ -29,12 +29,19 @@ using U2Pa.Lib.IC;
 
 namespace U2Pa.Lib
 {
+  /// <summary>
+  /// A collection of various tools.
+  /// </summary>
   public static class Tools
   {
+    /// <summary>
+    /// Read a binary file.
+    /// </summary>
+    /// <param name="fileName">The fully qualified filename.</param>
+    /// <returns>The sequence of bytes representing the file.</returns>
     public static IEnumerable<byte> ReadBinaryFile(string fileName)
     {
       var buffer = new byte[1];
-      // Open file and read it
       using (var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read))
       {
         using (var br = new BinaryReader(fs))
@@ -45,7 +52,12 @@ namespace U2Pa.Lib
       }
     }
 
-    public static void WriteBinaryFile(string fileName, IList<byte> data)
+    /// <summary>
+    /// Writes a binary file.
+    /// </summary>
+    /// <param name="fileName">The fully qualified filename.</param>
+    /// <param name="data">The sequence of data to be written.</param>
+    public static void WriteBinaryFile(string fileName, IEnumerable<byte> data)
     {
       using (var fs = new FileStream(fileName, FileMode.Create, FileAccess.Write))
       {
@@ -57,6 +69,17 @@ namespace U2Pa.Lib
       }
     }
 
+    /// <summary>
+    /// Analyzes the result of a ZIF-socket read.
+    /// </summary>
+    /// <param name="results">The array of results.</param>
+    /// <param name="eprom">The eprom.</param>
+    /// <param name="address">The address.</param>
+    /// <param name="result">
+    /// If <see cref="ReadSoundness.SeemsToBeAOkay"/> is returned, 
+    /// this result can be trusted.
+    /// </param>
+    /// <returns>The result of the analyzis.</returns>
     public static ReadSoundness AnalyzeEpromReadSoundness(
       ZIFSocket[] results,
       Eprom eprom,
@@ -82,6 +105,12 @@ namespace U2Pa.Lib
       return ReadSoundness.SeemsToBeAOkay;
     }
 
+    /// <summary>
+    /// Determines wether a byte can be patched.
+    /// </summary>
+    /// <param name="byteFromEprom">The byte read from the EPROM.</param>
+    /// <param name="byteFromFile">The corresponding byte from the file.</param>
+    /// <returns>The result.</returns>
     public static bool CanBePatched(byte byteFromEprom, byte byteFromFile)
     {
       // I know there's a smarter way to do this, but I'm a bit too tired atm.
@@ -96,16 +125,16 @@ namespace U2Pa.Lib
       return returnValue;
     }
 
-    public static bool Enable(this int pin)
-    {
-      return pin > 0;
-    }
-
-    public static bool Disable(this int pin)
-    {
-      return pin < 0;
-    }
-
+    /// <summary>
+    /// Pads a sting with spaces in both ends until <paramref name="maxLength"/> is reached.
+    /// </summary>
+    /// <param name="src">The string to be padded.</param>
+    /// <param name="maxLength">The maximum length of the resulting string.</param>
+    /// <returns>The padded string.</returns>
+    /// <remarks>
+    /// If <paramref name="maxLength"/> is larger than the length of <paramref name="src"/>,
+    /// no padding is done <paramref name="src"/> is returned unchanged.
+    /// </remarks>
     public static string Pad(this string src, int maxLength)
     {
       while(src.Length < maxLength)
@@ -118,7 +147,11 @@ namespace U2Pa.Lib
       return src;
     }
 
-
+    /// <summary>
+    /// Converts a <see cref="BitArray"/> to bytes.
+    /// </summary>
+    /// <param name="bits">The <see cref="BitArray"/> to be converted.</param>
+    /// <returns>The resulting bytes.</returns>
     public static IEnumerable<byte> ToBytes(this BitArray bits)
     {
       if (bits.Count % 8 != 0)
@@ -144,6 +177,12 @@ namespace U2Pa.Lib
       }
     }
 
+    /// <summary>
+    /// Parses an <see cref="XElement"/> into an array of <see cref="Pin"/>s.
+    /// </summary>
+    /// <param name="x">The <see cref="XElement"/> to be parsed.</param>
+    /// <param name="name">The name of the subelement.</param>
+    /// <returns>The parsed array of <see cref="Pin"/>s.</returns>
     internal static Pin[] ToPinArray(this XElement x, string name)
     {
       if (x.Element(name) == null) return new Pin[0];

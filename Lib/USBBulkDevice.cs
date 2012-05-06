@@ -120,11 +120,18 @@ namespace U2Pa.Lib
       stopWatch.Start();
     }
 
+    /// <summary>
+    /// Used to delay before the next command is send.
+    /// </summary>
+    /// <param name="milliseconds">Delay in ms.</param>
     public void Delay(int milliseconds)
     {
       currentDelay += milliseconds;
     }
 
+    /// <summary>
+    /// Waits until the delay runs out and resets it.
+    /// </summary>
     private void DoWait()
     {
       while (stopWatch.ElapsedMilliseconds <= currentDelay)

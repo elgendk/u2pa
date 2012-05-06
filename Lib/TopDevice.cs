@@ -69,7 +69,20 @@ namespace U2Pa.Lib
     /// </summary>
     public List<int> ValidGndPins;
 
+    /// <summary>
+    /// The valid VccLevels and their voltages.
+    /// </summary>
+    /// <remarks>
+    /// Found by setting each value in the interval and measuring on the ZIF.
+    /// </remarks>
     public List<Tuple<double, byte>> VccLevels;
+
+    /// <summary>
+    /// The valid VppLevels and their voltages.
+    /// </summary>
+    /// <remarks>
+    /// Found by setting each value in the interval and measuring on the ZIF.
+    /// </remarks>
     public List<Tuple<double, byte>> VppLevels;
 
     /// <summary>
@@ -178,31 +191,14 @@ namespace U2Pa.Lib
     }
 
     /// <summary>
-    /// Given a byte represenation of a FPGA-program, returns the index of the
-    /// first byte in the 'real' program; that is when we're past the header.
-    /// <remarks>This implementation is harcoded and ONLY works for the file ictest.bin.</remarks>
+    /// Reads an EPROM.
     /// </summary>
-    /// <param name="bytes">The bytes representing the FPGA-program.</param>
-    /// <returns>The index of the first byte in the program code.</returns>
-    protected static int CheckBitStreamHeader(IList<byte> bytes)
-    {
-      return 0x47;
-      // TODO: Make this alot smarter...
-      //var startIndex = 0;
-      //for (var i = 0; i < bytes.Count; i++)
-      //{
-      //  // Find position of 2nd 'e' in the stream...only works for ictest.bin
-      //  if (bytes[i] == 0x65 && i > 19)
-      //  {
-      //    startIndex = i;
-      //    break;
-      //  }
-      //}
-      //if (startIndex == 0 || startIndex == bytes.Count)
-      //  throw new U2PaException("Header check of bitstream failed!");
-      //return startIndex + 1 + 4;
-    }
-
+    /// <param name="eprom">The EPROM type.</param>
+    /// <param name="progressBar">The progress bar.</param>
+    /// <param name="bytes">The list that accumulates the read bytes.</param>
+    /// <param name="fromAddress">Start reading this address.</param>
+    /// <param name="totalNumberOfAdresses">The total number of adesses.</param>
+    /// <returns>The next adress to be read.</returns>
     public int ReadEprom(
       Eprom eprom, 
       PublicAddress.ProgressBar progressBar, 
@@ -282,6 +278,13 @@ namespace U2Pa.Lib
       return returnAddress + 1;
     }
 
+    /// <summary>
+    /// Writes an EPROM using the Classic Algorithm
+    /// </summary>
+    /// <param name="eprom">The EPROM type.</param>
+    /// <param name="pulse">The pulse length in ms.</param>
+    /// <param name="bytes">The bytes to write.</param>
+    /// <param name="patch">Not used yet!</param>
     public void WriteEpromClassic(Eprom eprom, int pulse, IList<byte> bytes, IList<int> patch = null)
     {
       var totalNumberOfAdresses = eprom.AddressPins.Length == 0 ? 0 : 1 << eprom.AddressPins.Length;
@@ -309,12 +312,12 @@ namespace U2Pa.Lib
         progress.Init();
         foreach (var address in Enumerable.Range(0, totalNumberOfAdresses))
         {
-          if(patch != null)
-          {
-            if(!patch.Contains(address))
-              continue;
-            progress.Shout("Now patching address {0}", address);
-          }
+          //if(patch != null)
+          //{
+          //  if(!patch.Contains(address))
+          //    continue;
+          //  progress.Shout("Now patching address {0}", address);
+          //}
 
           var zif = new ZIFSocket(40);
 
@@ -354,6 +357,11 @@ namespace U2Pa.Lib
       }
     }
 
+    /// <summary>
+    /// NOT WORKING YET!
+    /// </summary>
+    /// <param name="eprom"></param>
+    /// <param name="bytes"></param>
     public void WriteEpromFast(Eprom eprom, IList<byte> bytes)
     {
       var totalNumberOfAdresses = eprom.AddressPins.Length == 0 ? 0 : 1 << eprom.AddressPins.Length;
@@ -451,7 +459,16 @@ namespace U2Pa.Lib
       }
     }
 
-    public List<Tuple<int, string, string>> SRamTest(PublicAddress pa, SRam sram, PublicAddress.ProgressBar progressBar, int totalNumberOfAdresses, TopDevice topDevice, bool firstBit)
+    /// <summary>
+    /// A simple SRAM test.
+    /// </summary>
+    /// <param name="pa">Public addresser.</param>
+    /// <param name="sram">The SRAM type.</param>
+    /// <param name="progressBar">The progress bar.</param>
+    /// <param name="totalNumberOfAdresses">The total number of adresses.</param>
+    /// <param name="firstBit">The value of the first bit to write to the SRAM.</param>
+    /// <returns>Tuples of non-working addresses: (address, read_byte, expected_byte).</returns>
+    public List<Tuple<int, string, string>> SRamTest(PublicAddress pa, SRam sram, PublicAddress.ProgressBar progressBar, int totalNumberOfAdresses, bool firstBit)
     {
       var tr = new PinTranslator(sram.DilType, 40, sram.Placement, sram.UpsideDown);
       SetVccLevel(sram.VccLevel);
@@ -526,6 +543,11 @@ namespace U2Pa.Lib
       return badCells;
     }
 
+    /// <summary>
+    /// Reads the ZIF-socket (12 times).
+    /// </summary>
+    /// <param name="packageName">The message to shout.</param>
+    /// <returns>The 12 <see cref="ZIFSocket"/>s.</returns>
     public virtual ZIFSocket[] ReadZIF(string packageName)
     {
       var package = new List<byte>();
@@ -551,6 +573,11 @@ namespace U2Pa.Lib
       return zifs.ToArray();
     }
 
+    /// <summary>
+    /// Writes a <see cref="ZIFSocket"/>.
+    /// </summary>
+    /// <param name="zif">The ZIF to be written.</param>
+    /// <param name="packageName">The meassage to shout.</param>
     public virtual void WriteZIF(ZIFSocket zif, string packageName)
     {
       var rawBytes = zif.ToTopBytes();
@@ -567,18 +594,30 @@ namespace U2Pa.Lib
       BulkDevice.SendPackage(5, package, "{0} written to ZIF.", packageName);
     }
 
+    /// <summary>
+    /// Do we enable pullups on the ZIF-pins? 
+    /// </summary>
+    /// <param name="enable">True if enable.</param>
     public virtual void PullUpsEnable(bool enable)
     {
       BulkDevice.SendPackage(4, new byte[] { 0x0e, 0x28, (byte)(enable ? 0x01 : 0x00), 0x00 },
         "PullUps are {0}", enable ? "enabled" : "disabled");
     }
 
+    /// <summary>
+    /// Sets the Vpp level (byte version).
+    /// </summary>
+    /// <param name="level">The level represented as a raw byte.</param>
     public virtual void SetVppLevel(byte level)
     {
       BulkDevice.SendPackage(4, new byte[] { 0x0e, 0x12, level, 0x00 },
         "Vpp = {0}", level.ToString("X4"));
     }
 
+    /// <summary>
+    /// Sets the Vpp level (double version)
+    /// </summary>
+    /// <param name="rawLevel">The level represented as a voltage (double).</param>
     internal virtual void SetVppLevel(double rawLevel)
     {
       string stringLevel;
@@ -586,23 +625,20 @@ namespace U2Pa.Lib
       BulkDevice.SendPackage(4, new byte[] { 0x0e, 0x12, level, 0x00 }, "Vpp = {0}", stringLevel);
     }
 
-    private byte TranslateVppLevel(double rawLevel, out string stringLevel)
+    /// <summary>
+    /// Sets the Vcc level (byte version).
+    /// </summary>
+    /// <param name="level">The level represented as a raw byte.</param>
+    internal virtual void SetVccLevel(byte level)
     {
-      return TranslateLevel(VppLevels, rawLevel, out stringLevel);
+      BulkDevice.SendPackage(4, new byte[] { 0x0e, 0x13, level, 0x00 },
+        "Vcc = {0}", level.ToString("X4"));
     }
 
-    private byte TranslateVccLevel(double rawLevel, out string stringLevel)
-    {
-      return TranslateLevel(VccLevels, rawLevel, out stringLevel);
-    }
-
-    private byte TranslateLevel(IList<Tuple<double, byte>> levels, double rawLevel, out string stringLevel)
-    {
-      var foundLevel = levels.OrderBy(x => x.Item1).TakeWhile(x => x.Item1 <= rawLevel).Last();
-      stringLevel = foundLevel.Item1.ToString("F1");
-      return foundLevel.Item2;
-    }
-
+    /// <summary>
+    /// Sets the Vcc level (double version)
+    /// </summary>
+    /// <param name="rawLevel">The level represented as a voltage (double).</param>
     public virtual void SetVccLevel(double rawLevel)
     {
       string stringLevel;
@@ -610,27 +646,75 @@ namespace U2Pa.Lib
       BulkDevice.SendPackage(4, new byte[] { 0x0e, 0x13, level, 0x00 }, "Vcc = {0}", stringLevel);
     }
 
-    internal virtual void SetVccLevel(byte level)
+    /// <summary>
+    /// Translates from a voltage (double) to the raw byte.
+    /// </summary>
+    /// <param name="rawLevel">The voltage.</param>
+    /// <param name="stringLevel">Outputs the actual voltage as a string.</param>
+    /// <returns>The raw byte.</returns>
+    private byte TranslateVppLevel(double rawLevel, out string stringLevel)
     {
-      BulkDevice.SendPackage(4, new byte[] { 0x0e, 0x13, level, 0x00 },
-        "Vcc = {0}", level.ToString("X4"));
+      return TranslateLevel(VppLevels, rawLevel, out stringLevel);
     }
 
+    /// <summary>
+    /// Translates from a voltage (double) to the raw byte.
+    /// </summary>
+    /// <param name="rawLevel">The voltage.</param>
+    /// <param name="stringLevel">Outputs the actual voltage as a string.</param>
+    /// <returns>The raw byte.</returns>
+    private byte TranslateVccLevel(double rawLevel, out string stringLevel)
+    {
+      return TranslateLevel(VccLevels, rawLevel, out stringLevel);
+    }
+
+    /// <summary>
+    /// Translates from a voltage (double) to the raw byte.
+    /// </summary>
+    /// <param name="levels">The levels to use when translating.</param>
+    /// <param name="rawLevel">The voltage.</param>
+    /// <param name="stringLevel">Outputs the actual voltage as a string.</param>
+    /// <returns>The raw byte.</returns>
+    private byte TranslateLevel(IList<Tuple<double, byte>> levels, double rawLevel, out string stringLevel)
+    {
+      var foundLevel = levels.OrderBy(x => x.Item1).TakeWhile(x => x.Item1 <= rawLevel).Last();
+      stringLevel = foundLevel.Item1.ToString("F1");
+      return foundLevel.Item2;
+    }
+
+    /// <summary>
+    /// Clears all Vpp pins; then applies Vpp to the specified pins.
+    /// </summary>
+    /// <param name="translate">The translation function to use.</param>
+    /// <param name="dilPins">The pins to set.</param>
     public virtual void ApplyVpp(Func<Pin, int> translate = null, params Pin[] dilPins)
     {
       ApplyPropertyToPins("Vpp", 0x14, ValidVppPins, translate, dilPins);
     }
 
+    /// <summary>
+    /// Clears all Vcc pins; then applies Vcc to the specified pins.
+    /// </summary>
+    /// <param name="translate">The translation function to use.</param>
+    /// <param name="dilPins">The pins to set.</param>
     public virtual void ApplyVcc(Func<Pin, int> translate = null, params Pin[] dilPins)
     {
       ApplyPropertyToPins("Vcc", 0x15, ValidVccPins, translate, dilPins);
     }
 
+    /// <summary>
+    /// Clears all Gnd pins; then applies Gnd to the specified pins.
+    /// </summary>
+    /// <param name="translate">The translation function to use.</param>
+    /// <param name="dilPins">The pins to set.</param>
     public virtual void ApplyGnd(Func<Pin, int> translate = null, params Pin[] dilPins)
     {
       ApplyPropertyToPins("Gnd", 0x16, ValidGndPins, translate, dilPins);
     }
 
+    /// <summary>
+    /// Use by the other Apply...-methods.
+    /// </summary>
     protected virtual void ApplyPropertyToPins(string name, byte propCode, ICollection<int> validPins, Func<Pin, int> translate = null, params Pin[] dilPins)
     {
       translate = translate ?? (x => x.Number);
