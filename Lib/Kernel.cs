@@ -478,8 +478,8 @@ namespace U2Pa.Lib
         {
           pa.ShoutLine(1, "Testing SRAM{0}", type);
           progressBar.Init();
-          firstPass = topDevice.SRamTest(pa, sram, progressBar, totalNumberOfAdresses, topDevice, false);
-          secondPass = topDevice.SRamTest(pa, sram, progressBar, totalNumberOfAdresses, topDevice, true);
+          firstPass = topDevice.SRamTest(pa, sram, progressBar, totalNumberOfAdresses, false);
+          secondPass = topDevice.SRamTest(pa, sram, progressBar, totalNumberOfAdresses, true);
         }
       }
       var returnValue = 0;
