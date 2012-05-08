@@ -32,5 +32,9 @@ Setting up your system for using U2Pa:
 
 12) To test that the filter is up and running, you can issue the command.
    ~>./u2pa.exe prog id
+   
+13) Open the file Config.xml in the subfolder Xml and check that path to
+    the file ictest.bin is correct. We need the one from the blib2
+    subfolder in the TopWin6 folder.
 
-13) If the above command ran flawlessly, you're ready to go };-P
+14) You're ready to go };-P
