@@ -1,0 +1,36 @@
+Setting up your system for using U2Pa:
+======================================
+1)  Make sure that .NET4.0 is installed on your system.
+
+2)  Get hold of an Top2005+ Universal Programmer.
+
+3)  Download (if it's not on the disc that came with the Top2005+)
+    and install TopWin6.
+    You can get it here (or by using google): http://www.topwin6.com/
+
+4)  Test the programmer and software and make sure it works.
+
+5)  Download and install LibUsbDotNet 2.2.8.
+    You can get it here (or by using google): 
+    http://libusbdotnet.sourceforge.net/V2/Index.html
+   
+6)  Connect the Top2005+ to the USB-port you wish to use.
+
+7)  Launch the Filter Wizard from the LibUsbDotNet->libUsb-win32 start menu.
+
+8)  Install a filter for the Top2005+ (it will properly have a description
+    saying "TopUSB1" or something like that). By using a filter instead of
+    a "real" driver you don't have to uninstall the Top-driver from
+    TopWin6 to use U2Pa. You can now use the 2 programs side-by-side.
+
+9)  Build the U2Pa-soluiton with VisualStudio (or with the build.bat if
+    you haven't got VisualStudio installed).
+
+10) You can now find the command line tool u2pa.exe in the bin-directory.
+
+11) The command line tool is best launched from WindowsPowerShell.
+
+12) To test that the filter is up and running, you can issue the command.
+   ~>./u2pa.exe prog id
+
+13) If the above command ran flawlessly, you're ready to go };-P
