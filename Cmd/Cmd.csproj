@@ -75,40 +75,40 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="help\sram_info.txt">
+    <Content Include="Help\sram_info.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="help\help.txt">
+    <Content Include="Help\help.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="help\prog_id.txt">
+    <Content Include="Help\prog_id.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="help\prog.txt">
+    <Content Include="Help\prog.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="help\sram_test.txt">
+    <Content Include="Help\sram_test.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="help\sram.txt">
+    <Content Include="Help\sram.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="help\rom_verify.txt">
+    <Content Include="Help\rom_verify.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="help\main.txt">
+    <Content Include="Help\main.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="help\rom.txt">
+    <Content Include="Help\rom.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="help\rom_info.txt">
+    <Content Include="Help\rom_info.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="help\rom_read.txt">
+    <Content Include="Help\rom_read.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="help\rom_write.txt">
+    <Content Include="Help\rom_write.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="License.txt">
