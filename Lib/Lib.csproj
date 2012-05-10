@@ -95,25 +95,25 @@
     <Content Include="Doc\Protocol.txt" />
     <Content Include="Resources\LibUsbDotNet.dll" />
     <Content Include="Resources\LibUsbDotNet.xml" />
-    <Content Include="xml\Config.xml">
+    <Content Include="Xml\Config.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <SubType>Designer</SubType>
     </Content>
-    <Content Include="xml\SRams.xml">
+    <Content Include="Xml\SRams.xml">
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="xml\Eproms.xml">
+    <Content Include="Xml\Eproms.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <SubType>Designer</SubType>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <None Include="xml\Config.xsd">
+    <None Include="Xml\Config.xsd">
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="xml\ICs.xsd">
+    <None Include="Xml\ICs.xsd">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <SubType>Designer</SubType>
     </None>
