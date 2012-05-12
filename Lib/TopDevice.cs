@@ -642,7 +642,7 @@ namespace U2Pa.Lib
     public virtual void SetVccLevel(double rawLevel)
     {
       string stringLevel;
-      var level = TranslateVppLevel(rawLevel, out stringLevel);
+      var level = TranslateVccLevel(rawLevel, out stringLevel);
       BulkDevice.SendPackage(4, new byte[] { 0x0e, 0x13, level, 0x00 }, "Vcc = {0}", stringLevel);
     }
 
