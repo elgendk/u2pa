@@ -107,7 +107,11 @@ namespace U2Pa.Lib
         Console.WriteLine();
         Console.WriteLine("0 _____________ 1 _____________ 2 _____________ 3 _____________ 4");
         currentBar = "|...............|...............|...............|...............|";
-        Console.Write(String.Format("\r{0} {1}", currentBar, "(messages will be displayed here)").PadRight(120));
+        Console.Write(String.Format(
+		  "\r{0}{1}{2}",
+		  currentBar,
+		  Environment.NewLine,
+		  "(messages will be displayed here)"));
       }
 
       /// <summary>
@@ -116,7 +120,12 @@ namespace U2Pa.Lib
       public void Dispose()
       {
         if (!initialized) return;
-        Console.Write("\r{0}", "|===============================================================|");
+		Console.SetCursorPosition(Console.CursorLeft, Console.CursorTop - 1);
+        Console.Write(
+		  "\r{0}{1}{2}",
+		  "|===============================================================|",
+		  Environment.NewLine,
+		  Environment.NewLine);
         Console.WriteLine();
         Console.WriteLine();
         if (pa.VerbosityLevel == -1)
@@ -161,7 +170,8 @@ namespace U2Pa.Lib
           accBar += i%16 == 0 ? ("|") : ".";
         }
         currentBar = accBar;
-        Console.Write(String.Format("\r{0}", currentBar).PadRight(120));
+		Console.SetCursorPosition(Console.CursorLeft, Console.CursorTop - 1);
+        Console.Write(String.Format("\r{0}" + Environment.NewLine, currentBar));
         accCount++;
         totalCount++;
       }
@@ -174,7 +184,8 @@ namespace U2Pa.Lib
       internal void Shout(string message, params object[] obj)
       {
         var m = String.Format(message, obj);
-        Console.Write(String.Format("\r{0} {1}", currentBar, m).PadRight(120));
+		Console.SetCursorPosition(Console.CursorLeft, Console.CursorTop - 1);
+        Console.Write(String.Format("\r{0}{1}{2}", currentBar, Environment.NewLine, m));
       }
     }
   }

@@ -79,7 +79,10 @@ namespace U2Pa.Lib
     /// </summary>
     private void Init()
     {
+	  Console.WriteLine("1");
       UsbDevice = UsbDevice.OpenUsbDevice(new UsbDeviceFinder(VendorId, ProductId));
+	  
+	  Console.WriteLine("2");
 
       if (UsbDevice == null)
         throw new U2PaException(
@@ -87,11 +90,15 @@ namespace U2Pa.Lib
           VendorId.ToString("X4"),
           ProductId.ToString("X4"));
 
-      PA.ShoutLine(4,
-                   "Top Universal Programmer with VendorId: 0x{0} and ProductId: 0x{1} found.",
-                   UsbDevice.UsbRegistryInfo.Vid.ToString("X2"),
-                   UsbDevice.UsbRegistryInfo.Pid.ToString("X2"));
+	  Console.WriteLine("3");
 
+      PA.ShoutLine(4,
+        "Top Universal Programmer with VendorId: 0x{0} and ProductId: 0x{1} found.",
+        VendorId.ToString("X4"),
+        ProductId.ToString("X4"));
+
+	  Console.WriteLine("4");
+			
       var wholeUsbDevice = UsbDevice as IUsbDevice;
       if (!ReferenceEquals(wholeUsbDevice, null))
       {
@@ -107,11 +114,16 @@ namespace U2Pa.Lib
         else
           throw new U2PaException("Failed to claim interface with id: {0}", Interface);
       }
+			
+	  Console.WriteLine("5");
+
 
       UsbEndpointReader = UsbDevice.OpenEndpointReader(ReadEndpointID);
       if (UsbEndpointReader == null)
         throw new U2PaException("Unable to open read endpoint ${0}", ReadEndpointID.ToString());
       PA.ShoutLine(4, "Reader endpoint ${0} opened.", UsbEndpointReader.EndpointInfo.Descriptor.EndpointID.ToString("X2"));
+
+	  Console.WriteLine("6");
 
       UsbEndpointWriter = UsbDevice.OpenEndpointWriter(WriteEndpointID);
       if (UsbEndpointWriter == null)
@@ -153,7 +165,7 @@ namespace U2Pa.Lib
     {
       description = String.Format(description, args);
       int transferLength;
-      int timeOut = Math.Max(1000, data.Length / 10);
+      int timeOut = Math.Max(10000, data.Length / 10);
       DoWait();
       var errorCode = UsbEndpointWriter.Write(data, timeOut, out transferLength);
       if (errorCode == ErrorCode.None && transferLength == data.Length)
@@ -174,7 +186,7 @@ namespace U2Pa.Lib
       description = String.Format(description, args);
       var readBuffer = new byte[64];
       int transferLength;
-      const int timeOut = 1000;
+      const int timeOut = 10000;
       DoWait();
       var errorCode = UsbEndpointReader.Read(readBuffer, timeOut, out transferLength);
       if (errorCode == ErrorCode.None && transferLength == readBuffer.Length)

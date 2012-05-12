@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!--
 //                             u2pa
 //
@@ -32,9 +32,6 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>U2Pa.Lib</RootNamespace>
     <AssemblyName>U2Pa.Lib</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>
-    </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
@@ -58,7 +55,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="LibUsbDotNet">
-      <SpecificVersion>False</SpecificVersion>
       <HintPath>Resources\LibUsbDotNet.dll</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -86,8 +82,8 @@
     <Compile Include="Top2005Plus.cs" />
     <Compile Include="TopDevice.cs" />
     <Compile Include="U2PaException.cs" />
-    <Compile Include="UsbBulkDevice.cs" />
     <Compile Include="ZIFSocket.cs" />
+    <Compile Include="UsbBulkDevice.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="License.txt">
