@@ -79,26 +79,19 @@ namespace U2Pa.Lib
     /// </summary>
     private void Init()
     {
-	  Console.WriteLine("1");
       UsbDevice = UsbDevice.OpenUsbDevice(new UsbDeviceFinder(VendorId, ProductId));
 	  
-	  Console.WriteLine("2");
-
       if (UsbDevice == null)
         throw new U2PaException(
           "Top Universal Programmer with VendorId: 0x{0} and ProductId: 0x{1} not found.",
           VendorId.ToString("X4"),
           ProductId.ToString("X4"));
 
-	  Console.WriteLine("3");
-
       PA.ShoutLine(4,
         "Top Universal Programmer with VendorId: 0x{0} and ProductId: 0x{1} found.",
         VendorId.ToString("X4"),
         ProductId.ToString("X4"));
 
-	  Console.WriteLine("4");
-			
       var wholeUsbDevice = UsbDevice as IUsbDevice;
       if (!ReferenceEquals(wholeUsbDevice, null))
       {
@@ -115,15 +108,10 @@ namespace U2Pa.Lib
           throw new U2PaException("Failed to claim interface with id: {0}", Interface);
       }
 			
-	  Console.WriteLine("5");
-
-
       UsbEndpointReader = UsbDevice.OpenEndpointReader(ReadEndpointID);
       if (UsbEndpointReader == null)
         throw new U2PaException("Unable to open read endpoint ${0}", ReadEndpointID.ToString());
       PA.ShoutLine(4, "Reader endpoint ${0} opened.", UsbEndpointReader.EndpointInfo.Descriptor.EndpointID.ToString("X2"));
-
-	  Console.WriteLine("6");
 
       UsbEndpointWriter = UsbDevice.OpenEndpointWriter(WriteEndpointID);
       if (UsbEndpointWriter == null)
