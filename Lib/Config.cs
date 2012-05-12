@@ -19,6 +19,7 @@
 //    You should have received a copy of the GNU General Public License
 //    along with u2pa. If not, see <http://www.gnu.org/licenses/>.
 
+using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using System.Xml.Schema;
@@ -36,9 +37,9 @@ namespace U2Pa.Lib
     /// </summary>
     static Config()
     {
-      var xDocument = XDocument.Load(@"Xml\Config.xml");
+      var xDocument = XDocument.Load(Path.Combine("Xml","Config.xml"));
       var xSchema = new XmlSchemaSet();
-      xSchema.Add("", @"Xml\Config.xsd");
+      xSchema.Add("", Path.Combine("Xml","Config.xsd"));
       xDocument.Validate(xSchema, null);
       ICTestBinPath = xDocument
         .Descendants("Config")
