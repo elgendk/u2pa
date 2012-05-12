@@ -21,6 +21,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using System.Xml.Schema;
@@ -46,9 +47,9 @@ namespace U2Pa.Lib.IC
     /// </summary>
     static EpromXml()
     {
-      var xDocument = XDocument.Load(@"Xml\Eproms.xml");
+      var xDocument = XDocument.Load(Path.Combine("Xml", "Eproms.xml"));
       var xSchema = new XmlSchemaSet();
-      xSchema.Add("", @"Xml\ICs.xsd");
+      xSchema.Add("", Path.Combine("Xml", "ICs.xsd"));
       xDocument.Validate(xSchema, null);
       Specified = 
         xDocument.Descendants("Eprom").ToDictionary(
