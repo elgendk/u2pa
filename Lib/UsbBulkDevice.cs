@@ -191,6 +191,13 @@ namespace U2Pa.Lib
     public void Dispose()
     {
       DoWait();
+      UsbEndpointReader.Flush();
+      UsbEndpointReader.Reset();
+      UsbEndpointReader.Dispose();
+      UsbEndpointWriter.Flush();
+      UsbEndpointWriter.Reset();
+      UsbEndpointWriter.Dispose();
+			
       if (UsbDevice == null) return;
       if (UsbDevice.IsOpen)
       {
@@ -209,6 +216,7 @@ namespace U2Pa.Lib
 
       // Free usb resources
       UsbDevice.Exit();
+	  
       PA.ShoutLine(4, "USB resources freed.");
     }
   }
