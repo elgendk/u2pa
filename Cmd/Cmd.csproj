@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!--
 //                             u2pa
 //
@@ -32,9 +32,6 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>U2Pa.Cmd</RootNamespace>
     <AssemblyName>u2pa</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>
-    </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
