@@ -76,6 +76,8 @@ namespace U2Pa.Lib
       private int totalCount;
       private string currentBar = "";
       private int savedVerbosity;
+      private int savedCursorTop;
+      private int savedCursorLeft;
       private bool initialized = false;
 
       /// <summary>
@@ -103,15 +105,21 @@ namespace U2Pa.Lib
           return;
         // Shut all others up };-)
         pa.VerbosityLevel = -1;
+        savedCursorTop = Console.CursorTop;
+        savedCursorLeft = Console.CursorLeft;
         initialized = true;
-        Console.WriteLine();
-        Console.WriteLine("0 _____________ 1 _____________ 2 _____________ 3 _____________ 4");
-        currentBar = "|...............|...............|...............|...............|";
+        Console.SetCursorPosition(0, 0);
+        Console.WriteLine("+ ------------- + ------------- + ------------- + ------------- +".PadRight(75));
+        currentBar = "|               |               |               |               |".PadRight(75);
         Console.Write(String.Format(
-		  "\r{0}{1}{2}",
-		  currentBar,
-		  Environment.NewLine,
-		  "(messages will be displayed here)"));
+          "\r{0}{1}{2}{3}{4}{5}{6}",
+          currentBar,
+          Environment.NewLine,
+          "+ ------------- + ------------- + ------------- + ------------- +".PadRight(75),
+          Environment.NewLine,
+          "(messages will be displayed here)".PadRight(75),
+          Environment.NewLine,
+          "".PadRight(75)));
       }
 
       /// <summary>
@@ -120,14 +128,14 @@ namespace U2Pa.Lib
       public void Dispose()
       {
         if (!initialized) return;
-		Console.SetCursorPosition(Console.CursorLeft, Console.CursorTop - 1);
+        SetCursor();
         Console.Write(
-		  "\r{0}{1}{2}",
-		  "|===============================================================|",
-		  Environment.NewLine,
-		  Environment.NewLine);
-        Console.WriteLine();
-        Console.WriteLine();
+          "\r{0}{1}{2}",
+          "|===============================================================|".PadRight(75),
+          Environment.NewLine,
+          Environment.NewLine);
+        Console.CursorLeft = savedCursorLeft;
+        Console.CursorTop = savedCursorTop;
         if (pa.VerbosityLevel == -1)
           pa.VerbosityLevel = savedVerbosity;
       }
@@ -167,10 +175,10 @@ namespace U2Pa.Lib
             accBar += "=";
             continue;
           }
-          accBar += i%16 == 0 ? ("|") : ".";
+          accBar += i%16 == 0 ? ("|") : " ";
         }
-        currentBar = accBar;
-		Console.SetCursorPosition(Console.CursorLeft, Console.CursorTop - 1);
+        currentBar = accBar.PadRight(75);
+        SetCursor();
         Console.Write(String.Format("\r{0}" + Environment.NewLine, currentBar));
         accCount++;
         totalCount++;
@@ -184,8 +192,19 @@ namespace U2Pa.Lib
       internal void Shout(string message, params object[] obj)
       {
         var m = String.Format(message, obj);
-		Console.SetCursorPosition(Console.CursorLeft, Console.CursorTop - 1);
-        Console.Write(String.Format("\r{0}{1}{2}", currentBar, Environment.NewLine, m));
+        SetCursor();
+        Console.Write(String.Format(
+          "\r{0}{1}{2}{3}{4}", 
+          currentBar,
+          Environment.NewLine,
+          "+---------------------------------------------------------------+".PadRight(75),
+          Environment.NewLine,
+          m.PadRight(75)));
+      }
+      
+      private void SetCursor()
+      {
+        Console.SetCursorPosition(0, 1);        
       }
     }
   }
