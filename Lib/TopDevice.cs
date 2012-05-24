@@ -340,6 +340,11 @@ namespace U2Pa.Lib
           // Prepare ZIF without programming in order to let it stabilize
           // TODO: Do we really need to do this?
           WriteZIF(zif, "Write address & data to ZIF");
+          
+          // In order to let the boost converter for manual Vcc
+          // spin up to full output voltage.
+          if(address == 0 && eprom.InitialProgDelay != 0)
+            BulkDevice.Delay(eprom.InitialProgDelay);
 
           // Enter programming mode
           zif.Enable(eprom.Program, translator.ToZIF);
@@ -349,7 +354,7 @@ namespace U2Pa.Lib
           // Exit programming mode after at least <pulse> ms
           zif.Disable(eprom.Program, translator.ToZIF);
           zif.Disable(eprom.ChipEnable, translator.ToZIF);
-          BulkDevice.Delay(pulse);
+          BulkDevice.Delay(eprom.ProgPulse);
           WriteZIF(zif, "End pulse E");
 
           progress.Progress();
@@ -364,20 +369,24 @@ namespace U2Pa.Lib
     /// <param name="bytes"></param>
     public void WriteEpromFast(Eprom eprom, IList<byte> bytes)
     {
+      if(eprom.VppPins.Any(p => eprom.OutputEnable.Any(q => p.Number == q.Number)))
+        throw new U2PaException("Fast Programming Algoritm can't by used for this EPROM (yet)");
       var totalNumberOfAdresses = eprom.AddressPins.Length == 0 ? 0 : 1 << eprom.AddressPins.Length;
       var translator = new PinTranslator(eprom.DilType, ZIFType, 0, eprom.UpsideDown);
-
-      var zif = new ZIFSocket(40);
-      zif.SetAll(true);
-      zif.Disable(eprom.Program, translator.ToZIF);
-
-      WriteZIF(zif, "Apply 1 to all pins");
-      SetVccLevel(eprom.VccLevel);
-      SetVppLevel(eprom.VppLevel);
-      ApplyGnd(translator.ToZIF, eprom.GndPins);
-      ApplyVcc(translator.ToZIF, eprom.VccPins);
-      ApplyVpp(translator.ToZIF, eprom.VppPins);
-
+   
+      {
+        var zif = new ZIFSocket(40);
+        zif.SetAll(true);
+        zif.Disable(eprom.Program, translator.ToZIF);
+  
+        WriteZIF(zif, "Apply 1 to all pins");
+        SetVccLevel(eprom.VccLevel);
+        SetVppLevel(eprom.VppLevel);
+        ApplyGnd(translator.ToZIF, eprom.GndPins);
+        ApplyVcc(translator.ToZIF, eprom.VccPins);
+        ApplyVpp(translator.ToZIF, eprom.VppPins);
+      }
+      
       using (var progress = PA.GetProgressBar(totalNumberOfAdresses))
       {
         progress.Init();
@@ -402,14 +411,14 @@ namespace U2Pa.Lib
               : new[] { bytes[address] };
             writerZif.SetEpromData(eprom, data);
 
-            WriteZIF(zif, "Write address & data to ZIF");
+            WriteZIF(writerZif, "Write address & d ata to ZIF");
             writerZif.Enable(eprom.ChipEnable, translator.ToZIF);
             writerZif.Enable(eprom.Program, translator.ToZIF);
-            WriteZIF(zif, "Start pulse E");
+            WriteZIF(writerZif, "Start pulse E");
             writerZif.Disable(eprom.ChipEnable, translator.ToZIF);
             writerZif.Disable(eprom.Program, translator.ToZIF);
             BulkDevice.Delay(pulse);
-            WriteZIF(zif, "End pulse E");
+            WriteZIF(writerZif, "End pulse E");
             
             // Reading
             var addressZif = new ZIFSocket(40);
@@ -435,7 +444,7 @@ namespace U2Pa.Lib
                 BulkDevice.Delay(3 * pulse);
                 writerZif.Disable(eprom.ChipEnable, translator.ToZIF);
                 writerZif.Disable(eprom.Program, translator.ToZIF);
-                WriteZIF(zif, "End pulse E");
+                WriteZIF(writerZif, "End pulse E");
                 break;
               }
               else

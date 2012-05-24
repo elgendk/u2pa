@@ -22,7 +22,7 @@
 //    along with u2pa. If not, see <http://www.gnu.org/licenses/>.
 -->
 <Root>
-  <Eprom type = "2716" dilType = "24" placement = "0" Vcc= "5" Vpp = "25">
+  <Eprom type = "2716" dilType = "24" placement = "0" Vcc= "5" Vpp = "25" progPulse = "50">
     <AddressPins>8, 7, 6, 5, 4, 3, 2, 1, 23, 22, 19</AddressPins>
     <DataPins>9, 10, 11, 13, 14, 15, 16, 17</DataPins>
     <ChipEnable>/18</ChipEnable>
@@ -33,7 +33,7 @@
     <VppPins>21</VppPins>
   </Eprom>
   
-  <Eprom type = "2732" dilType = "24" placement = "0" Vcc = "5" Vpp = "21">
+  <Eprom type = "2732" dilType = "24" placement = "0" Vcc = "5" Vpp = "21" progPulse = "50">
     <AddressPins>8, 7, 6, 5, 4, 3, 2, 1, 23, 22, 19, 21</AddressPins>
     <DataPins>9, 10, 11, 13, 14, 15, 16, 17</DataPins>
     <ChipEnable>/18</ChipEnable>
@@ -44,7 +44,7 @@
     <VppPins>20</VppPins>
   </Eprom>
 
-  <Eprom type = "2764" dilType = "28" placement = "0" Vcc = "5" Vpp = "12.5">
+  <Eprom type = "2764" dilType = "28" placement = "0" Vcc = "5" Vpp = "12.9" progPulse = "40">
     <AddressPins>10, 9, 8, 7, 6, 5, 4, 3, 25, 24, 21, 23, 2</AddressPins>
     <DataPins>11, 12, 13, 15, 16, 17, 18, 19</DataPins>
     <ChipEnable>/20</ChipEnable>
@@ -55,7 +55,7 @@
     <VppPins>1</VppPins>
   </Eprom>
 
-  <Eprom type = "27128" dilType = "28" placement = "0" Vcc = "5" Vpp = "12.5">
+  <Eprom type = "27128" dilType = "28" placement = "0" Vcc = "5" Vpp = "12.9" progPulse = "40">
     <AddressPins>10, 9, 8, 7, 6, 5, 4, 3, 25, 24, 21, 23, 2, 26</AddressPins>
     <DataPins>11, 12, 13, 15, 16, 17, 18, 19</DataPins>
     <ChipEnable>/20</ChipEnable>
@@ -66,7 +66,7 @@
     <VppPins>1</VppPins>
   </Eprom>
 
-  <Eprom type = "27256" dilType = "28" placement = "0" Vcc = "5" Vpp = "12.5">
+  <Eprom type = "27256" dilType = "28" placement = "0" Vcc = "5" Vpp = "12.9" progPulse = "40">
     <AddressPins>10, 9, 8, 7, 6, 5, 4, 3, 25, 24, 21, 23, 2, 26, 27</AddressPins>
     <DataPins>11, 12, 13, 15, 16, 17, 18, 19</DataPins>
     <ChipEnable>/20</ChipEnable>
@@ -77,7 +77,7 @@
     <VppPins>1</VppPins>
   </Eprom>
 
-  <Eprom type = "27512" dilType = "28" placement = "0" Vcc = "5" Vpp = "12.5">
+  <Eprom type = "27512" dilType = "28" placement = "0" Vcc = "5" Vpp = "12.9" progPulse = "40">
     <AddressPins>10, 9, 8, 7, 6, 5, 4, 3, 25, 24, 21, 23, 2, 26, 27, 1</AddressPins>
     <DataPins>11, 12, 13, 15, 16, 17, 18, 19</DataPins>
     <ChipEnable>/20</ChipEnable>
@@ -88,7 +88,7 @@
     <VppPins>22</VppPins>
   </Eprom>
 
-  <Eprom type = "271024" dilType = "40" placement = "0" Vcc = "5" Vpp = "12.5">
+  <Eprom type = "271024" dilType = "40" placement = "0" Vcc = "5" Vpp = "12.9" progPulse = "2" initialProgDelay = "2000">
     <Notes>
       On a Top2005+, pins 11 and 30 can't be GND'ed.
       Therefore GND is applied to pin 20 and /OE is remapped to pin 30.
@@ -107,7 +107,7 @@
     <VppPins>1</VppPins>
   </Eprom>
   
-  <Eprom type = "272048" dilType = "40" placement = "0" Vcc = "5" Vpp = "12.5">
+  <Eprom type = "272048" dilType = "40" placement = "0" Vcc = "5" Vpp = "12.9" progPulse = "2" initialProgDelay = "2000">
     <Notes>
       On a Top2005+, pins 11 and 30 can't be GND'ed.
       Therefore GND is applied to pin 20 and /OE is remapped to pin 30.

@@ -21,6 +21,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using U2Pa.Lib.IC;
 
@@ -47,6 +48,38 @@ namespace U2Pa.Lib
       {
         pa.VerbosityLevel = v;
       }
+    }
+    
+    /// <summary>
+    /// Calculates and writes some statistics about the connected Top Programmer
+    /// and the UBS connection.
+    /// </summary>
+    /// <param name="pa">The public address instance.</param>
+    /// <returns>Exit code. 0 is fine; all other is bad.</returns>
+    public static int ProgStat(PublicAddress pa)
+    {
+      using (var td = TopDevice.Create(pa))
+      {
+        var writeZif = new ZIFSocket(40);
+        writeZif.SetAll(false);
+        td.WriteZIF(writeZif, "");
+        td.WriteZIF(writeZif, "");
+        Stopwatch sw = new Stopwatch();
+        sw.Start();
+        for(var i = 0; i < 1000; i++)
+          td.WriteZIF(writeZif, "");
+        sw.Stop();
+        pa.ShoutLine(0, "Average WriteZif = {0}ms (1000 performed)", (double)sw.ElapsedMilliseconds / 1000);
+        
+        sw.Reset();
+        
+        sw.Start();
+        for(var i = 0; i < 1000; i++)
+          td.ReadZIF("");
+        sw.Stop();
+        pa.ShoutLine(0, "Average ReadZif  = {0}ms (1000 performed)", (double)sw.ElapsedMilliseconds / 1000);
+      }
+      return 0;
     }
     #endregion Prog
 
@@ -102,15 +135,15 @@ namespace U2Pa.Lib
     /// </param>
     public static void RomWrite(PublicAddress pa, string type, IList<byte> fileData, params string[] vppLevel)
     {
-      if (type == "271024" || type == "272048")
-      {
-        Console.WriteLine("Writing EPROMS of type {0} is not yet supported, sorry }};-(", type);
-        return;
-      }
+//      if (type == "271024" || type == "272048")
+//      {
+//        Console.WriteLine("Writing EPROMS of type {0} is not yet supported, sorry }};-(", type);
+//        return;
+//      }
       using (var topDevice = TopDevice.Create(pa))
       {
         var eprom = EpromXml.Specified[type];
-        topDevice.WriteEpromClassic(eprom, 40, fileData);
+        topDevice.WriteEpromClassic(eprom, 2, fileData);
         //topDevice.WriteEpromFast(eprom, fileData);
       }
     }
@@ -406,40 +439,8 @@ namespace U2Pa.Lib
         zif.SetAll(true);
         using (var td = TopDevice.Create(pa))
         {
-          td.SetVccLevel(0x00);
-          td.SetVppLevel(0x00);
-          td.ApplyGnd(tr.ToZIF, new Pin { Number = 20 });
-          td.ApplyVcc(tr.ToZIF, new Pin { Number = 40 });
-          td.ApplyVpp(tr.ToZIF, new Pin { Number = 1 });
-          td.PullUpsEnable(true);
-          td.WriteZIF(zif, "");
-          var input = Console.ReadLine();
-        }
-      }
-      {
-        var tr = new PinTranslator(40, 40, 0, false);
-        var zif = new ZIFSocket(40);
-        zif.SetAll(true);
-        using (var td = TopDevice.Create(pa))
-        {
-          td.SetVccLevel(0x00);
-          td.SetVppLevel(0x00);
-          td.ApplyGnd(tr.ToZIF, new Pin { Number = 20 });
-          td.ApplyVcc(tr.ToZIF, new Pin { Number = 40 });
-          td.ApplyVpp(tr.ToZIF, new Pin { Number = 1 });
-          td.PullUpsEnable(true);
-          td.WriteZIF(zif, "");
-          var input = Console.ReadLine();
-        }
-      }
-      {
-        var tr = new PinTranslator(40, 40, 0, false);
-        var zif = new ZIFSocket(40);
-        zif.SetAll(true);
-        using (var td = TopDevice.Create(pa))
-        {
-          td.SetVccLevel(0x00);
-          td.SetVppLevel(0x00);
+          td.SetVccLevel(5.0);
+          td.SetVppLevel(12.5);
           td.ApplyGnd(tr.ToZIF, new Pin { Number = 20 });
           td.ApplyVcc(tr.ToZIF, new Pin { Number = 40 });
           td.ApplyVpp(tr.ToZIF, new Pin { Number = 1 });
