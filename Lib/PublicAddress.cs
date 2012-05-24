@@ -78,6 +78,7 @@ namespace U2Pa.Lib
       private int savedVerbosity;
       private int savedCursorTop;
       private int savedCursorLeft;
+      private int verticalPlacement = 0;
       private bool initialized = false;
 
       /// <summary>
@@ -108,7 +109,9 @@ namespace U2Pa.Lib
         savedCursorTop = Console.CursorTop;
         savedCursorLeft = Console.CursorLeft;
         initialized = true;
-        Console.SetCursorPosition(0, 0);
+        verticalPlacement = Math.Max(0, savedCursorTop - 35) + 2;
+        SetCursor(verticalPlacement - 2);
+        Console.WriteLine("".PadRight(75));
         Console.WriteLine("+ ------------- + ------------- + ------------- + ------------- +".PadRight(75));
         currentBar = "|               |               |               |               |".PadRight(75);
         Console.Write(String.Format(
@@ -128,7 +131,7 @@ namespace U2Pa.Lib
       public void Dispose()
       {
         if (!initialized) return;
-        SetCursor();
+        SetCursor(verticalPlacement);
         Console.Write(
           "\r{0}{1}{2}",
           "|===============================================================|".PadRight(75),
@@ -178,7 +181,7 @@ namespace U2Pa.Lib
           accBar += i%16 == 0 ? ("|") : " ";
         }
         currentBar = accBar.PadRight(75);
-        SetCursor();
+        SetCursor(verticalPlacement);
         Console.Write(String.Format("\r{0}" + Environment.NewLine, currentBar));
         accCount++;
         totalCount++;
@@ -192,7 +195,7 @@ namespace U2Pa.Lib
       internal void Shout(string message, params object[] obj)
       {
         var m = String.Format(message, obj);
-        SetCursor();
+        SetCursor(verticalPlacement);
         Console.Write(String.Format(
           "\r{0}{1}{2}{3}{4}", 
           currentBar,
@@ -202,9 +205,9 @@ namespace U2Pa.Lib
           m.PadRight(75)));
       }
       
-      private void SetCursor()
+      private void SetCursor(int verticalPlacement)
       {
-        Console.SetCursorPosition(0, 1);        
+        Console.SetCursorPosition(0, verticalPlacement);        
       }
     }
   }
