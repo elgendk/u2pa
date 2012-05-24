@@ -255,6 +255,10 @@ namespace U2Pa.Cmd
         case "id":
           Kernel.ProgId(pa);
           return 0;
+        
+        case "stat":
+          Kernel.ProgStat(pa);
+          return 0;
 
         default:
           pa.ShoutLine(1, "Unknown prog command {0}", args[1]);
@@ -304,12 +308,12 @@ namespace U2Pa.Cmd
     private static int Dev(PublicAddress pa, IList<string> args)
     {
       pa.VerbosityLevel = 5;
-      //return Kernel.Dev(pa);
+      return Kernel.Dev(pa);
       //return Kernel.DevVppLevels(pa);
       //return Kernel.DevVccLevels(pa);
       //return Kernel.DevVppPins(pa);
       //return Kernel.DevVccPins(pa);
-      return Kernel.DevGndPins(pa);
+      //return Kernel.DevGndPins(pa);
     }
   }
 }

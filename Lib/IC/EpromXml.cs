@@ -64,6 +64,10 @@ namespace U2Pa.Lib.IC
                    : false,
                  VccLevel = Double.Parse(x.Attribute("Vcc").Value, CultureInfo.InvariantCulture),
                  VppLevel = Double.Parse(x.Attribute("Vpp").Value, CultureInfo.InvariantCulture),
+                 ProgPulse = Int32.Parse(x.Attribute("progPulse").Value, CultureInfo.InvariantCulture),
+                 InitialProgDelay = x.Attribute("initialProgDelay") != null 
+                   ? Int32.Parse(x.Attribute("initialProgDelay").Value) 
+                   : 0,
                  AddressPins = x.ToPinArray("AddressPins"),
                  DataPins = x.ToPinArray("DataPins"),
                  ChipEnable = x.ToPinArray("ChipEnable"),

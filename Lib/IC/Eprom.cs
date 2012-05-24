@@ -70,6 +70,16 @@ namespace U2Pa.Lib.IC
     /// The VppLevel.
     /// </summary>
     public double VppLevel;
+    
+    /// <summary>
+    /// The prog pulse (in ms) to use in the classic write algoritm.
+    /// </summary>
+    public int ProgPulse;
+    
+    /// <summary>
+    /// An optional delay allowing the external boost converter to spin up.
+    /// </summary>
+    public int InitialProgDelay;
 
     /// <summary>
     /// The ordered sequence of the address pins.

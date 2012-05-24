@@ -41,11 +41,13 @@
               <xs:element name="VppPins" type="xs:string" minOccurs="1" />
             </xs:sequence>
             <xs:attribute name="type" type="xs:string" />
-            <xs:attribute name="dilType" type="xs:string" />
-            <xs:attribute name="placement" type="xs:string" />
+            <xs:attribute name="dilType" type="xs:integer" />
+            <xs:attribute name="placement" type="xs:integer" />
             <!--<xs:attribute name="upsideDown" type="xs:boolean" use="optional" />-->
             <xs:attribute name="Vcc" type="xs:string" />
             <xs:attribute name="Vpp" type="xs:string" />
+            <xs:attribute name="progPulse" type="xs:integer" />
+            <xs:attribute name="initialProgDelay" type="xs:integer" use="optional" />      
           </xs:complexType>
         </xs:element>
         <xs:element name="SRam">
@@ -63,8 +65,8 @@
               <xs:element name="GndPins" type="xs:string" minOccurs="1" />
             </xs:sequence>
             <xs:attribute name="type" type="xs:string" />
-            <xs:attribute name="dilType" type="xs:string" />
-            <xs:attribute name="placement" type="xs:string" />
+            <xs:attribute name="dilType" type="xs:integer" />
+            <xs:attribute name="placement" type="xs:integer" />
             <!--<xs:attribute name="upsideDown" type="xs:boolean" use="optional" />-->
             <xs:attribute name="Vcc" type="xs:string" />
           </xs:complexType>
