@@ -1,0 +1,91 @@
+Adding support for new ICs:
+===========================
+Support for new ICs (EPROMs and SRAMs) is fairly easy, as the definitions
+reside in XML-files. The schema for the 2 formats is found in ICs.xsd, but
+here are some semantics that can't be read from the schema:
+(when done specifying, you can issue the command:
+  ~>./u2pa.exe [rom or sram] info <my_type>
+to see a graphic representation of the specified IC)
+
+Common for SRAMs and EPROMs:
+----------------------------
+Attributes:
+- type      ->   The identifier for the IC when refering to it in the commands
+- dilType   ->   The number of pins on the DIL-package (must be an even number)
+- placement ->   An integer indicating where in the socket to place the IC;
+                 if 0, it is placede as per the drawing on the cover of the
+                 programmer; if larger that 0, it is moved that number of
+                 places forward
+- Vcc       ->   A double representing the Vcc of the IC; the space of voltages
+                 is not continuous, but a series of descrete values; the
+                 exact Vcc is choosen to be the smallest descrete value
+                 greater than or equal to the one specified
+                 Possible exact values are: 3.1, 3.6, 4.3, 4.9
+
+Elements:
+Every element is a comma separated list of pins
+Each pin has the form:
+
+  [/]<pin_number>[Z]
+
+/              ->  A '/' prefixing the <pin_number> means that the pin is 
+                   active-low; for VccPins, GndPins, VppPins, AddressPins,
+                   and DataPins, this option is ignored
+Z              ->  A 'Z' postfixing the <pin_number> means that the
+                   <pin_number> is specified relative to the ZIF-socket;
+                   otherwise the <pin_number> is assumed to be specified
+                   relative to the dil-package
+<pin_number>   ->  The pin number
+
+- Description  ->  A short description of the IC (optional)
+- Notes        ->  Additional notes about the specific IC (optional)
+- AddressPins  ->  The list of address pins; the first is the least segnificant
+                   bit
+- DataPins     ->  The list of data pins; the first is the least segnificant
+                   bit
+- ChipEnable   ->  The list of pins to set the chip enabled
+- OutputEnable ->  The list of pins to make the chips outputs enabled
+- Constans     ->  A list of pins that must be held at a constant logical level
+                   at all times (optional)
+- VccPins      ->  The list of pins that must be fed with Vcc;
+                   Not all pin in the ZIF-socket can be used for Vcc;
+                   The valid pins are: 8, 13, 16, 17, 24, 25, 26, 27, 28, 30,
+                   32, 34, 36, 40
+- GndPins      ->  The list of pins that must be connected to Ground
+                   Not all pin in the ZIF-socket can be used for Gnd;
+                   The valid pins are: 10, 14, 16, 20, 25, 25, 31
+
+EPROMs:
+-------
+Attributes:
+- Vpp       ->   A double representing the Vpp of the EPROM; the space of 
+                 voltages is not continuous, but a series of descrete values;
+                 the resulting Vpp is choosen to be the smallest descrete value
+                 greater than or equal to the one specified
+                 Possible exact values are: 4.8, 6.9, 7.3, 7.5, 8.8, 9.0, 9.5,
+                 9.9, 10.4, 12.0, 12.4, 12.9, 13.4, 14.0, 14.5, 15.0, 15.5,
+                 16.2, 20.9
+                 I know that the programmer claims to be able to deliver a Vpp
+                 of 25V, but I haven't been able to squeeze that much out of it
+- progPulse  ->  The length of the pulse (in ms) to use with the Classic
+                 Algoritm when programming this EPROM
+- initialProgDelay ->
+                 When programming 27C1024, 27C2048, 27C4096, I use an small 
+                 external step-up/boost converter between the ZIF Vcc and the
+                 EPROM in order to get a Vcc = 6.5V (as the datasheet reads);
+                 To be sure that the capacitors in the boost converter is fully
+                 charged before the proramming starts, I use a little delay
+                 just after I've set the Vcc on the ZIF-socket; I use 2000ms
+                 (optional)
+                 
+Elements:
+- VppPins      ->  The list of pins that must be fed with Vpp
+                   Not all pin in the ZIF-socket can be used for Vcc;
+                   The valid pins are: 1, 5, 7, 9, 10, 11, 12, 14, 15, 20, 26,
+                   28, 29, 30, 31, 34, 35
+- Program      ->  The program pins
+
+SRAMs:
+------
+Elements:
+- WriteEnable  ->  The list of pins to set the SRAM in write-enable

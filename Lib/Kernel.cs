@@ -135,15 +135,10 @@ namespace U2Pa.Lib
     /// </param>
     public static void RomWrite(PublicAddress pa, string type, IList<byte> fileData, params string[] vppLevel)
     {
-//      if (type == "271024" || type == "272048")
-//      {
-//        Console.WriteLine("Writing EPROMS of type {0} is not yet supported, sorry }};-(", type);
-//        return;
-//      }
       using (var topDevice = TopDevice.Create(pa))
       {
         var eprom = EpromXml.Specified[type];
-        topDevice.WriteEpromClassic(eprom, 2, fileData);
+        topDevice.WriteEpromClassic(eprom, fileData);
         //topDevice.WriteEpromFast(eprom, fileData);
       }
     }
@@ -446,7 +441,7 @@ namespace U2Pa.Lib
           td.ApplyVpp(tr.ToZIF, new Pin { Number = 1 });
           td.PullUpsEnable(true);
           td.WriteZIF(zif, "");
-          var input = Console.ReadLine();
+          Console.ReadLine();
         }
       }
 

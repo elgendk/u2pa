@@ -1,40 +1,72 @@
 Setting up your system for using U2Pa:
 ======================================
-1)  Make sure that .NET4.0 is installed on your system.
 
-2)  Get hold of an Top2005+ Universal Programmer.
+Windows (native .NET):
+----------------------
+1)  Make sure that .NET4.0 is installed on your system
+
+2)  Get hold of an Top2005+ Universal Programmer
 
 3)  Download (if it's not on the disc that came with the Top2005+)
-    and install TopWin6.
+    and install TopWin6
     You can get it here (or by using google): http://www.topwin6.com/
 
-4)  Test the programmer and software and make sure it works.
+4)  Test the programmer and software and make sure it works
 
 5)  Download and install LibUsbDotNet 2.2.8.
     You can get it here (or by using google): 
     http://libusbdotnet.sourceforge.net/V2/Index.html
    
-6)  Connect the Top2005+ to the USB-port you wish to use.
+6)  Connect the Top2005+ to the USB-port you wish to use
 
-7)  Launch the Filter Wizard from the LibUsbDotNet->libUsb-win32 start menu.
+7)  Launch the Filter Wizard from the LibUsbDotNet->libUsb-win32 start menu
 
 8)  Install a filter for the Top2005+ (it will properly have a description
     saying "TopUSB1" or something like that). By using a filter instead of
     a "real" driver you don't have to uninstall the Top-driver from
-    TopWin6 to use U2Pa. You can now use the 2 programs side-by-side.
+    TopWin6 to use U2Pa. You can now use the 2 programs side-by-side
 
 9)  Build the U2Pa-soluiton with VisualStudio (or with the build.bat if
-    you haven't got VisualStudio installed).
+    you haven't got VisualStudio installed)
 
-10) You can now find the command line tool u2pa.exe in the bin-directory.
+10) You can now find the command line tool u2pa.exe in the bin-directory
 
-11) The command line tool is best launched from WindowsPowerShell.
+11) The command line tool is best launched from WindowsPowerShell
 
-12) To test that the filter is up and running, you can issue the command.
+12) To test that the filter is up and running, you can issue the command
    ~>./u2pa.exe prog id
    
 13) Open the file Config.xml in the subfolder Xml and check that path to
     the file ictest.bin is correct. We need the one from the blib2
-    subfolder in the TopWin6 folder.
+    subfolder in the TopWin6 folder
 
 14) You're ready to go };-P
+
+
+Linux (Mono):
+-------------
+
+1)  Download and install the latest version of Mono on your Linux system
+    (must support .NET 4.0)
+    
+2)  Download and install the libusb-1.0 on your Linux system
+
+3)  Build the U2Pa-soluiton with MonoDevelop (or with the xbuild if
+    you haven't got MonoDevelop installed)
+    
+4)  Connect the Top2005+ to a USB-port
+
+5)  Get hold of the ictest.bin from the blib2-dir of the TopWin6 installation,
+    place in a folder, and correct the path in Config.xml accordingly.
+    
+6)  To test that libusb is up and running, you can issue the command
+    ~>./u2pa.exe prog id
+    (remember that you have to have access right to the USB-ports. I just
+    sudo the u2pa-commands, but then again, I'm no Linux-guru };-P)
+    
+7)  You're ready to go };-P
+
+=================
+
+    The build-in help can be seen by issuing:
+    ~>./u2pa.exe help

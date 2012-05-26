@@ -1,0 +1,34 @@
+Release Notes:
+==============
+
+20120526 Version 0.1:
+---------------------
+This is the first release of U2Pa, a command line interface for
+Top Universal Programmers.
+
+Features:
+- Simple reading of some EPROMs 
+- Simple (Classic Algorithm) programming of some EPROMs
+- Simple test of some SRAMs
+- Support for other EPROMs and SRAMs are fairly easy implemented (through XML)
+- Coded in C#
+- Uses the GPL library LibUsbDotNet (that in turn uses the GPL library
+  libusb-1.0)
+- The source code is well documented and should by fairly easy to understand
+- Runs on both native .NET (tested on Windows7) and Mono (tested on Ubuntu)
+
+Suported and tested programmers:
+- Top2005+ Universal Programmer
+
+Supported devices:
+- EPROMs: 2716, 2732, 2764, 27128, 27256, 27512 (out of the box)
+- EPROMs: 271024, 272048, 274096 (by the use an easy-to-build-adaptor)
+- SRAMs:  6116, 6264 (out of the box)
+- SRAMs:  6148 (by using 1 wire)
+
+I have observed that the appilication runs twice as fast on Linux as it does
+on Windows. I think this is due to the fact, that the implementation of
+libusb-1.0 is faster on Linux than on Windows. As a consequence, I recommend
+running U2Pa on a Linux box.
+
+For newest version, go to: http://code.google.com/p/u2pa/
