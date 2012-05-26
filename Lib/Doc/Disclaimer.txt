@@ -1,0 +1,23 @@
+DISCLAIMER:
+===========
+I've coded this application (U2Pa) for my own pleasure.
+You are welcome to use the compiled application it as you like, as long at you
+commit yourself to the terms stated in the GLP (included in the file
+License.txt).
+However I do NOT take any responsibility for the possible destruction of your
+EPROM-programmer, ICs, peripherals, etc. as a consequence of using the
+application.
+
+If you have any ideas, comments, praisings, beers, etc. you want to give me,
+you are welcome to contact me through my blog: 
+   http://elgensrepairs.blogspot.com/
+However I do NOT promise to implement anything else.
+
+The source code is hosted as a Google Code Project in a Mercurial (hg) repo at
+the address:
+   http://code.google.com/p/u2pa/
+
+Hope you enjoy U2Pa.
+
+Kind Regards
+};-P Elgen

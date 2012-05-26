@@ -282,10 +282,9 @@ namespace U2Pa.Lib
     /// Writes an EPROM using the Classic Algorithm
     /// </summary>
     /// <param name="eprom">The EPROM type.</param>
-    /// <param name="pulse">The pulse length in ms.</param>
     /// <param name="bytes">The bytes to write.</param>
     /// <param name="patch">Not used yet!</param>
-    public void WriteEpromClassic(Eprom eprom, int pulse, IList<byte> bytes, IList<int> patch = null)
+    public void WriteEpromClassic(Eprom eprom, IList<byte> bytes, IList<int> patch = null)
     {
       var totalNumberOfAdresses = eprom.AddressPins.Length == 0 ? 0 : 1 << eprom.AddressPins.Length;
       var translator = new PinTranslator(eprom.DilType, ZIFType, 0, eprom.UpsideDown);

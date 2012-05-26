@@ -25,3 +25,5 @@ all commands related to the Top Device
 
 commands:
   id        reads the id string of the connected Top Programmer and displays it on screen
+  stat      calculates and displays some statistics about the connected programmer
+            (do not issue this command with an IC inserted in the ZIF-socket)

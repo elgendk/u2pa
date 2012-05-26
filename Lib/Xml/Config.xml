@@ -25,7 +25,7 @@
 <Root>
   <Config>
     <Files>
-      <ICTestBinPath path="C:\Top\Topwin6\Blib2\ictest.bit"/>
+      <ICTestBinPath path="./ictest.bit"/>
     </Files>
   </Config>
 </Root>
