@@ -43,7 +43,7 @@ namespace U2Pa.Lib
       // In doubt about pins: 26, 28, 30...
       ValidVccPins = new List<int> {0, 8, 13, 16, 17, 24, 25, 26, 27, 28, 30, 32, 34, 36, 40};
       ValidVppPins = new List<int> {0, 1, 5, 7, 9, 10, 11, 12, 14, 15, 20, 26, 28, 29, 30, 31, 34, 35};
-      ValidGndPins = new List<int> {0, 10, 14, 16, 20, 25, 25, 31};
+      ValidGndPins = new List<int> {0, 10, 14, 16, 20, 24, 25, 31};
       VppLevels = new List<Tuple<double, byte>> 
       {
         t(4.8, 0x00),
