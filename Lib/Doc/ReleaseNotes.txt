@@ -3,6 +3,9 @@ Release Notes:
 
 20120526 Version 0.1:
 ---------------------
+20120530 Correction a: Added support for 274096 as it was desribed in the release notes.
+20120602 Correction b: Fixed a bug regarding the GND-pins.
+---------------------
 This is the first release of U2Pa, a command line interface for
 Top Universal Programmers.
 
