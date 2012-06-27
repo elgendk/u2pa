@@ -25,7 +25,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using U2Pa.Lib.IC;
-using LibUsbDotNet.Main;
 
 namespace U2Pa.Lib
 {
@@ -39,10 +38,10 @@ namespace U2Pa.Lib
     protected const int ProductId = 0x0853;
     protected const int Configuration = 1;
     protected const byte Interface = 0;
-    protected const ReadEndpointID ReadEndpointId = ReadEndpointID.Ep02;
-    protected const WriteEndpointID WriteEndpointId = WriteEndpointID.Ep02;
+    protected const int ReadEndpointInt = 0x82;
+    protected const int WriteEndpointInt = 0x02;
     
-    protected UsbBulkDevice BulkDevice;
+    protected IUsbBulkDevice BulkDevice;
 
     /// <summary>
     /// The number of pins in the ZIF socket.
@@ -50,9 +49,9 @@ namespace U2Pa.Lib
     public abstract int ZIFType { get; }
 
     /// <summary>
-    /// The public address instance.
+    /// The shouter instance.
     /// </summary>
-    public PublicAddress PA { get; private set; }
+    public IShouter Shouter { get; private set; }
 
     /// <summary>
     /// The list of pins in the ZIF socket that can be used as Vcc.
@@ -88,39 +87,39 @@ namespace U2Pa.Lib
     /// <summary>
     /// ctor.
     /// </summary>
-    /// <param name="pa">The public address instance.</param>
+    /// <param name="shouter">The shouter instance.</param>
     /// <param name="bulkDevice">The bulk device instance.</param>
-    protected TopDevice(PublicAddress pa, UsbBulkDevice bulkDevice)
+    protected TopDevice(IShouter shouter, IUsbBulkDevice bulkDevice)
     {
       BulkDevice = bulkDevice;
-      PA = pa;
+      Shouter = shouter;
     }
 
     /// <summary>
     /// Opens a new instace of a bulk device using the constants specified for this Top Device.
     /// </summary>
-    /// <param name="pa">The public address instance.</param>
+    /// <param name="shouter">The shouter instance.</param>
     /// <returns>The created instace of the bulk device.</returns>
-    public static UsbBulkDevice OpenBulkDevice(PublicAddress pa)
+    public static IUsbBulkDevice OpenBulkDevice(IShouter shouter)
     {
-      return new UsbBulkDevice(pa, VendorId, ProductId, Configuration, Interface, ReadEndpointId, WriteEndpointId);
+      return new UsbBulkDevice(shouter, VendorId, ProductId, Configuration, Interface, ReadEndpointInt, WriteEndpointInt);
     }
 
     /// <summary>
     /// Creates a new instance of the Top Device connected to the Top Programmer.
     /// <remarks>Atm. only works for model Top2005+.</remarks>
     /// </summary>
-    /// <param name="pa">The public address instance.</param>
+    /// <param name="shouter">The shouter instance.</param>
     /// <returns>The created instance of the Top Device.</returns>
-    public static TopDevice Create(PublicAddress pa)
+    public static TopDevice Create(IShouter shouter)
     {
-      var bulkDevice = OpenBulkDevice(pa);
+      var bulkDevice = OpenBulkDevice(shouter);
 
-      var idString = ReadTopDeviceIdString(pa, bulkDevice);
-      pa.ShoutLine(2, "Connected Top device is: {0}.", idString);
+      var idString = ReadTopDeviceIdString(shouter, bulkDevice);
+      shouter.ShoutLine(2, "Connected Top device is: {0}.", idString);
 
       if (idString.StartsWith("top2005+"))
-        return new Top2005Plus(pa, bulkDevice);
+        return new Top2005Plus(shouter, bulkDevice);
 
       throw new U2PaException("Not supported Top Programmer {0}", idString);
     }
@@ -131,29 +130,29 @@ namespace U2Pa.Lib
     /// <returns>The read id string.</returns>
     public string ReadTopDeviceIdString()
     {
-      return ReadTopDeviceIdString(PA, BulkDevice);
+      return ReadTopDeviceIdString(Shouter, BulkDevice);
     }
 
     /// <summary>
     /// Reads the id string of the connected Top Programmer.
     /// </summary>
-    /// <param name="pa">The public address instance.</param>
+    /// <param name="shouter">The shouter instance.</param>
     /// <returns>The read id string.</returns>
-    public static string ReadTopDeviceIdString(PublicAddress pa)
+    public static string ReadTopDeviceIdString(IShouter shouter)
     {
-      using (var bulkDevice = OpenBulkDevice(pa))
+      using (var bulkDevice = OpenBulkDevice(shouter))
       {
-        return ReadTopDeviceIdString(pa, bulkDevice);
+        return ReadTopDeviceIdString(shouter, bulkDevice);
       }
     }
 
     /// <summary>
     /// Reads the id string of the connected Top Programmer.
     /// </summary>
-    /// <param name="pa">The public address instance.</param>
+    /// <param name="shouter">The shouter instance.</param>
     /// <param name="bulkDevice">The bulk device instance.</param>
     /// <returns>The read id string.</returns>
-    public static string ReadTopDeviceIdString(PublicAddress pa, UsbBulkDevice bulkDevice)
+    public static string ReadTopDeviceIdString(IShouter shouter, IUsbBulkDevice bulkDevice)
     {
       bulkDevice.SendPackage(4, new byte[] { 0x0E, 0x11, 0x00, 0x00 }, "Write version string to buffer");
       bulkDevice.SendPackage(4, new byte[] { 0x07 }, "07 command");
@@ -201,14 +200,14 @@ namespace U2Pa.Lib
     /// <returns>The next adress to be read.</returns>
     public int ReadEprom(
       Eprom eprom, 
-      PublicAddress.ProgressBar progressBar, 
+      ProgressBar progressBar, 
       IList<byte> bytes, 
       int fromAddress, 
       int totalNumberOfAdresses)
     {
       const int rewriteCount = 5;
       const int rereadCount = 5;
-      PA.ShoutLine(2, "Reading EPROM{0}", eprom.Type);
+      Shouter.ShoutLine(2, "Reading EPROM{0}", eprom.Type);
       SetVccLevel(eprom.VccLevel);
       var translator = new PinTranslator(eprom.DilType, ZIFType, 0, eprom.UpsideDown);
       ApplyVcc(translator.ToZIF, eprom.VccPins);
@@ -217,7 +216,7 @@ namespace U2Pa.Lib
 
       var zif = new ZIFSocket(40);
       var returnAddress = fromAddress;
-      PA.ShoutLine(2, "Now reading bytes...");
+      Shouter.ShoutLine(2, "Now reading bytes...");
       progressBar.Init();
       foreach (var address in Enumerable.Range(fromAddress, totalNumberOfAdresses - fromAddress))
       {
@@ -306,7 +305,7 @@ namespace U2Pa.Lib
       ApplyVpp(translator.ToZIF, eprom.VppPins);
       PullUpsEnable(true);
 
-      using (var progress = PA.GetProgressBar(totalNumberOfAdresses))
+      using (var progress = new ProgressBar(Shouter, totalNumberOfAdresses))
       {
         progress.Init();
         foreach (var address in Enumerable.Range(0, totalNumberOfAdresses))
@@ -386,7 +385,7 @@ namespace U2Pa.Lib
         ApplyVpp(translator.ToZIF, eprom.VppPins);
       }
       
-      using (var progress = PA.GetProgressBar(totalNumberOfAdresses))
+      using (var progress = new ProgressBar(Shouter, totalNumberOfAdresses))
       {
         progress.Init();
         foreach (var address in Enumerable.Range(0, totalNumberOfAdresses))
@@ -470,13 +469,13 @@ namespace U2Pa.Lib
     /// <summary>
     /// A simple SRAM test.
     /// </summary>
-    /// <param name="pa">Public addresser.</param>
+    /// <param name="shouter">Public shouter instance.</param>
     /// <param name="sram">The SRAM type.</param>
     /// <param name="progressBar">The progress bar.</param>
     /// <param name="totalNumberOfAdresses">The total number of adresses.</param>
     /// <param name="firstBit">The value of the first bit to write to the SRAM.</param>
     /// <returns>Tuples of non-working addresses: (address, read_byte, expected_byte).</returns>
-    public List<Tuple<int, string, string>> SRamTest(PublicAddress pa, SRam sram, PublicAddress.ProgressBar progressBar, int totalNumberOfAdresses, bool firstBit)
+    public List<Tuple<int, string, string>> SRamTest(IShouter shouter, SRam sram, ProgressBar progressBar, int totalNumberOfAdresses, bool firstBit)
     {
       var tr = new PinTranslator(sram.DilType, 40, sram.Placement, sram.UpsideDown);
       SetVccLevel(sram.VccLevel);

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!--
 //                             u2pa
 //
@@ -71,8 +71,11 @@
     <Compile Include="IC\EpromXml.cs" />
     <Compile Include="IC\Eprom.cs" />
     <Compile Include="IC\Pin.cs" />
+    <Compile Include="IShouter.cs" />
+    <Compile Include="IUsbBulkDevice.cs" />
     <Compile Include="Kernel.cs" />
-    <Compile Include="PublicAddress.cs" />
+    <Compile Include="ProgressBar.cs" />
+    <Compile Include="Shouter.cs" />
     <Compile Include="IC\SRam.cs" />
     <Compile Include="IC\SRamXml.cs" />
     <Compile Include="Tools.cs" />
