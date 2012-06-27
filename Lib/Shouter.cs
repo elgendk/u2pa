@@ -19,41 +19,39 @@
 //    You should have received a copy of the GNU General Public License
 //    along with u2pa. If not, see <http://www.gnu.org/licenses/>.
 
-using System.IO;
-using System.Linq;
-using System.Xml.Linq;
-using System.Xml.Schema;
-using System.Collections.Generic;
+using System;
 
 namespace U2Pa.Lib
 {
   /// <summary>
-  /// Wraps the values defined in the file Config.xml.
+  /// A class that wraps output from the app.
   /// </summary>
-  public static class Config
+  public class Shouter : IShouter
   {
     /// <summary>
-    /// Static ctor.
+    /// Verbosity.
     /// </summary>
-    static Config()
+    public int VerbosityLevel { get; set; }
+
+    /// <summary>
+    /// ctor.
+    /// </summary>
+    /// <param name="verbosityLevel">Verbosity.</param>
+    public Shouter(int verbosityLevel)
     {
-      var xDocument = XDocument.Load(Path.Combine("Xml","Config.xml"));
-      var xSchema = new XmlSchemaSet();
-      xSchema.Add("", Path.Combine("Xml","Config.xsd"));
-      xDocument.Validate(xSchema, null);
-      ICTestBinPath = xDocument
-        .Descendants("Config")
-        .Single()
-        .Element("Files")
-        .Element("ICTestBinPath")
-        .Attribute("path")
-        .Value;
+      VerbosityLevel = verbosityLevel;
     }
 
     /// <summary>
-    /// Path to the "bit-bashing" FPGA-program ictest.bin
-    /// that comes with the software TopWin6.
+    /// Outputs a line.
     /// </summary>
-    public static string ICTestBinPath { get; private set; }
+    /// <param name="verbosity">Verbosity.</param>
+    /// <param name="message">The message (may contain String.Format mark-ups).</param>
+    /// <param name="obj">Parameters to the message.</param>
+    public void ShoutLine(int verbosity, string message, params object[] obj)
+    {
+      if (verbosity <= VerbosityLevel)
+        Console.WriteLine((VerbosityLevel == 5 ? "V" + verbosity + ": " : "") + message, obj);
+    }
   }
 }
