@@ -33,20 +33,20 @@ namespace U2Pa.Lib
     /// <summary>
     /// Writes the id of the connected Top Programmer.
     /// </summary>
-    /// <param name="pa">The public address instance.</param>
+    /// <param name="shouter">The shouter instance.</param>
     /// <returns>Exit code. 0 is fine; all other is bad.</returns>
-    public static int ProgId(PublicAddress pa)
+    public static int ProgId(IShouter shouter)
     {
-      var v = pa.VerbosityLevel;
+      var v = shouter.VerbosityLevel;
       try
       {
-        pa.VerbosityLevel = 0;
-        pa.ShoutLine(0, "Connected Top Programmer has id: {0}", TopDevice.ReadTopDeviceIdString(pa));
+        shouter.VerbosityLevel = 0;
+        shouter.ShoutLine(0, "Connected Top Programmer has id: {0}", TopDevice.ReadTopDeviceIdString(shouter));
         return 0;
       }
       finally
       {
-        pa.VerbosityLevel = v;
+        shouter.VerbosityLevel = v;
       }
     }
     
@@ -54,11 +54,11 @@ namespace U2Pa.Lib
     /// Calculates and writes some statistics about the connected Top Programmer
     /// and the UBS connection.
     /// </summary>
-    /// <param name="pa">The public address instance.</param>
+    /// <param name="shouter">The shouter instance.</param>
     /// <returns>Exit code. 0 is fine; all other is bad.</returns>
-    public static int ProgStat(PublicAddress pa)
+    public static int ProgStat(IShouter shouter)
     {
-      using (var td = TopDevice.Create(pa))
+      using (var td = TopDevice.Create(shouter))
       {
         var writeZif = new ZIFSocket(40);
         writeZif.SetAll(false);
@@ -69,7 +69,7 @@ namespace U2Pa.Lib
         for(var i = 0; i < 1000; i++)
           td.WriteZIF(writeZif, "");
         sw.Stop();
-        pa.ShoutLine(0, "Average WriteZif = {0}ms (1000 performed)", (double)sw.ElapsedMilliseconds / 1000);
+        shouter.ShoutLine(0, "Average WriteZif = {0}ms (1000 performed)", (double)sw.ElapsedMilliseconds / 1000);
         
         sw.Reset();
         
@@ -77,7 +77,7 @@ namespace U2Pa.Lib
         for(var i = 0; i < 1000; i++)
           td.ReadZIF("");
         sw.Stop();
-        pa.ShoutLine(0, "Average ReadZif  = {0}ms (1000 performed)", (double)sw.ElapsedMilliseconds / 1000);
+        shouter.ShoutLine(0, "Average ReadZif  = {0}ms (1000 performed)", (double)sw.ElapsedMilliseconds / 1000);
       }
       return 0;
     }
@@ -87,10 +87,10 @@ namespace U2Pa.Lib
     /// <summary>
     /// Displays the EPROM inserted into the Top-programmer.
     /// </summary>
-    /// <param name="pa">The public address instance.</param>
+    /// <param name="shouter">The shouter instance.</param>
     /// <param name="type"></param>
     /// <returns>Exit code. 0 is fine; all other is bad.</returns>
-    public static int RomInfo(PublicAddress pa, string type)
+    public static int RomInfo(IShouter shouter, string type)
     {
       var eprom = EpromXml.Specified[type];
       Console.WriteLine(eprom);
@@ -100,20 +100,20 @@ namespace U2Pa.Lib
     /// <summary>
     /// The main method for reading a rom that is defined in the Eproms.xml file.
     /// </summary>
-    /// <param name="pa">The public address instance.</param>
+    /// <param name="shouter">The shouter instance.</param>
     /// <param name="type">The type of the rom the be read.</param>
     /// <returns>Exit code. 0 is fine; all other is bad.</returns>
-    public static IList<byte> RomRead(PublicAddress pa, string type)
+    public static IList<byte> RomRead(IShouter shouter, string type)
     {
       IList<byte> bytes = new List<byte>();
       var eprom = EpromXml.Specified[type];
       var totalNumberOfAdresses = eprom.AddressPins.Length == 0 ? 0 : 1 << eprom.AddressPins.Length;
       var startAddress = 0;
-      using (var progressBar = pa.GetProgressBar(totalNumberOfAdresses))
+      using (var progressBar = new ProgressBar(shouter, totalNumberOfAdresses))
       {
         while (startAddress < totalNumberOfAdresses)
         {
-          using (var topDevice = TopDevice.Create(pa))
+          using (var topDevice = TopDevice.Create(shouter))
           {
             startAddress = topDevice.ReadEprom(eprom, progressBar, bytes, startAddress, totalNumberOfAdresses);
           }
@@ -127,15 +127,15 @@ namespace U2Pa.Lib
     /// <summary>
     /// Programs an EPROM.
     /// </summary>
-    /// <param name="pa">The public address instance.</param>
+    /// <param name="shouter">The shouter instance.</param>
     /// <param name="type">The type of the rom the be programmed.</param>
     /// <param name="fileData">The data to be written.</param>
     /// <param name="vppLevel">The Vpp-level; if not present, the one from the EPROM definition is used.
     /// <remarks>Not yet used!</remarks>
     /// </param>
-    public static void RomWrite(PublicAddress pa, string type, IList<byte> fileData, params string[] vppLevel)
+    public static void RomWrite(IShouter shouter, string type, IList<byte> fileData, params string[] vppLevel)
     {
-      using (var topDevice = TopDevice.Create(pa))
+      using (var topDevice = TopDevice.Create(shouter))
       {
         var eprom = EpromXml.Specified[type];
         topDevice.WriteEpromClassic(eprom, fileData);
@@ -149,17 +149,17 @@ namespace U2Pa.Lib
     /// <remarks>
     /// At present only works for 8-bit roms!
     /// </remarks>
-    /// <param name="pa">The public address instance.</param>
+    /// <param name="shouter">The shouter instance.</param>
     /// <param name="type">The type of the rom the be verified.</param>
     /// <param name="fileData">The list of data to verify against.</param>
     /// <returns>
     /// A list of tuples representing bytes that didn't verify.
     /// The tupeles has the form (address, actual_byte_on_EPROM, expected_byte).
     /// </returns>
-    public static List<Tuple<int, byte, byte>> RomVerify(PublicAddress pa, string type, IList<byte> fileData)
+    public static List<Tuple<int, byte, byte>> RomVerify(IShouter shouter, string type, IList<byte> fileData)
     {
       var didntVerify = new List<Tuple<int, byte, byte>>();
-      var epromData = RomRead(pa, type);
+      var epromData = RomRead(shouter, type);
 
       if(epromData.Count != fileData.Count)
         throw  new U2PaException("Filedata doesn't have the same length as EPROM data.");
@@ -174,7 +174,7 @@ namespace U2Pa.Lib
     #endregion Rom
 
     #region Dev
-    public static int DevVppLevels(PublicAddress pa)
+    public static int DevVppLevels(Shouter shouter)
     {
       var onScreen = "n/f = increase Vpp by 1/10; p/b = decrease Vpp by 1/10; q = quit!";
       byte b = 0x00;
@@ -184,7 +184,7 @@ namespace U2Pa.Lib
         var tr = new PinTranslator(40, 40, 0, false);
         var zif = new ZIFSocket(40);
         zif.SetAll(true);
-        using (var td = TopDevice.Create(pa))
+        using (var td = TopDevice.Create(shouter))
         {
           td.SetVppLevel(b);
           td.ApplyGnd(tr.ToZIF, new Pin { Number = 20 });
@@ -223,7 +223,7 @@ namespace U2Pa.Lib
       return 0;
     }
 
-    public static int DevVppPins(PublicAddress pa)
+    public static int DevVppPins(Shouter shouter)
     {
       var onScreen = "n/f = increase pinnumber by 1/10; p/b = decrease pinnumber by 1/10; q = quit!";
       byte p = 20;
@@ -233,7 +233,7 @@ namespace U2Pa.Lib
         var tr = new PinTranslator(40, 40, 0, false);
         var zif = new ZIFSocket(40);
         zif.SetAll(true);
-        using (var td = TopDevice.Create(pa))
+        using (var td = TopDevice.Create(shouter))
         {
           td.SetVppLevel(0x7D);
           td.ApplyGnd(tr.ToZIF, new Pin { Number = 10 });
@@ -272,7 +272,7 @@ namespace U2Pa.Lib
       return 0;
     }
  
-    public static int DevVccPins(PublicAddress pa)
+    public static int DevVccPins(Shouter shouter)
     {
       var onScreen = "n/f = increase pinnumber by 1/10; p/b = decrease pinnumber by 1/10; q = quit!";
       byte p = 20;
@@ -282,7 +282,7 @@ namespace U2Pa.Lib
         var tr = new PinTranslator(40, 40, 0, false);
         var zif = new ZIFSocket(40);
         zif.SetAll(true);
-        using (var td = TopDevice.Create(pa))
+        using (var td = TopDevice.Create(shouter))
         {
           td.SetVccLevel(0x2D);
           td.ApplyGnd(tr.ToZIF, new Pin { Number = 10 });
@@ -321,7 +321,7 @@ namespace U2Pa.Lib
       return 0;
     }
     
-    public static int DevVccLevels(PublicAddress pa)
+    public static int DevVccLevels(Shouter shouter)
     {
       var onScreen = "n/f = increase Vcc by 1/10; p/b = decrease Vcc by 1/10; q = quit!";
       byte b = 0x00;
@@ -331,7 +331,7 @@ namespace U2Pa.Lib
         var tr = new PinTranslator(40, 40, 0, false);
         var zif = new ZIFSocket(40);
         zif.SetAll(true);
-        using (var td = TopDevice.Create(pa))
+        using (var td = TopDevice.Create(shouter))
         {
           td.SetVccLevel(b);
           td.ApplyGnd(tr.ToZIF, new Pin { Number = 20 });
@@ -370,7 +370,7 @@ namespace U2Pa.Lib
       return 0;
     }
 
-    public static int DevGndPins(PublicAddress pa)
+    public static int DevGndPins(Shouter shouter)
     {
       var onScreen = "n/f = increase pinnumber by 1/10; p/b = decrease pinnumber by 1/10; q = quit!";
       byte p = 0;
@@ -380,7 +380,7 @@ namespace U2Pa.Lib
         var tr = new PinTranslator(40, 40, 0, false);
         var zif = new ZIFSocket(40);
         zif.SetAll(true);
-        using (var td = TopDevice.Create(pa))
+        using (var td = TopDevice.Create(shouter))
         {
           td.SetVccLevel(0x2D);
           td.ApplyGnd(tr.ToZIF, new Pin { Number = 40 });
@@ -422,9 +422,9 @@ namespace U2Pa.Lib
     /// <summary>
     /// For dev.
     /// </summary>
-    /// <param name="pa">The public address instance.</param>
+    /// <param name="shouter">The shouter instance.</param>
     /// <returns>Exit code. 0 is fine; all other is bad.</returns>
-    public static int Dev(PublicAddress pa)
+    public static int Dev(IShouter shouter)
     {
       //var fpgaFile = new FPGAProgram(@"C:\Top\Topwin6\Blib2\ictest.bit");
       //Console.WriteLine(fpgaFile);
@@ -432,19 +432,33 @@ namespace U2Pa.Lib
         var tr = new PinTranslator(40, 40, 0, false);
         var zif = new ZIFSocket(40);
         zif.SetAll(true);
-        using (var td = TopDevice.Create(pa))
+        using (var td = TopDevice.Create(shouter))
         {
           td.SetVccLevel(5.0);
-          td.SetVppLevel(12.5);
-          td.ApplyGnd(tr.ToZIF, new Pin { Number = 20 });
+          td.SetVppLevel(13.0);
+          td.ApplyGnd(tr.ToZIF, new Pin { Number = 10 });
           td.ApplyVcc(tr.ToZIF, new Pin { Number = 40 });
-          td.ApplyVpp(tr.ToZIF, new Pin { Number = 1 });
           td.PullUpsEnable(true);
           td.WriteZIF(zif, "");
           Console.ReadLine();
         }
       }
 
+      {
+        var tr = new PinTranslator(40, 40, 0, false);
+        var zif = new ZIFSocket(40);
+        zif.SetAll(false);
+        using (var td = TopDevice.Create(shouter))
+        {
+          td.SetVccLevel(5.0);
+          td.SetVppLevel(21.0);
+          td.ApplyGnd(tr.ToZIF, new Pin { Number = 10 });
+          td.ApplyVcc(tr.ToZIF, new Pin { Number = 40 });
+          td.PullUpsEnable(true);
+          td.WriteZIF(zif, "");
+          Console.ReadLine();
+        }
+      }
       //Console.WriteLine("Testing {0} for Erasure }};-P", args[1]);
       //var fileData = Tools.ReadBinaryFile(args[1]).ToArray();
 
@@ -460,40 +474,40 @@ namespace U2Pa.Lib
     /// <summary>
     /// A simple SRAM-test.
     /// </summary>
-    /// <param name="pa">The public address instance.</param>
+    /// <param name="shouter">The shouter instance.</param>
     /// <param name="type">The type of SRAM.</param>
     /// <returns>Exit code. 0 is fine; all other is bad.</returns>
-    public static int SRamTest(PublicAddress pa, string type)
+    public static int SRamTest(IShouter shouter, string type)
     {
       var sram = SRamXml.Specified[type];
       var totalNumberOfAdresses = sram.AddressPins.Length == 0 ? 0 : 1 << sram.AddressPins.Length;
       List<Tuple<int, string, string>> firstPass, secondPass;
-      using (var progressBar = pa.GetProgressBar(totalNumberOfAdresses * 4))
+      using (var progressBar = new ProgressBar(shouter, totalNumberOfAdresses * 4))
       {
-        using (var topDevice = TopDevice.Create(pa))
+        using (var topDevice = TopDevice.Create(shouter))
         {
-          pa.ShoutLine(1, "Testing SRAM{0}", type);
+          shouter.ShoutLine(1, "Testing SRAM{0}", type);
           progressBar.Init();
-          firstPass = topDevice.SRamTest(pa, sram, progressBar, totalNumberOfAdresses, false);
-          secondPass = topDevice.SRamTest(pa, sram, progressBar, totalNumberOfAdresses, true);
+          firstPass = topDevice.SRamTest(shouter, sram, progressBar, totalNumberOfAdresses, false);
+          secondPass = topDevice.SRamTest(shouter, sram, progressBar, totalNumberOfAdresses, true);
         }
       }
       var returnValue = 0;
       foreach (var tuple in firstPass)
       {
-        pa.ShoutLine(1, "Bad cell found in first pass. Address: {0} Expected {1} Read {2}",
+        shouter.ShoutLine(1, "Bad cell found in first pass. Address: {0} Expected {1} Read {2}",
           tuple.Item1.ToString("X4"), tuple.Item3, tuple.Item2);
         returnValue = 1;
       }
       foreach (var tuple in secondPass)
       {
-        pa.ShoutLine(1, "Bad cell found in second pass. Address: {0} Expected {1} Read {2}",
+        shouter.ShoutLine(1, "Bad cell found in second pass. Address: {0} Expected {1} Read {2}",
           tuple.Item1.ToString("X4"), tuple.Item3, tuple.Item2);
         returnValue = 1;
       }
 
       if(returnValue == 0)
-        pa.ShoutLine(1, "This piece of SRAM is just a'okay }};-P");
+        shouter.ShoutLine(1, "This piece of SRAM is just a'okay }};-P");
 
       return returnValue;
     }
@@ -501,10 +515,10 @@ namespace U2Pa.Lib
     /// <summary>
     /// Displays the SRAM inserted into the Top-programmer.
     /// </summary>
-    /// <param name="pa">The public address instance.</param>
+    /// <param name="shouter">The shouter instance.</param>
     /// <param name="type">The type of SRAM.</param>
     /// <returns>Exit code. 0 is fine; all other is bad.</returns>
-    public static int SRamInfo(PublicAddress pa, string type)
+    public static int SRamInfo(IShouter shouter, string type)
     {
       var sram = SRamXml.Specified[type];
       Console.WriteLine(sram);
