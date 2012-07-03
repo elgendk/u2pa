@@ -134,7 +134,7 @@ namespace U2Pa.Lib
     /// </summary>
     private void DoWait()
     {
-      while (stopWatch.ElapsedMilliseconds <= currentDelay)
+      while (stopWatch.ElapsedMilliseconds < currentDelay)
       {
         // Wait };-P
       }
