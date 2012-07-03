@@ -29,47 +29,47 @@ namespace U2Pa.Lib
   /// <summary>
   /// A wrapper class for the key methods in LibUsbDotNet we use.
   /// </summary>
-  public class UsbBulkDevice : IDisposable
+  public class UsbBulkDevice : IUsbBulkDevice, IDisposable
   {
-    public int VendorId { get; private set; }
-    public int ProductId { get; private set; }
+    private int VendorId;
+    private int ProductId;
     private byte Configuration;
     private int Interface;
     private ReadEndpointID ReadEndpointID;
     private WriteEndpointID WriteEndpointID;
-    private UsbDevice UsbDevice { get; set; }
-    private UsbEndpointReader UsbEndpointReader { get; set; }
-    private UsbEndpointWriter UsbEndpointWriter { get; set; }
-    private PublicAddress PA { get; set; }
+    private UsbDevice UsbDevice;
+    private UsbEndpointReader UsbEndpointReader;
+    private UsbEndpointWriter UsbEndpointWriter;
+    private IShouter Shouter;
     private int currentDelay = 0;
     private Stopwatch stopWatch = new Stopwatch();
 
     /// <summary>
     /// ctor.
     /// </summary>
-    /// <param name="pa">The public address instance.</param>
+    /// <param name="shouter">The shouter instance.</param>
     /// <param name="vendorId">The vendor id.</param>
     /// <param name="productId">The product id.</param>
     /// <param name="configuration">The configuration id.</param>
-    /// <param name="nterface">The interface id.</param>
-    /// <param name="readEndpointID">The read endpoint id.</param>
-    /// <param name="writeEndpointID">The write end point id.</param>
+    /// <param name="@interface">The interface id.</param>
+    /// <param name="readEndpointInt">The read endpoint id.</param>
+    /// <param name="writeEndpointInt">The write end point id.</param>
     public UsbBulkDevice(
-      PublicAddress pa, 
+      IShouter shouter, 
       int vendorId, 
       int productId, 
       byte configuration, 
-      int nterface,
-      ReadEndpointID readEndpointID, 
-      WriteEndpointID writeEndpointID)
+      int @interface,
+      int readEndpointInt, 
+      int writeEndpointInt)
     {
-      PA = pa;
+      Shouter = shouter;
       VendorId = vendorId;
       ProductId = productId;
       Configuration = configuration;
-      Interface = nterface;
-      ReadEndpointID = readEndpointID;
-      WriteEndpointID = writeEndpointID;
+      Interface = @interface;
+      ReadEndpointID = (ReadEndpointID)readEndpointInt;
+      WriteEndpointID = (WriteEndpointID)writeEndpointInt;
       Init();
     }
 
@@ -87,7 +87,7 @@ namespace U2Pa.Lib
           VendorId.ToString("X4"),
           ProductId.ToString("X4"));
 
-      PA.ShoutLine(4,
+      Shouter.ShoutLine(4,
         "Top Universal Programmer with VendorId: 0x{0} and ProductId: 0x{1} found.",
         VendorId.ToString("X4"),
         ProductId.ToString("X4"));
@@ -98,12 +98,12 @@ namespace U2Pa.Lib
         wholeUsbDevice.SetConfiguration(Configuration);
         byte temp;
         if (wholeUsbDevice.GetConfiguration(out temp))
-          PA.ShoutLine(4, "Configuration with id: {0} selected.", temp.ToString("X2"));
+          Shouter.ShoutLine(4, "Configuration with id: {0} selected.", temp.ToString("X2"));
         else
           throw new U2PaException("Failed to set configuration id: {0}", Configuration);
 
         if (wholeUsbDevice.ClaimInterface(Interface))
-          PA.ShoutLine(4, "Interface with id: {0} claimed.", Interface);
+          Shouter.ShoutLine(4, "Interface with id: {0} claimed.", Interface);
         else
           throw new U2PaException("Failed to claim interface with id: {0}", Interface);
       }
@@ -111,12 +111,12 @@ namespace U2Pa.Lib
       UsbEndpointReader = UsbDevice.OpenEndpointReader(ReadEndpointID);
       if (UsbEndpointReader == null)
         throw new U2PaException("Unable to open read endpoint ${0}", ReadEndpointID.ToString());
-      PA.ShoutLine(4, "Reader endpoint ${0} opened.", UsbEndpointReader.EndpointInfo.Descriptor.EndpointID.ToString("X2"));
+      Shouter.ShoutLine(4, "Reader endpoint ${0} opened.", UsbEndpointReader.EndpointInfo.Descriptor.EndpointID.ToString("X2"));
 
       UsbEndpointWriter = UsbDevice.OpenEndpointWriter(WriteEndpointID);
       if (UsbEndpointWriter == null)
         throw new U2PaException("Unable to open write endpoint ${0}", WriteEndpointID.ToString());
-      PA.ShoutLine(4, "Writer endpoint ${0} opened.", UsbEndpointWriter.EndpointInfo.Descriptor.EndpointID.ToString("X2"));
+      Shouter.ShoutLine(4, "Writer endpoint ${0} opened.", UsbEndpointWriter.EndpointInfo.Descriptor.EndpointID.ToString("X2"));
       stopWatch.Start();
     }
 
@@ -157,7 +157,7 @@ namespace U2Pa.Lib
       DoWait();
       var errorCode = UsbEndpointWriter.Write(data, timeOut, out transferLength);
       if (errorCode == ErrorCode.None && transferLength == data.Length)
-        PA.ShoutLine(verbosity, "Write success: {0}. Timeout {1}ms.", description, timeOut);
+        Shouter.ShoutLine(verbosity, "Write success: {0}. Timeout {1}ms.", description, timeOut);
       else
         throw new U2PaException("Write failure. {0}.\r\nTransferlength: {1} ErrorCode: {2}", description, transferLength, errorCode);
     }
@@ -178,7 +178,7 @@ namespace U2Pa.Lib
       DoWait();
       var errorCode = UsbEndpointReader.Read(readBuffer, timeOut, out transferLength);
       if (errorCode == ErrorCode.None && transferLength == readBuffer.Length)
-        PA.ShoutLine(verbosity, "Read  success: {0}. Timeout {1}ms.", description, timeOut);
+        Shouter.ShoutLine(verbosity, "Read  success: {0}. Timeout {1}ms.", description, timeOut);
       else
         throw new U2PaException("Read failure: {0}.\r\nTransferlength: {1} ErrorCode: {2}", description, transferLength, errorCode);
       return readBuffer;
@@ -206,18 +206,18 @@ namespace U2Pa.Lib
         {
           // Release interface #0.
           wholeUsbDevice.ReleaseInterface(0);
-          PA.ShoutLine(4, "Interface released.");
+          Shouter.ShoutLine(4, "Interface released.");
         }
 
         UsbDevice.Close();
-        PA.ShoutLine(4, "Device closed.");
+        Shouter.ShoutLine(4, "Device closed.");
       }
       UsbDevice = null;
 
       // Free usb resources
       UsbDevice.Exit();
 	  
-      PA.ShoutLine(4, "USB resources freed.");
+      Shouter.ShoutLine(4, "USB resources freed.");
     }
   }
 }

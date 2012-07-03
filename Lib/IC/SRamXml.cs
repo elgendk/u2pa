@@ -76,6 +76,4 @@ namespace U2Pa.Lib.IC
         });
     }
   }
-
-
 }

@@ -22,7 +22,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using LibUsbDotNet;
 
 namespace U2Pa.Lib
 {
@@ -34,10 +33,10 @@ namespace U2Pa.Lib
     /// <summary>
     /// ctor.
     /// </summary>
-    /// <param name="pa">Public adresser.</param>
+    /// <param name="shouter">The shouter instance.</param>
     /// <param name="bulkDevice">The bulk device.</param>
-    public Top2005Plus(PublicAddress pa, UsbBulkDevice bulkDevice)
-      : base(pa, bulkDevice)
+    public Top2005Plus(IShouter shouter, IUsbBulkDevice bulkDevice)
+      : base(shouter, bulkDevice)
     {
       Func<double, byte, Tuple<double, byte>> t = Tuple.Create<double,byte>;
       // In doubt about pins: 26, 28, 30...
@@ -86,7 +85,7 @@ namespace U2Pa.Lib
 
       var fpgaProgram = new FPGAProgram(fileName);
       var bytesToSend = PackFPGABytes(fpgaProgram.Payload).SelectMany(x => x).ToArray();
-      PA.ShoutLine(5, fpgaProgram.ToString());
+      Shouter.ShoutLine(5, fpgaProgram.ToString());
       BulkDevice.SendPackage(5, bytesToSend, "Uploading file: {0}", fileName);
 
       // Postlude of black magic
