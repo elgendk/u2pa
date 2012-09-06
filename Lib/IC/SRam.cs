@@ -103,6 +103,27 @@ namespace U2Pa.Lib.IC
     public Pin[] GndPins;
 
     /// <summary>
+    /// Sets the specified address on the specified zif socket.
+    /// </summary>
+    /// <param name="zif">The zif socket to write to.</param>
+    /// <param name="address">The address.</param>
+    public void SetAddress(ZIFSocket zif, int address)
+    {
+      zif.SetPins(address, AddressPins, new PinTranslator(DilType, zif.Size, Placement, UpsideDown).ToZIF);
+    }
+
+    /// <summary>
+    /// Sets the specified data on the specified zif socket.
+    /// </summary>
+    /// <param name="zif">The zif socket to write to.</param>
+    /// <param name="data">The data.</param>
+    public void SetData(ZIFSocket zif, byte[] data)
+    {
+      zif.SetPins(data, DataPins, new PinTranslator(DilType, zif.Size, Placement, UpsideDown).ToZIF);
+    }
+
+
+    /// <summary>
     /// Displays the SRAM inserted correctly into the Top-programmer.
     /// </summary>
     /// <returns>The string representation of the SRAM.</returns>

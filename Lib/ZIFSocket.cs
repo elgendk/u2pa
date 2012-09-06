@@ -36,7 +36,7 @@ namespace U2Pa.Lib
   public class ZIFSocket
   {
     private readonly BitArray pins;
-    private readonly int size;
+    public int Size { get; private set; }
 
     /// <summary>
     /// ctor
@@ -55,7 +55,7 @@ namespace U2Pa.Lib
     /// <param name="size">The number of pins.</param>
     public ZIFSocket(int size)
     {
-      this.size = size;
+      this.Size = size;
       pins = new BitArray(size + 1);
     }
 
@@ -77,46 +77,6 @@ namespace U2Pa.Lib
     public void SetAll(bool value)
     {
       pins.SetAll(value);
-    }
-
-    /// <summary>
-    /// Sets the specified address for the specified sram.
-    /// </summary>
-    /// <param name="sram">The SRAM specification.</param>
-    /// <param name="address">The address.</param>
-    public void SetSRamAddress(SRam sram, int address)
-    {
-      SetPins(address, sram.AddressPins, new PinTranslator(sram.DilType, size, sram.Placement, sram.UpsideDown).ToZIF);
-    }
-
-    /// <summary>
-    /// Sets the specified data for the specified sram.
-    /// </summary>
-    /// <param name="sram">The SRAM specification.</param>
-    /// <param name="data">The data.</param>
-    public void SetSRamData(SRam sram, byte[] data)
-    {
-      SetPins(data, sram.DataPins, new PinTranslator(sram.DilType, size, sram.Placement, sram.UpsideDown).ToZIF);
-    }
-
-    /// <summary>
-    /// Sets the specified address for the specified eprom.
-    /// </summary>
-    /// <param name="eprom">The EPROM specification.</param>
-    /// <param name="address">The address.</param>
-    public void SetEpromAddress(Eprom eprom, int address)
-    {
-      SetPins(address, eprom.AddressPins, new PinTranslator(eprom.DilType, size, eprom.Placement, eprom.UpsideDown).ToZIF);
-    }
-
-    /// <summary>
-    /// Sets the specified data for the specified eprom.
-    /// </summary>
-    /// <param name="eprom">The EPROM specification.</param>
-    /// <param name="data">The data.</param>
-    public void SetEpromData(Eprom eprom, byte[] data)
-    {
-      SetPins(data, eprom.DataPins, new PinTranslator(eprom.DilType, size, eprom.Placement, eprom.UpsideDown).ToZIF);
     }
 
     /// <summary>
@@ -176,16 +136,6 @@ namespace U2Pa.Lib
     }
 
     /// <summary>
-    /// Gets the address using the provided eprom specification and returns it as an Int32.
-    /// </summary>
-    /// <param name="eprom">The EPROM to use.</param>
-    /// <returns>The address as an Int32.</returns>
-    public int GetEpromAddress(Eprom eprom)
-    {
-      return GetDataAsInt(eprom.AddressPins, new PinTranslator(eprom.DilType, size, eprom.Placement, eprom.UpsideDown).ToZIF);
-    }
-
-    /// <summary>
     /// Gets the data using the provided dil mask and returns it as an Int32.
     /// </summary>
     /// <param name="eprom">The dil mask to use.</param>
@@ -198,16 +148,6 @@ namespace U2Pa.Lib
       for (var i = 0; i < dilMask.Length; i++)
         readByte[i] = pins[translate(dilMask[i])];
       return readByte.ToBytes();
-    }
-
-    /// <summary>
-    /// Gets the data using the provided eprom specification and returns it as a sequence of bytes.
-    /// </summary>
-    /// <param name="eprom">The EPROM to use.</param>
-    /// <returns>The data as a sequence of bytes.</returns>
-    public IEnumerable<byte> GetEpromData(Eprom eprom)
-    {
-      return GetDataAsBytes(eprom.DataPins, new PinTranslator(eprom.DilType, size, eprom.Placement, eprom.UpsideDown).ToZIF);
     }
 
     /// <summary>

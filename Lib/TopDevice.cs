@@ -226,7 +226,7 @@ namespace U2Pa.Lib
         zif.Enable(eprom.ChipEnable, translator.ToZIF);
         zif.Enable(eprom.OutputEnable, translator.ToZIF);
 
-        zif.SetEpromAddress(eprom, returnAddress = address);
+        eprom.SetAddress(zif, returnAddress = address);
 
 
         ZIFSocket resultZIF = null;
@@ -269,7 +269,7 @@ namespace U2Pa.Lib
         if (result != ReadSoundness.SeemsToBeAOkay)
           return returnAddress;
 
-        foreach(var b in resultZIF.GetEpromData(eprom))
+        foreach(var b in eprom.GetData(resultZIF))
           bytes.Add(b);
 
         progressBar.Progress();
@@ -329,11 +329,11 @@ namespace U2Pa.Lib
           zif.Disable(eprom.OutputEnable, translator.ToZIF);
 
           // Set address and data
-          zif.SetEpromAddress(eprom, address);
+          eprom.SetAddress(zif, address);
           var data = eprom.DataPins.Length > 8
             ? new[] { bytes[2 * address], bytes[2 * address + 1] } 
             : new[] { bytes[address]}; 
-          zif.SetEpromData(eprom, data);
+          eprom.SetData(zif, data);
 
           // Prepare ZIF without programming in order to let it stabilize
           // TODO: Do we really need to do this?
@@ -402,12 +402,12 @@ namespace U2Pa.Lib
             writerZif.Disable(eprom.OutputEnable, translator.ToZIF);
             writerZif.Disable(eprom.Program, translator.ToZIF);
 
-            writerZif.SetEpromAddress(eprom, address);
+            eprom.SetAddress(writerZif, address);
             
             var data = eprom.DataPins.Length > 8
               ? new[] { bytes[2 * address], bytes[2 * address + 1] }
               : new[] { bytes[address] };
-            writerZif.SetEpromData(eprom, data);
+            eprom.SetData(writerZif, data);
 
             WriteZIF(writerZif, "Write address & d ata to ZIF");
             writerZif.Enable(eprom.ChipEnable, translator.ToZIF);
@@ -426,14 +426,14 @@ namespace U2Pa.Lib
             addressZif.Enable(eprom.ChipEnable, translator.ToZIF);
             addressZif.Enable(eprom.OutputEnable, translator.ToZIF);
             addressZif.Disable(eprom.Program, translator.ToZIF);
-            addressZif.SetEpromAddress(eprom, address);
+            eprom.SetAddress(addressZif, address);
 
             WriteZIF(addressZif, "Write address");
             var dataZifs = ReadZIF("Read data");
             ZIFSocket resultZif;
             if (Tools.AnalyzeEpromReadSoundness(dataZifs, eprom, address, out resultZif) == ReadSoundness.SeemsToBeAOkay)
             {
-              if (resultZif.GetEpromData(eprom).SequenceEqual(data))
+              if (eprom.GetData(resultZif).SequenceEqual(data))
               {
                 // Data validates; now we overprogram
                 writerZif.Enable(eprom.ChipEnable, translator.ToZIF);
@@ -449,8 +449,8 @@ namespace U2Pa.Lib
               {
                 Console.WriteLine("Pulse: {0}", pulse);
                 Console.WriteLine("Address: {0}", address.ToString("X4"));
-                Console.WriteLine(writerZif.GetEpromData(eprom).First());
-                Console.WriteLine(resultZif.GetEpromData(eprom).First());
+                Console.WriteLine(eprom.GetData(writerZif).First());
+                Console.WriteLine(eprom.GetData(resultZif).First());
               }
             }
 
@@ -492,7 +492,7 @@ namespace U2Pa.Lib
         writerZif.Disable(sram.GndPins, tr.ToZIF);
         writerZif.Enable(sram.Constants, tr.ToZIF);
         writerZif.Enable(sram.ChipEnable, tr.ToZIF);
-        writerZif.SetSRamAddress(sram, address);
+        sram.SetAddress(writerZif, address);
         foreach (var i in sram.DataPins.Select(tr.ToZIF))
         {
           writerZif[i] = bit;
@@ -520,7 +520,7 @@ namespace U2Pa.Lib
         writerZif.Enable(sram.ChipEnable, tr.ToZIF);
         writerZif.Enable(sram.OutputEnable, tr.ToZIF);
         writerZif.Disable(sram.WriteEnable, tr.ToZIF);
-        writerZif.SetSRamAddress(sram, address);
+        sram.SetAddress(writerZif, address);
         WriteZIF(writerZif, "Writing SRam address.");
 
         var readerZif = ReadZIF("Reading SRam data.")[0];
