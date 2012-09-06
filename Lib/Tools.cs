@@ -90,14 +90,14 @@ namespace U2Pa.Lib
       var refLenght = results.Length;
       var revResults = results.Reverse().ToArray();
 
-      var withCorrectAddresses = revResults.TakeWhile(x => x.GetEpromAddress(eprom) == address).ToArray();
+      var withCorrectAddresses = revResults.TakeWhile(x => eprom.GetAddress(x) == address).ToArray();
       if (withCorrectAddresses.Length == 0)
         return ReadSoundness.TryRewrite;
       if (withCorrectAddresses.Length != refLenght)
         return ReadSoundness.TryReread;
 
-      var refData = revResults[0].GetEpromData(eprom);
-      var withRefData = revResults.TakeWhile(x => x.GetEpromData(eprom).SequenceEqual(refData)).ToArray();
+      var refData = eprom.GetData(revResults[0]);
+      var withRefData = revResults.TakeWhile(x => eprom.GetData(x).SequenceEqual(refData)).ToArray();
       if (withRefData.Length != refLenght)
         return ReadSoundness.TryReread;
 

@@ -127,6 +127,46 @@ namespace U2Pa.Lib.IC
     public Pin[] VppPins;
 
     /// <summary>
+    /// Extracts the address from the provided zif socket and returns it as an Int32.
+    /// </summary>
+    /// <param name="zif">The zif socket containing the address.</param>
+    /// <returns>The address as an Int32.</returns>
+    public int GetAddress(ZIFSocket zif)
+    {
+      return zif.GetDataAsInt(AddressPins, new PinTranslator(DilType, zif.Size, Placement, UpsideDown).ToZIF);
+    }
+
+    /// <summary>
+    /// Gets the data from the provided zif socket and returns it as a sequence of bytes.
+    /// </summary>
+    /// <param name="zif">The zif socket containing the data.</param>
+    /// <returns>The data as a sequence of bytes.</returns>
+    public IEnumerable<byte> GetData(ZIFSocket zif)
+    {
+      return zif.GetDataAsBytes(DataPins, new PinTranslator(DilType, zif.Size, Placement, UpsideDown).ToZIF);
+    }
+
+    /// <summary>
+    /// Sets the specified address on the specified zif socket.
+    /// </summary>
+    /// <param name="zif">The zif socket to write to.</param>
+    /// <param name="address">The address.</param>
+    public void SetAddress(ZIFSocket zif, int address)
+    {
+      zif.SetPins(address, AddressPins, new PinTranslator(DilType, zif.Size, Placement, UpsideDown).ToZIF);
+    }
+
+    /// <summary>
+    /// Sets the specified data on the specified zif.
+    /// </summary>
+    /// <param name="zif">The zif socket to write to.</param>
+    /// <param name="data">The data.</param>
+    public void SetData(ZIFSocket zif, byte[] data)
+    {
+      zif.SetPins(data, DataPins, new PinTranslator(DilType, zif.Size, Placement, UpsideDown).ToZIF);
+    }
+
+    /// <summary>
     /// Displays the EPROM inserted correctly into the Top-programmer.
     /// </summary>
     /// <returns>The string representation of the EPROM.</returns>
