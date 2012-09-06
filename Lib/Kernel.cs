@@ -33,7 +33,7 @@ namespace U2Pa.Lib
     /// <summary>
     /// Writes the id of the connected Top Programmer.
     /// </summary>
-    /// <param name="shouter">The shouter instance.</param>
+    /// <param name="shouter">The public address instance.</param>
     /// <returns>Exit code. 0 is fine; all other is bad.</returns>
     public static int ProgId(IShouter shouter)
     {
@@ -54,7 +54,7 @@ namespace U2Pa.Lib
     /// Calculates and writes some statistics about the connected Top Programmer
     /// and the UBS connection.
     /// </summary>
-    /// <param name="shouter">The shouter instance.</param>
+    /// <param name="shouter">The public address instance.</param>
     /// <returns>Exit code. 0 is fine; all other is bad.</returns>
     public static int ProgStat(IShouter shouter)
     {

@@ -35,7 +35,7 @@ namespace U2Pa.Lib
     /// </summary>
     /// <param name="shouter">The shouter instance.</param>
     /// <param name="bulkDevice">The bulk device.</param>
-    public Top2005Plus(IShouter shouter, IUsbBulkDevice bulkDevice)
+    internal Top2005Plus(IShouter shouter, IUsbBulkDevice bulkDevice)
       : base(shouter, bulkDevice)
     {
       Func<double, byte, Tuple<double, byte>> t = Tuple.Create<double,byte>;

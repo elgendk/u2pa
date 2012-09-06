@@ -24,16 +24,22 @@ using System;
 namespace U2Pa.Lib
 {
   /// <summary>
-  /// A wrapper interface for low level commmunication with the Top Programmer.
+  /// Extends <see cref="IRawUsbBulkDevice"/> with delay of commands.
   /// </summary>
-  public interface IUsbBulkDevice : IDisposable
+  public interface IUsbBulkDevice : IRawUsbBulkDevice
   {
     /// <summary>
     /// Used to delay before the next command is send.
     /// </summary>
     /// <param name="milliseconds">Delay in ms.</param>
     void Delay(int milliseconds);
-    
+  }
+
+  /// <summary>
+  /// A wrapper interface for low level commmunication with the Top Programmer.
+  /// </summary>
+  public interface IRawUsbBulkDevice : IDisposable
+  {
     /// <summary>
     /// Sends a data package to the Top Programmer.
     /// </summary>
