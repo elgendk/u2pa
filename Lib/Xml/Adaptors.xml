@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!--
+//                             u2pa
+//
+//    A command line interface for Top Universal Programmers
+//
+//    Copyright (C) Elgen };-) aka Morten Overgaard 2012
+//
+//    This file is part of u2pa.
+//
+//    u2pa is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
+//
+//    u2pa is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with u2pa. If not, see <http://www.gnu.org/licenses/>.
+-->
+<Root>
+  <Adaptor type = "16bit27x0xx" dilTypeSocket = "40" dilTypePins = "40" placement = "0">
+    <Map socket = "1" pin = "1"/>
+    <Map socket = "2" pin = "2"/>
+    <Map socket = "3" pin = "3"/>
+    <Map socket = "4" pin = "4"/>
+    <Map socket = "5" pin = "5"/>
+    <Map socket = "6" pin = "6"/>
+    <Map socket = "7" pin = "7"/>
+    <Map socket = "8" pin = "8"/>
+    <Map socket = "9" pin = "9"/>
+    <Map socket = "10" pin = "10"/>
+    <Map socket = "11" pin = "20"/>
+    <Map socket = "12" pin = "12"/>
+    <Map socket = "13" pin = "13"/>
+    <Map socket = "14" pin = "14"/>
+    <Map socket = "15" pin = "15"/>
+    <Map socket = "16" pin = "16"/>
+    <Map socket = "17" pin = "17"/>
+    <Map socket = "18" pin = "18"/>
+    <Map socket = "19" pin = "19"/>
+    <Map socket = "20" pin = "30"/>
+    <Map socket = "21" pin = "21"/>
+    <Map socket = "22" pin = "22"/>
+    <Map socket = "23" pin = "23"/>
+    <Map socket = "24" pin = "24"/>
+    <Map socket = "25" pin = "25"/>
+    <Map socket = "26" pin = "26"/>
+    <Map socket = "27" pin = "27"/>
+    <Map socket = "28" pin = "28"/>
+    <Map socket = "29" pin = "29"/>
+    <Map socket = "30" pin = "20"/>
+    <Map socket = "31" pin = "31"/>
+    <Map socket = "32" pin = "32"/>
+    <Map socket = "33" pin = "33"/>
+    <Map socket = "34" pin = "34"/>
+    <Map socket = "35" pin = "35"/>
+    <Map socket = "36" pin = "36"/>
+    <Map socket = "37" pin = "37"/>
+    <Map socket = "38" pin = "38"/>
+    <Map socket = "39" pin = "39"/>
+    <Map socket = "40" pin = "40"/>
+  </Adaptor>
+</Root>

@@ -24,27 +24,12 @@ using U2Pa.Lib;
 
 namespace U2Pa.Test
 {
-  /// <summary>
-  /// Test implementation.
-  /// </summary>
-  public class UsbBulkTestDevice : UsbBulkDeviceDelayer
+  public class ShouterSink : IShouter
   {
-    public UsbBulkTestDevice() : base(new RawUsbBulkTestDevice())
+    public int VerbosityLevel { get; set; }
+
+    public void ShoutLine(int verbosity, string message, params object[] obj)
     {
     }
-  }
-
-  public class RawUsbBulkTestDevice : IRawUsbBulkDevice
-  {
-    public void SendPackage(int verbosity, byte[] data, string description, params object[] args)
-    { }
-
-    public byte[] RecievePackage(int verbosity, string description, params object[] args)
-    {
-      return new byte[0];
-    }
-
-    public void Dispose()
-    { }
   }
 }

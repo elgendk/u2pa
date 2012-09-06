@@ -41,7 +41,7 @@ namespace U2Pa.Lib
     protected const int ReadEndpointInt = 0x82;
     protected const int WriteEndpointInt = 0x02;
     
-    protected IUsbBulkDevice BulkDevice;
+    public IUsbBulkDevice BulkDevice { get; private set; }
 
     /// <summary>
     /// The number of pins in the ZIF socket.

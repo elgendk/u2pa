@@ -85,6 +85,7 @@
     <Compile Include="Top2005Plus.cs" />
     <Compile Include="TopDevice.cs" />
     <Compile Include="U2PaException.cs" />
+    <Compile Include="UsbBulkDeviceDelayer.cs" />
     <Compile Include="ZIFSocket.cs" />
     <Compile Include="UsbBulkDevice.cs" />
   </ItemGroup>
@@ -95,6 +96,7 @@
     <Content Include="Doc\Protocol.txt" />
     <Content Include="Resources\LibUsbDotNet.dll" />
     <Content Include="Resources\LibUsbDotNet.xml" />
+    <Content Include="Xml\Adaptors.xml" />
     <Content Include="Xml\Config.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <SubType>Designer</SubType>

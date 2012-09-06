@@ -22,28 +22,14 @@
 using System;
 using LibUsbDotNet;
 using LibUsbDotNet.Main;
-using System.Diagnostics;
 
 namespace U2Pa.Lib
 {
   /// <summary>
   /// A wrapper class for the key methods in LibUsbDotNet we use.
   /// </summary>
-  public class UsbBulkDevice : IUsbBulkDevice, IDisposable
+  public class UsbBulkDevice : UsbBulkDeviceDelayer
   {
-    private int VendorId;
-    private int ProductId;
-    private byte Configuration;
-    private int Interface;
-    private ReadEndpointID ReadEndpointID;
-    private WriteEndpointID WriteEndpointID;
-    private UsbDevice UsbDevice;
-    private UsbEndpointReader UsbEndpointReader;
-    private UsbEndpointWriter UsbEndpointWriter;
-    private IShouter Shouter;
-    private int currentDelay = 0;
-    private Stopwatch stopWatch = new Stopwatch();
-
     /// <summary>
     /// ctor.
     /// </summary>
@@ -55,6 +41,54 @@ namespace U2Pa.Lib
     /// <param name="readEndpointInt">The read endpoint id.</param>
     /// <param name="writeEndpointInt">The write end point id.</param>
     public UsbBulkDevice(
+      IShouter shouter,
+      int vendorId,
+      int productId,
+      byte configuration,
+      int @interface,
+      int readEndpointInt,
+      int writeEndpointInt)
+      : base(
+      new RawUsbBulkDevice(
+        shouter,
+        vendorId,
+        productId,
+        configuration,
+        @interface,
+        readEndpointInt,
+        writeEndpointInt))
+    {
+
+    }
+  }
+
+  /// <summary>
+  /// A wrapper class for the key methods in LibUsbDotNet we use.
+  /// </summary>
+  public class RawUsbBulkDevice : IRawUsbBulkDevice, IDisposable
+  {
+    private int VendorId;
+    private int ProductId;
+    private byte Configuration;
+    private int Interface;
+    private ReadEndpointID ReadEndpointID;
+    private WriteEndpointID WriteEndpointID;
+    private UsbDevice UsbDevice;
+    private UsbEndpointReader UsbEndpointReader;
+    private UsbEndpointWriter UsbEndpointWriter;
+    private IShouter Shouter;
+
+    /// <summary>
+    /// ctor.
+    /// </summary>
+    /// <param name="shouter">The shouter instance.</param>
+    /// <param name="vendorId">The vendor id.</param>
+    /// <param name="productId">The product id.</param>
+    /// <param name="configuration">The configuration id.</param>
+    /// <param name="@interface">The interface id.</param>
+    /// <param name="readEndpointInt">The read endpoint id.</param>
+    /// <param name="writeEndpointInt">The write end point id.</param>
+    public RawUsbBulkDevice(
       IShouter shouter, 
       int vendorId, 
       int productId, 
@@ -117,29 +151,6 @@ namespace U2Pa.Lib
       if (UsbEndpointWriter == null)
         throw new U2PaException("Unable to open write endpoint ${0}", WriteEndpointID.ToString());
       Shouter.ShoutLine(4, "Writer endpoint ${0} opened.", UsbEndpointWriter.EndpointInfo.Descriptor.EndpointID.ToString("X2"));
-      stopWatch.Start();
-    }
-
-    /// <summary>
-    /// Used to delay before the next command is send.
-    /// </summary>
-    /// <param name="milliseconds">Delay in ms.</param>
-    public void Delay(int milliseconds)
-    {
-      currentDelay += milliseconds;
-    }
-
-    /// <summary>
-    /// Waits until the delay runs out and resets it.
-    /// </summary>
-    private void DoWait()
-    {
-      while (stopWatch.ElapsedMilliseconds < currentDelay)
-      {
-        // Wait };-P
-      }
-      currentDelay = 0;
-      stopWatch.Restart();
     }
 
     /// <summary>
@@ -154,7 +165,6 @@ namespace U2Pa.Lib
       description = String.Format(description, args);
       int transferLength;
       int timeOut = Math.Max(10000, data.Length / 10);
-      DoWait();
       var errorCode = UsbEndpointWriter.Write(data, timeOut, out transferLength);
       if (errorCode == ErrorCode.None && transferLength == data.Length)
         Shouter.ShoutLine(verbosity, "Write success: {0}. Timeout {1}ms.", description, timeOut);
@@ -175,7 +185,6 @@ namespace U2Pa.Lib
       var readBuffer = new byte[64];
       int transferLength;
       const int timeOut = 10000;
-      DoWait();
       var errorCode = UsbEndpointReader.Read(readBuffer, timeOut, out transferLength);
       if (errorCode == ErrorCode.None && transferLength == readBuffer.Length)
         Shouter.ShoutLine(verbosity, "Read  success: {0}. Timeout {1}ms.", description, timeOut);
@@ -190,7 +199,6 @@ namespace U2Pa.Lib
     /// </summary>
     public void Dispose()
     {
-      DoWait();
       UsbEndpointReader.Flush();
       UsbEndpointReader.Reset();
       UsbEndpointReader.Dispose();
