@@ -152,17 +152,17 @@ namespace U2Pa.Lib
     /// </summary>
     /// <param name="bits">The <see cref="BitArray"/> to be converted.</param>
     /// <returns>The resulting bytes.</returns>
-    public static IEnumerable<byte> ToBytes(this BitArray bits)
+    public static IEnumerable<byte> ToBytes(this BitArray bits, int biteSize = 8)
     {
-      if (bits.Count % 8 != 0)
-        throw new U2PaException("bits.Count % 8 != 0");
+      if (bits.Count % biteSize != 0)
+        throw new U2PaException(String.Format("bits.Count % {0} != 0", biteSize));
 
       byte acc = 0x00;
       var mainIndex = 0;
       var accIndex = 0;
       while (true)
       {
-        if (accIndex == 8)
+        if (accIndex == biteSize)
         {
           yield return acc;
           acc = 0x00;

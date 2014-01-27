@@ -144,10 +144,11 @@ namespace U2Pa.Lib
     public IEnumerable<byte> GetDataAsBytes(Pin[] dilMask, Func<Pin, int> translate = null)
     {
       translate = translate ?? (x => x.Number);
-      var readByte = new BitArray(dilMask.Length);
-      for (var i = 0; i < dilMask.Length; i++)
-        readByte[i] = pins[translate(dilMask[i])];
-      return readByte.ToBytes();
+      var biteSize = dilMask.Length;
+      var readBite = new BitArray(biteSize);
+      for (var i = 0; i < biteSize; i++)
+        readBite[i] = pins[translate(dilMask[i])];
+      return readBite.ToBytes(Math.Min(biteSize, 8));
     }
 
     /// <summary>

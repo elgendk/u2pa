@@ -144,4 +144,34 @@
     <GndPins>20</GndPins>
     <VppPins>1</VppPins>
   </Eprom>
+
+  <Eprom type = "24S10" dilType = "16" placement = "0" Vcc = "5" Vpp = "5" progPulse = "0">
+    <Notes>
+      This is actually a bipolar PROM and can not be
+      programmed by the Top2005+. It can only be read.
+    </Notes>
+    <AddressPins>5, 6, 7, 4, 3, 2, 1, 15</AddressPins>
+    <DataPins>12, 11, 10, 9</DataPins>
+    <ChipEnable>/13</ChipEnable>
+    <OutputEnable>/14</OutputEnable>
+    <Program></Program>
+    <VccPins>16</VccPins>
+    <GndPins>8</GndPins>
+    <VppPins></VppPins>
+  </Eprom>
+
+  <Eprom type = "18S030" dilType = "16" placement = "0" Vcc = "5" Vpp = "5" progPulse = "0">
+    <Notes>
+      This is actually a bipolar PROM and can not be
+      programmed by the Top2005+. It can only be read.
+    </Notes>
+    <AddressPins>10, 11, 12, 13, 14</AddressPins>
+    <DataPins>1, 2, 3, 4, 5, 6, 7, 9</DataPins>
+    <ChipEnable></ChipEnable>
+    <OutputEnable>/15</OutputEnable>
+    <Program></Program>
+    <VccPins>16</VccPins>
+    <GndPins>8</GndPins>
+    <VppPins></VppPins>
+  </Eprom>
 </Root>
