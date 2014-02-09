@@ -37,26 +37,29 @@ namespace U2Pa.BipolarDump2PLD
     /// <remarks>
     /// args[0] = number of outputs
     /// args[1] = number of inputs
-    /// args[2] = file name
-    /// args[3] = option to print truth table only
+    /// args[2] = options
+    /// args[3] = file name
     /// </remarks>
     static void Main(string[] args)
     {
-      if (args.Length < 3)
+      if (args.Length < 4)
       {
         Console.WriteLine(
 @"
 Usage:
-~> bd2pld.exe <number_of_outputs> <number_of_inputs> <full_file_name> [/t]
-(option '/t' only prints the truth table)");
+~> bd2pld.exe <number_of_outputs> <number_of_inputs> <option> <full_file_name>
+Possible options are:
+  ce = print CUPL equations
+  cf = print CUPL truth table field data
+  ht = print human readable truth table");
 
         return;
       }
 
       var numberOfOutputs = Int32.Parse(args[0]);
       var numberOfInputs = Int32.Parse(args[1]);
-      var printTruthTable = args.Length >= 4 && args[3] == "/t";
-      var fileData = ReadBinaryFile(args[2]).ToArray();
+      var option = args[2];
+      var fileData = ReadBinaryFile(args[3]).ToArray();
 
       //Building address table
       var adresses = Enumerable.Range(0, fileData.Length).Select(i => new BitArray(new[]{(byte)i})).ToArray();
@@ -64,16 +67,28 @@ Usage:
       //Building data table
       var data = fileData.Select(i => new BitArray(new[] { i })).ToArray();
 
-      if(printTruthTable)
-        PrintTruthTable(numberOfOutputs, numberOfInputs, fileData, adresses, data);
-      else
-        PrintProductTerms(numberOfOutputs, numberOfInputs, adresses, data);
+      Console.WriteLine();
+
+      switch(option)
+      {
+        case "ce":
+          PrintProductTerms(numberOfOutputs, numberOfInputs, adresses, data);
+          break;
+          
+        case "cf":
+          PrintTruthTableFieldData(numberOfOutputs, numberOfInputs, fileData, adresses.Length);
+          break;
+
+        case "ht":
+          PrintHumanReadableTruthTable(numberOfOutputs, numberOfInputs, fileData, adresses, data);
+          break;
+      }
 
       Console.WriteLine();
     }
 
     /// <summary>
-    /// Prints all the unreduced product terms.
+    /// Prints all the unreduced product terms in CUPL format.
     /// </summary>
     /// <param name="numberOfOutputs">Number of input pins.</param>
     /// <param name="numberOfInputs">Number of output pins.</param>
@@ -126,18 +141,39 @@ Usage:
     }
 
     /// <summary>
+    /// Prints CUPL truth table data.
+    /// </summary>
+    /// <param name="numberOfOutputs">Number of input pins.</param>
+    /// <param name="numberOfInputs">Number of output pins.</param>
+    /// <param name="numberOfAddresses">Number of adresses.</param>
+    private static void PrintTruthTableFieldData(int numberOfOutputs, int numberOfInputs, byte[] fileData, int numberOfAddresses)
+    {
+      Console.WriteLine("field address = [A{0}..0];", numberOfInputs - 1);
+      Console.WriteLine("field data = [D{0}..0];", numberOfOutputs - 1);
+      Console.WriteLine();
+      Console.WriteLine("table address => data {");
+      for (var i = 0; i < numberOfAddresses; i++)
+      {
+        Console.WriteLine(
+          " {0} => {1};", 
+          i.ToString("X").PadLeft(3, ' '), 
+          fileData[i].ToString("X2"));
+      }
+      Console.WriteLine("}");
+    }
+
+    /// <summary>
     /// Debug method for PrettyPriting the truthtable.
     /// </summary>
-    static void PrintTruthTable(int numberOfOutputs, int numberOfInputs, byte[] fileData, BitArray[] adresses, BitArray[] data)
+    static void PrintHumanReadableTruthTable(int numberOfOutputs, int numberOfInputs, byte[] fileData, BitArray[] adresses, BitArray[] data)
     {
-      Console.WriteLine();
       Console.WriteLine("| NNN | AAAAAAAA | DDDDDDDD | HH |");
       Console.WriteLine("|     | 01234567 | 01234567 |    |");
       Console.WriteLine("+-----+----------+----------+----+");
       for (var j = 0; j < adresses.Length; j++)
       {
         Console.Write("| ");
-        Console.Write(j.ToString().PadLeft(3, '0'));
+        Console.Write(j.ToString("X3").PadLeft(3, '0'));
         Console.Write(" | ");
         for (var i = 0; i < 8; i++)
         {

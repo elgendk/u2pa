@@ -160,6 +160,20 @@
     <VppPins></VppPins>
   </Eprom>
 
+  <Eprom type = "prom-3.1c" dilType = "24" placement = "0" Vcc = "5" Vpp = "5" progPulse = "0">
+    <Notes>
+      Galaga prom-3.1c implemented on a GAL22V10.
+    </Notes>
+    <AddressPins>5, 6, 7, 4, 3, 2, 1, 23</AddressPins>
+    <DataPins>20, 19, 18, 17</DataPins>
+    <ChipEnable>/21</ChipEnable>
+    <OutputEnable>/22</OutputEnable>
+    <Program></Program>
+    <VccPins>24</VccPins>
+    <GndPins>12</GndPins>
+    <VppPins></VppPins>
+  </Eprom>
+  
   <Eprom type = "18S030" dilType = "16" placement = "0" Vcc = "5" Vpp = "5" progPulse = "0">
     <Notes>
       This is actually a bipolar PROM and can not be
@@ -172,6 +186,20 @@
     <Program></Program>
     <VccPins>16</VccPins>
     <GndPins>8</GndPins>
+    <VppPins></VppPins>
+  </Eprom>
+
+  <Eprom type = "prom-5.5n" dilType = "20" placement = "0" Vcc = "5" Vpp = "5" progPulse = "0">
+    <Notes>
+      Galaga prom-5.5n implemented on a GAL16V8.
+    </Notes>
+    <AddressPins>3, 4, 5, 6, 7</AddressPins>
+    <DataPins>12, 13, 14, 15, 16, 17, 18, 19</DataPins>
+    <ChipEnable></ChipEnable>
+    <OutputEnable>/8</OutputEnable>
+    <Program></Program>
+    <VccPins>20</VccPins>
+    <GndPins>10</GndPins>
     <VppPins></VppPins>
   </Eprom>
 </Root>
