@@ -209,7 +209,7 @@ namespace U2Pa.Lib
       const int rereadCount = 5;
       Shouter.ShoutLine(2, "Reading EPROM{0}", eprom.Type);
       SetVccLevel(eprom.VccLevel);
-      var translator = new PinTranslator(eprom.DilType, ZIFType, 0, eprom.UpsideDown);
+      var translator = new PinTranslator(eprom.DilType, ZIFType, eprom.Placement, eprom.UpsideDown);
       ApplyVcc(translator.ToZIF, eprom.VccPins);
       ApplyGnd(translator.ToZIF, eprom.GndPins);
       PullUpsEnable(true);
@@ -286,7 +286,7 @@ namespace U2Pa.Lib
     public void WriteEpromClassic(Eprom eprom, IList<byte> bytes, IList<int> patch = null)
     {
       var totalNumberOfAdresses = eprom.AddressPins.Length == 0 ? 0 : 1 << eprom.AddressPins.Length;
-      var translator = new PinTranslator(eprom.DilType, ZIFType, 0, eprom.UpsideDown);
+      var translator = new PinTranslator(eprom.DilType, ZIFType, eprom.Placement, eprom.UpsideDown);
 
       SetVccLevel(eprom.VccLevel);
       ApplyGnd(translator.ToZIF, eprom.GndPins);
