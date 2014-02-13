@@ -145,10 +145,11 @@
     <VppPins>1</VppPins>
   </Eprom>
 
-  <Eprom type = "24S10" dilType = "16" placement = "0" Vcc = "5" Vpp = "5" progPulse = "0">
+  <Eprom type = "TBP24S10" dilType = "16" placement = "0" Vcc = "5" Vpp = "5" progPulse = "0">
     <Notes>
       This is actually a bipolar PROM and can not be
       programmed by the Top2005+. It can only be read.
+      It's made by Texas Instruments.
     </Notes>
     <AddressPins>5, 6, 7, 4, 3, 2, 1, 15</AddressPins>
     <DataPins>12, 11, 10, 9</DataPins>
@@ -174,10 +175,11 @@
     <VppPins></VppPins>
   </Eprom>
   
-  <Eprom type = "18S030" dilType = "16" placement = "0" Vcc = "5" Vpp = "5" progPulse = "0">
+  <Eprom type = "TBP18S030" dilType = "16" placement = "0" Vcc = "5" Vpp = "5" progPulse = "0">
     <Notes>
       This is actually a bipolar PROM and can not be
       programmed by the Top2005+. It can only be read.
+      It's made by Texas Instruments.
     </Notes>
     <AddressPins>10, 11, 12, 13, 14</AddressPins>
     <DataPins>1, 2, 3, 4, 5, 6, 7, 9</DataPins>
@@ -200,6 +202,39 @@
     <Program></Program>
     <VccPins>20</VccPins>
     <GndPins>10</GndPins>
+    <VppPins></VppPins>
+  </Eprom>
+
+  <Eprom type = "MB7122" dilType = "18" placement = "1" Vcc = "5" Vpp = "5" progPulse = "0">
+    <Notes>
+      This is actually a bipolar PROM and can not be
+      programmed by the Top2005+. It can only be read.
+      It's made by Fujitsu.
+      Connection to GND must be done with a wire.
+    </Notes>
+    <AddressPins>5, 6, 7, 4, 3, 2, 1, 17, 16, 15</AddressPins>
+    <DataPins>14, 13, 12, 11</DataPins>
+    <ChipEnable>/10</ChipEnable>
+    <OutputEnable>/8</OutputEnable>
+    <Program></Program>
+    <VccPins>18</VccPins>
+    <GndPins>20Z</GndPins>
+    <VppPins></VppPins>
+  </Eprom>
+
+  <Eprom type = "MB7132" dilType = "24" placement = "0" Vcc = "5" Vpp = "5" progPulse = "0">
+    <Notes>
+      This is actually a bipolar PROM and can not be
+      programmed by the Top2005+. It can only be read.
+      It's made by Fujitsu.
+    </Notes>
+    <AddressPins>8, 7, 6, 5, 4, 3, 2, 1, 23, 22</AddressPins>
+    <DataPins>9, 10, 11, 13, 14, 15, 16, 17</DataPins>
+    <ChipEnable>18, /20</ChipEnable>
+    <OutputEnable>19, /21</OutputEnable>
+    <Program></Program>
+    <VccPins>24</VccPins>
+    <GndPins>12</GndPins>
     <VppPins></VppPins>
   </Eprom>
 </Root>
