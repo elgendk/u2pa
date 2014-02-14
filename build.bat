@@ -12,6 +12,3 @@ C:\Windows\Microsoft.NET\Framework\v4.0.30319\csc.exe /r:..\bin\u2pa.lib.dll /ou
 mkdir ..\bin\help
 copy help\*.* ..\bin\help
 cd ..
-cd BipolarDump2PLD
-C:\Windows\Microsoft.NET\Framework\v4.0.30319\csc.exe /out:..\bin\bd2pld.exe /recurse:*.cs
-cd ..
