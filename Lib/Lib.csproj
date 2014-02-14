@@ -66,6 +66,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BinaryDumpProcessor.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="FPGAProgram.cs" />
     <Compile Include="IC\EpromXml.cs" />
