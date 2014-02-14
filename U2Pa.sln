@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lib", "Lib\Lib.csproj", "{B
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{294DE065-F00C-48A6-B437-E272882541DA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BipolarDump2PLD", "BipolarDump2PLD\BipolarDump2PLD.csproj", "{017E5AB6-64B0-4117-8D82-467674D3A776}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -49,16 +47,6 @@ Global
 		{294DE065-F00C-48A6-B437-E272882541DA}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{294DE065-F00C-48A6-B437-E272882541DA}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{294DE065-F00C-48A6-B437-E272882541DA}.Release|x86.ActiveCfg = Release|Any CPU
-		{017E5AB6-64B0-4117-8D82-467674D3A776}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{017E5AB6-64B0-4117-8D82-467674D3A776}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{017E5AB6-64B0-4117-8D82-467674D3A776}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{017E5AB6-64B0-4117-8D82-467674D3A776}.Debug|x86.ActiveCfg = Debug|x86
-		{017E5AB6-64B0-4117-8D82-467674D3A776}.Debug|x86.Build.0 = Debug|x86
-		{017E5AB6-64B0-4117-8D82-467674D3A776}.Release|Any CPU.ActiveCfg = Release|x86
-		{017E5AB6-64B0-4117-8D82-467674D3A776}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{017E5AB6-64B0-4117-8D82-467674D3A776}.Release|Mixed Platforms.Build.0 = Release|x86
-		{017E5AB6-64B0-4117-8D82-467674D3A776}.Release|x86.ActiveCfg = Release|x86
-		{017E5AB6-64B0-4117-8D82-467674D3A776}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

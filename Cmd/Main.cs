@@ -123,6 +123,10 @@ namespace U2Pa.Cmd
             returnCode = Prog(shouter, cleanedArgs);
             break;
 
+          case "bdump":
+            returnCode = BDump(shouter, cleanedArgs);
+            break;
+
           case "help":
             returnCode = Help(shouter, cleanedArgs);
             break;
@@ -161,6 +165,10 @@ namespace U2Pa.Cmd
 
       switch (args[1])
       {
+        case "all":
+          var option = args.Count == 3 ? args[2] : null;
+          return Kernel.RomAll(shouter, option);
+
         case "id":
           shouter.ShoutLine(1, "rom id not yet implemented!");
           return 1;
@@ -223,6 +231,10 @@ namespace U2Pa.Cmd
 
       switch (args[1])
       {
+        case "all":
+          var option = args.Count == 3 ? args[2] : null;
+          return Kernel.SRamAll(shouter, option);
+
         case "test":
           return Kernel.SRamTest(shouter, args[2]);
 
@@ -262,6 +274,35 @@ namespace U2Pa.Cmd
 
         default:
           shouter.ShoutLine(1, "Unknown prog command {0}", args[1]);
+          return 1;
+      }
+    }
+
+    /// <summary>
+    /// Entry point for the 'bdump' catagory of commands.
+    /// </summary>
+    /// <param name="shouter">The shouter instance.</param>
+    /// <param name="args">Command line argumsnts</param>
+    /// <returns>Exit code. 0 is fine; all other is bad.</returns>
+    private static int BDump(IShouter shouter, IList<string> args)
+    {
+      if (args.Count < 6)
+      {
+        args.Insert(0, "help");
+        Help(shouter, args);
+        return 0;
+      }
+
+      var numberOfOutputs = Int32.Parse(args[3]);
+      var numberOfInputs = Int32.Parse(args[4]);
+
+      switch (args[1])
+      {
+        case "process":
+          Kernel.BDumpProcess(shouter, args[2], numberOfOutputs, numberOfInputs, args[5]);
+          return 0;
+        default:
+          shouter.ShoutLine(1, "Unknown bdump command {0}", args[1]);
           return 1;
       }
     }

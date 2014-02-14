@@ -85,6 +85,42 @@ namespace U2Pa.Lib
 
     #region Rom
     /// <summary>
+    /// Displays a list of all supported ROMs.
+    /// </summary>
+    /// <param name="shouter">The shouter instance.</param>
+    /// <param name="option">If option "type" is passed, only the type is displayed.</param>
+    /// <returns>Exit code. 0 is fine; all other is bad.</returns>
+    public static int RomAll(IShouter shouter, string option)
+    {
+      var onlyDisplayTypeName = option == "type";
+      shouter.ShoutLine(1, "Supported ROMs:");
+      shouter.ShoutLine(1, "===============");
+      foreach (var pair in EpromXml.Specified.OrderBy(pair => pair.Key))
+      {
+        if (onlyDisplayTypeName)
+          shouter.ShoutLine(1, pair.Key);
+        else
+        {
+          var rom = pair.Value;
+          shouter.ShoutLine(1, "Type:");
+          shouter.ShoutLine(1, "  {0}", rom.Type);
+          if (!String.IsNullOrWhiteSpace(rom.Description))
+          {
+            shouter.ShoutLine(1, "Description:");
+            shouter.ShoutLine(1, rom.Description);
+          }
+          if (!String.IsNullOrWhiteSpace(rom.Notes))
+          {
+            shouter.ShoutLine(1, "Notes:");
+            shouter.ShoutLine(1, rom.Notes);
+          }
+          shouter.ShoutLine(1, "-----------");
+        }
+      }
+      return 0;
+    }
+
+    /// <summary>
     /// Displays the EPROM inserted into the Top-programmer.
     /// </summary>
     /// <param name="shouter">The shouter instance.</param>
@@ -524,6 +560,86 @@ namespace U2Pa.Lib
       Console.WriteLine(sram);
       return 0;
     }
+
+    /// <summary>
+    /// Displays a list of all supported SRAMs.
+    /// </summary>
+    /// <param name="shouter">The shouter instance.</param>
+    /// <param name="option">If option "type" is passed, only the type is displayed.</param>
+    /// <returns>Exit code. 0 is fine; all other is bad.</returns>
+    public static int SRamAll(IShouter shouter, string option)
+    {
+      var onlyDisplayTypeName = option == "type";
+      shouter.ShoutLine(1, "Supported SRAMs:");
+      shouter.ShoutLine(1, "================");
+      foreach (var pair in SRamXml.Specified.OrderBy(pair => pair.Key))
+      {
+        if (onlyDisplayTypeName)
+          shouter.ShoutLine(1, pair.Key);
+        else
+        {
+          var sram = pair.Value;
+          shouter.ShoutLine(1, "Type:");
+          shouter.ShoutLine(1, "  {0}", sram.Type);
+          if (!String.IsNullOrWhiteSpace(sram.Description))
+          {
+            shouter.ShoutLine(1, "Description:");
+            shouter.ShoutLine(1, sram.Description);
+          }
+          if (!String.IsNullOrWhiteSpace(sram.Notes))
+          {
+            shouter.ShoutLine(1, "Notes:");
+            shouter.ShoutLine(1, sram.Notes);
+          }
+          shouter.ShoutLine(1, "-----------");
+        }
+      }
+      return 0;
+    }
     #endregion SRam
+
+    #region BDump
+    /// <summary>
+    /// Processes a binary dump.
+    /// </summary>
+    /// <param name="shouter">The shouter instance.</param>
+    /// <param name="format">Format.</param>
+    /// <param name="numberOfOutputs">Number of input pins.</param>
+    /// <param name="numberOfInputs">Number of output pins.</param>
+    /// <param name="path">The file name.</param>
+    /// <returns>Exit code. 0 is fine; all other is bad.</returns>
+    public static int BDumpProcess(
+      IShouter shouter, 
+      string format, 
+      int numberOfOutputs, 
+      int numberOfInputs, 
+      string path)
+    {
+      var processor = new BinaryDumpProcessor(path);
+
+      string output;
+      switch (format)
+      {
+        case "ceqn":
+          output = processor.GenerateCUPLEquations(numberOfOutputs, numberOfInputs);
+          break;
+
+        case "ctt":
+          output = processor.GenerateCUPLTruthTable(numberOfOutputs, numberOfInputs);
+          break;
+
+        case "tt":
+          output = processor.GenerateHumanReadableTruthTable(numberOfOutputs, numberOfInputs);
+          break;
+
+        default:
+          shouter.ShoutLine(1, "Unknown bdump format {0}", format);
+          return 1;
+      }
+      Console.WriteLine();
+      Console.WriteLine(output);
+      return 0;
+    }
+    #endregion
   }
 }

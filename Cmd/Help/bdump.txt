@@ -19,15 +19,9 @@
 //    You should have received a copy of the GNU General Public License
 //    along with u2pa. If not, see <http://www.gnu.org/licenses/>.
 ~~~
-USAGE: u2pa <category> <command> [arguments] [options...]
+u2pa bdump <command> <arguments>
 
-Categories are:
-  help      displays detailed help for a category
-  prog      commands related to the Top Programmer device itself
-  rom       commands related to roms (that is ROM/PROM/EPROM/EEPROM...)
-  sram      commands related to srams
-  bdump     commands related to binary files
+all commands related to processing binary files
 
-General options:
- -v   --verbosity   Verbosity; i must be in the range [0,..,5] default is 3; 
-                    the higher i, the more crap on screen
+commands:
+  process   processes a binary file in various ways
