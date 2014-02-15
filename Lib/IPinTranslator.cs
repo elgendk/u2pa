@@ -1,6 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<!--
-//                             u2pa
+﻿//                             u2pa
 //
 //    A command line interface for Top Universal Programmers
 //
@@ -20,11 +18,29 @@
 //
 //    You should have received a copy of the GNU General Public License
 //    along with u2pa. If not, see <http://www.gnu.org/licenses/>.
--->
-<Root>
-  <Adaptor type = "27nXMb" holes = "40" pins = "40" placement = "0">
-    <Remap hole = "11" pin = "20"/>
-    <Remap hole = "20" pin = "30"/>
-    <Remap hole = "30" pin = "20"/>
-  </Adaptor>
-</Root>
+
+using U2Pa.Lib.IC;
+
+namespace U2Pa.Lib
+{
+  /// <summary>
+  /// An interface for translating between pin numbers with respect
+  /// to either the ZIF-socket og the DIL-package
+  /// </summary>
+  public interface IPinTranslator
+  {
+    /// <summary>
+    /// Translates a ZIF-pinnumber to DIL-pinnumber.
+    /// </summary>
+    /// <param name="zifPinNumer">The ZIF-pinnumber.</param>
+    /// <returns>The DIL-pinnumber.</returns>
+    int ToDIL(int zifPinNumer);
+
+    /// <summary>
+    /// Translates from DIL-pin to ZIF-pinnumber.
+    /// </summary>
+    /// <param name="dilPin">The DIL-pin.</param>
+    /// <returns>The ZIF-pinumber.</returns>
+    int ToZIF(Pin dilPin);
+  }
+}

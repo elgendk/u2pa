@@ -31,7 +31,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>U2Pa.Lib</RootNamespace>
-    <AssemblyName>U2Pa.Lib</AssemblyName>
+    <AssemblyName>u2Pa.Lib</AssemblyName>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
@@ -66,12 +66,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IC\Adaptor.cs" />
     <Compile Include="BinaryDumpProcessor.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="FPGAProgram.cs" />
+    <Compile Include="IC\AdaptorXml.cs" />
     <Compile Include="IC\EpromXml.cs" />
     <Compile Include="IC\Eprom.cs" />
     <Compile Include="IC\Pin.cs" />
+    <Compile Include="IPinTranslator.cs" />
     <Compile Include="IShouter.cs" />
     <Compile Include="IUsbBulkDevice.cs" />
     <Compile Include="Kernel.cs" />
@@ -97,7 +100,9 @@
     <Content Include="Doc\Protocol.txt" />
     <Content Include="Resources\LibUsbDotNet.dll" />
     <Content Include="Resources\LibUsbDotNet.xml" />
-    <Content Include="Xml\Adaptors.xml" />
+    <Content Include="Xml\Adaptors.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Xml\Config.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <SubType>Designer</SubType>
@@ -112,14 +117,18 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Xml\Config.xsd">
+    <Content Include="Xml\Adaptors.xsd">
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Xml\ICs.xsd">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Xml\Config.xsd">
       <SubType>Designer</SubType>
-    </None>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Xml\Eproms.xsd">
+      <SubType>Designer</SubType>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="Doc\Installation.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -130,6 +139,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Doc\AddingSupportForNewICs.txt" />
+    <Content Include="Xml\SRams.xsd">
+      <SubType>Designer</SubType>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
