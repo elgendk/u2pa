@@ -34,24 +34,33 @@ namespace U2Pa.Lib.IC
   /// </summary>
   public class SRamXml : SRam
   {
+    private static IDictionary<string, SRamXml> specified;
     /// <summary>
     /// Dictionary of the SRAMs specified in xml.
     /// <remarks>
     /// The keys are the 'Type' of the SRAM.
     /// </remarks>
     /// </summary>
-    public static IDictionary<string, SRamXml> Specified { get; private set; }
+    public static IDictionary<string, SRamXml> Specified
+    {
+      get
+      {
+        if (specified == null)
+          Load();
+        return specified;
+      }
+    }
 
     /// <summary>
-    /// Static ctor.
+    /// Loader.
     /// </summary>
-    static SRamXml()
+    private static void Load()
     {
       var xDocument = XDocument.Load(Path.Combine("Xml", "SRams.xml"));
       var xSchema = new XmlSchemaSet();
-      xSchema.Add("", Path.Combine("Xml", "ICs.xsd"));
+      xSchema.Add("", Path.Combine("Xml", "SRams.xsd"));
       xDocument.Validate(xSchema, null);
-      Specified =
+      specified =
         xDocument.Descendants("SRam").ToDictionary(
         x => x.Attribute("type").Value,
         x => new SRamXml()

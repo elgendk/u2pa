@@ -209,7 +209,7 @@ namespace U2Pa.Lib
       const int rereadCount = 5;
       Shouter.ShoutLine(2, "Reading EPROM{0}", eprom.Type);
       SetVccLevel(eprom.VccLevel);
-      var translator = new PinTranslator(eprom.DilType, ZIFType, eprom.Placement, eprom.UpsideDown);
+      var translator = eprom.GetPinTranslator(ZIFType);
       ApplyVcc(translator.ToZIF, eprom.VccPins);
       ApplyGnd(translator.ToZIF, eprom.GndPins);
       PullUpsEnable(true);
@@ -286,7 +286,7 @@ namespace U2Pa.Lib
     public void WriteEpromClassic(Eprom eprom, IList<byte> bytes, IList<int> patch = null)
     {
       var totalNumberOfAdresses = eprom.AddressPins.Length == 0 ? 0 : 1 << eprom.AddressPins.Length;
-      var translator = new PinTranslator(eprom.DilType, ZIFType, eprom.Placement, eprom.UpsideDown);
+      var translator = eprom.GetPinTranslator(ZIFType);
 
       SetVccLevel(eprom.VccLevel);
       ApplyGnd(translator.ToZIF, eprom.GndPins);
@@ -370,10 +370,10 @@ namespace U2Pa.Lib
       if(eprom.VppPins.Any(p => eprom.OutputEnable.Any(q => p.Number == q.Number)))
         throw new U2PaException("Fast Programming Algoritm can't by used for this EPROM (yet)");
       var totalNumberOfAdresses = eprom.AddressPins.Length == 0 ? 0 : 1 << eprom.AddressPins.Length;
-      var translator = new PinTranslator(eprom.DilType, ZIFType, 0, eprom.UpsideDown);
+      var translator = eprom.GetPinTranslator(ZIFType);
    
       {
-        var zif = new ZIFSocket(40);
+        var zif = new ZIFSocket(ZIFType);
         zif.SetAll(true);
         zif.Disable(eprom.Program, translator.ToZIF);
   
@@ -477,10 +477,10 @@ namespace U2Pa.Lib
     /// <returns>Tuples of non-working addresses: (address, read_byte, expected_byte).</returns>
     public List<Tuple<int, string, string>> SRamTest(IShouter shouter, SRam sram, ProgressBar progressBar, int totalNumberOfAdresses, bool firstBit)
     {
-      var tr = new PinTranslator(sram.DilType, 40, sram.Placement, sram.UpsideDown);
+      var translator = sram.GetPinTranslator(ZIFType);
       SetVccLevel(sram.VccLevel);
-      ApplyGnd(tr.ToZIF, sram.GndPins);
-      ApplyVcc(tr.ToZIF, sram.VccPins);
+      ApplyGnd(translator.ToZIF, sram.GndPins);
+      ApplyVcc(translator.ToZIF, sram.VccPins);
 
       var badCells = new List<Tuple<int, string, string>>();
       var writerZif = new ZIFSocket(40);
@@ -489,11 +489,11 @@ namespace U2Pa.Lib
       {
         var bit = startBit;
         writerZif.SetAll(true);
-        writerZif.Disable(sram.GndPins, tr.ToZIF);
-        writerZif.Enable(sram.Constants, tr.ToZIF);
-        writerZif.Enable(sram.ChipEnable, tr.ToZIF);
+        writerZif.Disable(sram.GndPins, translator.ToZIF);
+        writerZif.Enable(sram.Constants, translator.ToZIF);
+        writerZif.Enable(sram.ChipEnable, translator.ToZIF);
         sram.SetAddress(writerZif, address);
-        foreach (var i in sram.DataPins.Select(tr.ToZIF))
+        foreach (var i in sram.DataPins.Select(translator.ToZIF))
         {
           writerZif[i] = bit;
           bit = !bit;
@@ -501,10 +501,10 @@ namespace U2Pa.Lib
         startBit = !startBit;
         WriteZIF(writerZif, "");
 
-        writerZif.Enable(sram.WriteEnable, tr.ToZIF);
+        writerZif.Enable(sram.WriteEnable, translator.ToZIF);
         WriteZIF(writerZif, "");
 
-        writerZif.Disable(sram.WriteEnable, tr.ToZIF);
+        writerZif.Disable(sram.WriteEnable, translator.ToZIF);
         WriteZIF(writerZif, "");
 
         progressBar.Progress();
@@ -515,23 +515,23 @@ namespace U2Pa.Lib
       {
         var bit = startBit;
         writerZif.SetAll(true);
-        writerZif.Disable(sram.GndPins, tr.ToZIF);
-        writerZif.Enable(sram.Constants, tr.ToZIF);
-        writerZif.Enable(sram.ChipEnable, tr.ToZIF);
-        writerZif.Enable(sram.OutputEnable, tr.ToZIF);
-        writerZif.Disable(sram.WriteEnable, tr.ToZIF);
+        writerZif.Disable(sram.GndPins, translator.ToZIF);
+        writerZif.Enable(sram.Constants, translator.ToZIF);
+        writerZif.Enable(sram.ChipEnable, translator.ToZIF);
+        writerZif.Enable(sram.OutputEnable, translator.ToZIF);
+        writerZif.Disable(sram.WriteEnable, translator.ToZIF);
         sram.SetAddress(writerZif, address);
         WriteZIF(writerZif, "Writing SRam address.");
 
         var readerZif = ReadZIF("Reading SRam data.")[0];
-        foreach (var i in sram.DataPins.Select(tr.ToZIF))
+        foreach (var i in sram.DataPins.Select(translator.ToZIF))
         {
           if (readerZif[i] != bit)
           {
             var expected = "";
             var read = "";
             bit = startBit;
-            foreach (var j in sram.DataPins.Select(tr.ToZIF))
+            foreach (var j in sram.DataPins.Select(translator.ToZIF))
             {
               expected = expected + (bit ? "1" : "0");
               read = read + (readerZif[j] ? "1" : "0");

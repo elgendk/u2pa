@@ -103,13 +103,23 @@ namespace U2Pa.Lib.IC
     public Pin[] GndPins;
 
     /// <summary>
+    /// Gets the <see cref="IPinTranslator"/>.
+    /// </summary>
+    /// <param name="zifType">The zif type.</param>
+    /// <returns></returns>
+    public IPinTranslator GetPinTranslator(int zifType)
+    {
+      return new PinTranslator(DilType, zifType, Placement, UpsideDown);
+    }
+
+    /// <summary>
     /// Sets the specified address on the specified zif socket.
     /// </summary>
     /// <param name="zif">The zif socket to write to.</param>
     /// <param name="address">The address.</param>
     public void SetAddress(ZIFSocket zif, int address)
     {
-      zif.SetPins(address, AddressPins, new PinTranslator(DilType, zif.Size, Placement, UpsideDown).ToZIF);
+      zif.SetPins(address, AddressPins, GetPinTranslator(zif.Size).ToZIF);
     }
 
     /// <summary>
@@ -119,7 +129,7 @@ namespace U2Pa.Lib.IC
     /// <param name="data">The data.</param>
     public void SetData(ZIFSocket zif, byte[] data)
     {
-      zif.SetPins(data, DataPins, new PinTranslator(DilType, zif.Size, Placement, UpsideDown).ToZIF);
+      zif.SetPins(data, DataPins, GetPinTranslator(zif.Size).ToZIF);
     }
 
 
@@ -132,7 +142,7 @@ namespace U2Pa.Lib.IC
       // DIL pin, ZIF pin, description.
       var left = new List<Tuple<int, int>>();
       var right = new List<Tuple<int, int>>();
-      var t = new PinTranslator(DilType, 40, Placement, UpsideDown);
+      var t = GetPinTranslator(40);
 
       // First blank all fields.
       var zifPins = new string[41];
@@ -183,8 +193,8 @@ namespace U2Pa.Lib.IC
         if (left[i].Item2 == 0) middle = " | | ";
         else if (right[i].Item1 == 20 - Placement) middle = String.Format(" +-----{0}-----+ ", UpsideDown ? "O" : "-");
         else if (right[i].Item1 == 20 - Placement - (DilType / 2) + 1) middle = String.Format(" +-----{0}-----+ ", UpsideDown ? "-" : "O");
-        else if (right[i].Item2 == (DilType / 4) + 1) middle = String.Format(" |{0}| ", Type.Pad(11));
-        else middle = " |".PadRight(13) + "| ";
+        else if (right[i].Item2 == (DilType / 4) + 1) middle = String.Format(" +{0}+ ", Type.Pad(11));
+        else middle = " +".PadRight(13) + "+ ";
 
         display += String.Format("  |{0} {1} {2}{3}{4} {5} {6}|\r\n",
                                  left[i].Item1.ToString(CultureInfo.InvariantCulture).PadRight(2),

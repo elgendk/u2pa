@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+//                             u2pa
+//
+//    A command line interface for Top Universal Programmers
+//
+//    Copyright (C) Elgen };-) aka Morten Overgaard 2012
+//
+//    This file is part of u2pa.
+//
+//    u2pa is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
+//
+//    u2pa is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with u2pa. If not, see <http://www.gnu.org/licenses/>.
+-->
+<xs:schema id="Root" xmlns="" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="Root">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="SRam">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Description" type="xs:string" minOccurs="0" />
+              <xs:element name="Notes" type="xs:string" minOccurs="0" />
+              <xs:element name="AddressPins" type="xs:string" minOccurs="1" />
+              <xs:element name="DataPins" type="xs:string" minOccurs="1" />
+              <xs:element name="ChipEnable" type="xs:string" minOccurs="1" />
+              <xs:element name="OutputEnable" type="xs:string" minOccurs="1" />
+              <xs:element name="WriteEnable" type="xs:string" minOccurs="1" />
+              <xs:element name="Constants" type="xs:string" minOccurs="0" />
+              <xs:element name="VccPins" type="xs:string" minOccurs="1" />
+              <xs:element name="GndPins" type="xs:string" minOccurs="1" />
+            </xs:sequence>
+            <xs:attribute name="type" type="xs:string" />
+            <xs:attribute name="dilType" type="xs:integer" />
+            <xs:attribute name="placement" type="xs:integer" />
+            <!--<xs:attribute name="upsideDown" type="xs:boolean" use="optional" />-->
+            <xs:attribute name="adaptor" type="xs:string" use="optional"/>
+            <xs:attribute name="Vcc" type="xs:string" />
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

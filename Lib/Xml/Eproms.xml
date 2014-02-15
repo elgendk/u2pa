@@ -88,7 +88,7 @@
     <VppPins>22</VppPins>
   </Eprom>
 
-  <Eprom type = "271024" dilType = "40" placement = "0" Vcc = "5" Vpp = "12.9" progPulse = "3" initialProgDelay = "2000">
+  <Eprom type = "271024" dilType = "40" placement = "0" adaptor = "27nXMb" Vcc = "5" Vpp = "12.9" progPulse = "3" initialProgDelay = "2000">
     <Notes>
       On a Top2005+, pins 11 and 30 can't be GND'ed.
       Therefore GND is applied to pin 20 and /OE is remapped to pin 30.
@@ -99,15 +99,14 @@
     <AddressPins>21, 22, 23, 24, 25, 26, 27, 28, 29, 31, 32, 33, 34, 35, 36, 37</AddressPins>
     <DataPins>19, 18, 17, 16, 15, 14, 13, 12, 10, 9, 8, 7, 6, 5, 4, 3</DataPins>
     <ChipEnable>/2</ChipEnable>
-    <OutputEnable>/30</OutputEnable>
+    <OutputEnable>/20</OutputEnable>
     <Program>/39</Program>
-    <Constants>/11</Constants>
     <VccPins>40</VccPins>
-    <GndPins>20</GndPins>
+    <GndPins>11, 30</GndPins>
     <VppPins>1</VppPins>
   </Eprom>
   
-  <Eprom type = "272048" dilType = "40" placement = "0" Vcc = "5" Vpp = "12.9" progPulse = "3" initialProgDelay = "2000">
+  <Eprom type = "272048" dilType = "40" placement = "0" adaptor = "27nXMb" Vcc = "5" Vpp = "12.9" progPulse = "3" initialProgDelay = "2000">
     <Notes>
       On a Top2005+, pins 11 and 30 can't be GND'ed.
       Therefore GND is applied to pin 20 and /OE is remapped to pin 30.
@@ -118,15 +117,15 @@
     <AddressPins>21, 22, 23, 24, 25, 26, 27, 28, 29, 31, 32, 33, 34, 35, 36, 37, 38</AddressPins>
     <DataPins>19, 18, 17, 16, 15, 14, 13, 12, 10, 9, 8, 7, 6, 5, 4, 3</DataPins>
     <ChipEnable>/2</ChipEnable>
-    <OutputEnable>/30</OutputEnable>
+    <OutputEnable>/20</OutputEnable>
     <Program>/39</Program>
-    <Constants>/11</Constants>
+    <Constants></Constants>
     <VccPins>40</VccPins>
-    <GndPins>20</GndPins>
+    <GndPins>11, 30</GndPins>
     <VppPins>1</VppPins>
   </Eprom>
 
-  <Eprom type = "274096" dilType = "40" placement = "0" Vcc = "5" Vpp = "12.9" progPulse = "3" initialProgDelay = "2000">
+  <Eprom type = "274096" dilType = "40" placement = "0" adaptor = "27nXMb" Vcc = "5" Vpp = "12.9" progPulse = "3" initialProgDelay = "2000">
     <Notes>
       On a Top2005+, pins 11 and 30 can't be GND'ed.
       Therefore GND is applied to pin 20 and /OE is remapped to pin 30.
@@ -137,11 +136,11 @@
     <AddressPins>21, 22, 23, 24, 25, 26, 27, 28, 29, 31, 32, 33, 34, 35, 36, 37, 38, 39</AddressPins>
     <DataPins>19, 18, 17, 16, 15, 14, 13, 12, 10, 9, 8, 7, 6, 5, 4, 3</DataPins>
     <ChipEnable>/2</ChipEnable>
-    <OutputEnable>/30</OutputEnable>
+    <OutputEnable>/20</OutputEnable>
     <Program>/2</Program>
-    <Constants>/11</Constants>
+    <Constants></Constants>
     <VccPins>40</VccPins>
-    <GndPins>20</GndPins>
+    <GndPins>11, 30</GndPins>
     <VppPins>1</VppPins>
   </Eprom>
 

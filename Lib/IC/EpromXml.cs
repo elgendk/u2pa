@@ -34,24 +34,33 @@ namespace U2Pa.Lib.IC
   /// </summary>
   public class EpromXml : Eprom
   {
+    private static IDictionary<string, EpromXml> specified;
     /// <summary>
     /// Dictionary of the EPROMs specified in xml.
     /// <remarks>
     /// The keys are the 'Type' of the EPROM.
     /// </remarks>
     /// </summary>
-    public static IDictionary<string, EpromXml> Specified { get; private set; }
+    public static IDictionary<string, EpromXml> Specified 
+    {
+      get
+      {
+        if (specified == null)
+          Load();
+        return specified;
+      }
+    }
     
     /// <summary>
-    /// Static ctor.
+    /// Loader.
     /// </summary>
-    static EpromXml()
+    private static void Load()
     {
       var xDocument = XDocument.Load(Path.Combine("Xml", "Eproms.xml"));
       var xSchema = new XmlSchemaSet();
-      xSchema.Add("", Path.Combine("Xml", "ICs.xsd"));
+      xSchema.Add("", Path.Combine("Xml", "Eproms.xsd"));
       xDocument.Validate(xSchema, null);
-      Specified = 
+      specified = 
         xDocument.Descendants("Eprom").ToDictionary(
         x => x.Attribute("type").Value,
         x => new EpromXml
@@ -59,6 +68,9 @@ namespace U2Pa.Lib.IC
                  Type = x.Attribute("type").Value,
                  DilType = Int32.Parse(x.Attribute("dilType").Value),
                  Placement = Int32.Parse(x.Attribute("placement").Value),
+                 Adaptor = x.Attribute("adaptor") != null
+                  ? AdaptorXml.Specified[x.Attribute("adaptor").Value]
+                  : null,
                  UpsideDown = x.Attribute("upsideDown") != null 
                    ? Boolean.Parse(x.Attribute("upsideDown").Value) 
                    : false,

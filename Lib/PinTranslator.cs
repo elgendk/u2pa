@@ -26,9 +26,9 @@ namespace U2Pa.Lib
 {
   /// <summary>
   /// A class for translating between pin numbers with respect
-  /// <to either the ZIF-socket og the DIL-package
+  /// to either the ZIF-socket og the DIL-package
   /// </summary>
-  public class PinTranslator
+  public class PinTranslator : IPinTranslator
   {
     private readonly int dilIndex;
     private readonly int dilType;
