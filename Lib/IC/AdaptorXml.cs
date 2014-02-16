@@ -100,7 +100,7 @@ namespace U2Pa.Lib.IC
             Placement = placement,
             FromHoleToPin = fromHoleToPin,
             FromPinToHole = fromPinToHole,
-            AdaptorTranslator = new PinTranslator(holeType, pinType, placement)
+            AdaptorTranslator = new PinTranslator(pinType, pinType, placement)
           };
         });
     }
