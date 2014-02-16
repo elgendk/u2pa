@@ -35,7 +35,6 @@ namespace U2Pa.Lib
     private readonly int zifType;
     private readonly int zifIndex;
     private readonly int placement;
-    private readonly bool upsideDown;
 
     /// <summary>
     /// ctor.
@@ -43,11 +42,7 @@ namespace U2Pa.Lib
     /// <param name="dilType">Number of pins on the DIL-package.</param>
     /// <param name="zifType">Number of pins in the ZIF-socket.</param>
     /// <param name="placement">Placement/offset of the DIL-package in the ZIF socket.</param>
-    /// <param name="upsideDown">
-    /// True if the DIL-package is placed upside-down
-    /// instead of the drawing on Top-programmers frontcover.
-    /// </param>
-    public PinTranslator(int dilType, int zifType, int placement, bool upsideDown)
+    public PinTranslator(int dilType, int zifType, int placement)
     {
       if (dilType % 2 != 0)
         throw new U2PaException("dilType must be even, but was {0}", dilType);
@@ -60,24 +55,6 @@ namespace U2Pa.Lib
       if (placement + dilIndex > zifIndex)
         throw new U2PaException("DIL{0} can't be placed at position {1}", dilType, placement);
       this.placement = placement;
-      this.upsideDown = upsideDown;
-    }
-
-    private Pin Turn180DegIfNeeded(Pin dilPin)
-    {
-      if (!upsideDown) return dilPin;
-      return new Pin 
-      { 
-        EnableLow = dilPin.EnableLow, 
-        TrueZIF = dilPin.TrueZIF, 
-        Number = Turn180DegIfNeeded(dilPin.Number)
-      }; 
-    }
-
-    private int Turn180DegIfNeeded(int dilPinNumber)
-    {
-      if (!upsideDown) return dilPinNumber;
-      return dilPinNumber > dilIndex ? dilPinNumber - dilIndex : dilPinNumber + dilIndex; 
     }
 
     /// <summary>
@@ -93,12 +70,12 @@ namespace U2Pa.Lib
       {
         returnValue = zifPinNumer - zifIndex + dilIndex + placement;
         return 
-          returnValue > dilIndex || returnValue < 0 ? 0 : Turn180DegIfNeeded(returnValue);
+          returnValue > dilIndex || returnValue < 0 ? 0 : returnValue;
       }
       
       returnValue = zifPinNumer - zifIndex + dilIndex - placement;
       return
-        returnValue <= dilIndex || returnValue > dilType ? 0 : Turn180DegIfNeeded(returnValue);
+        returnValue <= dilIndex || returnValue > dilType ? 0 : returnValue;
     }
 
     /// <summary>
@@ -110,7 +87,6 @@ namespace U2Pa.Lib
     {
       if (dilPin.TrueZIF) return dilPin.Number;
       if (dilPin.Number == 0) return 0;
-      dilPin = Turn180DegIfNeeded(dilPin);
       if (dilPin.Number <= dilIndex)
         return dilPin.Number + zifIndex - dilIndex - placement;
       return dilPin.Number + zifIndex - dilIndex + placement;

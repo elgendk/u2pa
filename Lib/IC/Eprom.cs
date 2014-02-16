@@ -56,12 +56,6 @@ namespace U2Pa.Lib.IC
     public int Placement;
 
     /// <summary>
-    /// True if the EPROM should be placed upside-down instead
-    /// of the drawing on Top-programmers frontcover
-    /// </summary>
-    public bool UpsideDown;
-
-    /// <summary>
     /// The VccLevel.
     /// </summary>
     public double VccLevel;
@@ -138,7 +132,7 @@ namespace U2Pa.Lib.IC
     /// <returns></returns>
     public IPinTranslator GetPinTranslator(int zifType)
     {
-      var pinTranslator = new PinTranslator(DilType, zifType, Placement, UpsideDown);
+      var pinTranslator = new PinTranslator(DilType, zifType, Placement);
       return Adaptor == null
         ? (IPinTranslator) pinTranslator
         : (IPinTranslator) Adaptor.Init(pinTranslator);
@@ -251,8 +245,8 @@ namespace U2Pa.Lib.IC
       {
         string middle;
         if (left[i].Item2 == 0) middle = " | | ";
-        else if (right[i].Item1 == 20 - Placement) middle = String.Format(" +-----{0}-----+ ", UpsideDown ? "O" : "-");
-        else if (right[i].Item1 == 20 - Placement - (DilType / 2) + 1) middle = String.Format(" +-----{0}-----+ ", UpsideDown ? "-" : "O");
+        else if (right[i].Item1 == 20 - Placement) middle = String.Format(" +-----{0}-----+ ", "-");
+        else if (right[i].Item1 == 20 - Placement - (DilType / 2) + 1) middle = String.Format(" +-----{0}-----+ ", "O");
         else if (right[i].Item2 == (DilType/4) + 1) middle = String.Format(" +{0}+ ", Type.Pad(11));
         else middle = " +".PadRight(13) + "+ ";
 

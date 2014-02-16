@@ -68,9 +68,6 @@ namespace U2Pa.Lib.IC
           Type = x.Attribute("type").Value,
           DilType = Int32.Parse(x.Attribute("dilType").Value),
           Placement = Int32.Parse(x.Attribute("placement").Value),
-          UpsideDown = x.Attribute("upsideDown") != null
-            ? Boolean.Parse(x.Attribute("upsideDown").Value)
-            : false,
           VccLevel = Double.Parse(x.Attribute("Vcc").Value, CultureInfo.InvariantCulture),
           AddressPins = x.ToPinArray("AddressPins"),
           DataPins = x.ToPinArray("DataPins"),

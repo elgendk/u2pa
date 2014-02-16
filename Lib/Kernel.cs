@@ -217,7 +217,7 @@ namespace U2Pa.Lib
       var quit = false;
       while(!quit)
       {
-        var tr = new PinTranslator(40, 40, 0, false);
+        var tr = new PinTranslator(40, 40, 0);
         var zif = new ZIFSocket(40);
         zif.SetAll(true);
         using (var td = TopDevice.Create(shouter))
@@ -266,7 +266,7 @@ namespace U2Pa.Lib
       var quit = false;
       while (!quit)
       {
-        var tr = new PinTranslator(40, 40, 0, false);
+        var tr = new PinTranslator(40, 40, 0);
         var zif = new ZIFSocket(40);
         zif.SetAll(true);
         using (var td = TopDevice.Create(shouter))
@@ -315,7 +315,7 @@ namespace U2Pa.Lib
       var quit = false;
       while (!quit)
       {
-        var tr = new PinTranslator(40, 40, 0, false);
+        var tr = new PinTranslator(40, 40, 0);
         var zif = new ZIFSocket(40);
         zif.SetAll(true);
         using (var td = TopDevice.Create(shouter))
@@ -364,7 +364,7 @@ namespace U2Pa.Lib
       var quit = false;
       while (!quit)
       {
-        var tr = new PinTranslator(40, 40, 0, false);
+        var tr = new PinTranslator(40, 40, 0);
         var zif = new ZIFSocket(40);
         zif.SetAll(true);
         using (var td = TopDevice.Create(shouter))
@@ -413,7 +413,7 @@ namespace U2Pa.Lib
       var quit = false;
       while (!quit)
       {
-        var tr = new PinTranslator(40, 40, 0, false);
+        var tr = new PinTranslator(40, 40, 0);
         var zif = new ZIFSocket(40);
         zif.SetAll(true);
         using (var td = TopDevice.Create(shouter))
@@ -465,7 +465,7 @@ namespace U2Pa.Lib
       //var fpgaFile = new FPGAProgram(@"C:\Top\Topwin6\Blib2\ictest.bit");
       //Console.WriteLine(fpgaFile);
       {
-        var tr = new PinTranslator(40, 40, 0, false);
+        var tr = new PinTranslator(40, 40, 0);
         var zif = new ZIFSocket(40);
         zif.SetAll(true);
         using (var td = TopDevice.Create(shouter))
@@ -481,7 +481,7 @@ namespace U2Pa.Lib
       }
 
       {
-        var tr = new PinTranslator(40, 40, 0, false);
+        var tr = new PinTranslator(40, 40, 0);
         var zif = new ZIFSocket(40);
         zif.SetAll(false);
         using (var td = TopDevice.Create(shouter))
