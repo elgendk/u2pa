@@ -39,9 +39,9 @@ namespace U2Pa.Lib.IC
     protected IPinTranslator ICTranslator { get; set; }
     protected IPinTranslator AdaptorTranslator { get; set; }
 
-    public Adaptor Init(int dilType, int zifType, int placement, bool upsideDown)
+    public Adaptor Init(int dilType, int zifType, int placement)
     {
-      return Init(new PinTranslator(dilType, zifType, placement, upsideDown));
+      return Init(new PinTranslator(dilType, zifType, placement));
     }
 
     public Adaptor Init(IPinTranslator icTranslator)

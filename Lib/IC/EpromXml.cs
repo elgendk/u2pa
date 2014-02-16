@@ -71,9 +71,6 @@ namespace U2Pa.Lib.IC
                  Adaptor = x.Attribute("adaptor") != null
                   ? AdaptorXml.Specified[x.Attribute("adaptor").Value]
                   : null,
-                 UpsideDown = x.Attribute("upsideDown") != null 
-                   ? Boolean.Parse(x.Attribute("upsideDown").Value) 
-                   : false,
                  VccLevel = Double.Parse(x.Attribute("Vcc").Value, CultureInfo.InvariantCulture),
                  VppLevel = Double.Parse(x.Attribute("Vpp").Value, CultureInfo.InvariantCulture),
                  ProgPulse = Int32.Parse(x.Attribute("progPulse").Value, CultureInfo.InvariantCulture),
