@@ -68,6 +68,9 @@ namespace U2Pa.Lib.IC
           Type = x.Attribute("type").Value,
           DilType = Int32.Parse(x.Attribute("dilType").Value),
           Placement = Int32.Parse(x.Attribute("placement").Value),
+          Adaptor = x.Attribute("adaptor") != null
+           ? AdaptorXml.Specified[x.Attribute("adaptor").Value]
+           : null,
           VccLevel = Double.Parse(x.Attribute("Vcc").Value, CultureInfo.InvariantCulture),
           AddressPins = x.ToPinArray("AddressPins"),
           DataPins = x.ToPinArray("DataPins"),

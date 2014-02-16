@@ -97,13 +97,20 @@ namespace U2Pa.Lib.IC
     public Pin[] GndPins;
 
     /// <summary>
+    /// Adaptor; can be <c>null</c>.
+    /// </summary>
+    public Adaptor Adaptor;
+
+    /// <summary>
     /// Gets the <see cref="IPinTranslator"/>.
     /// </summary>
     /// <param name="zifType">The zif type.</param>
     /// <returns></returns>
     public IPinTranslator GetPinTranslator(int zifType)
     {
-      return new PinTranslator(DilType, zifType, Placement);
+      return Adaptor == null
+        ? (IPinTranslator)(new PinTranslator(DilType, zifType, Placement))
+        : (IPinTranslator)Adaptor.Init(DilType, Placement);
     }
 
     /// <summary>
@@ -133,6 +140,7 @@ namespace U2Pa.Lib.IC
     /// <returns>The string representation of the SRAM.</returns>
     public override string ToString()
     {
+      var adaptorInUse = Adaptor != null;
       // DIL pin, ZIF pin, description.
       var left = new List<Tuple<int, int>>();
       var right = new List<Tuple<int, int>>();
@@ -185,9 +193,9 @@ namespace U2Pa.Lib.IC
       {
         string middle;
         if (left[i].Item2 == 0) middle = " | | ";
-        else if (right[i].Item1 == 20 - Placement) middle = String.Format(" +-----{0}-----+ ", "-");
-        else if (right[i].Item1 == 20 - Placement - (DilType / 2) + 1) middle = String.Format(" +-----{0}-----+ ", "O");
-        else if (right[i].Item2 == (DilType / 4) + 1) middle = String.Format(" +{0}+ ", Type.Pad(11));
+        else if (!adaptorInUse && right[i].Item1 == 20 - Placement) middle = String.Format(" +-----{0}-----+ ", "-");
+        else if (!adaptorInUse && right[i].Item1 == 20 - Placement - (DilType / 2) + 1) middle = String.Format(" +-----{0}-----+ ", "O");
+        else if (!adaptorInUse && right[i].Item2 == (DilType / 4) + 1) middle = String.Format(" +{0}+ ", Type.Pad(11));
         else middle = " +".PadRight(13) + "+ ";
 
         display += String.Format("  |{0} {1} {2}{3}{4} {5} {6}|\r\n",
@@ -204,6 +212,8 @@ namespace U2Pa.Lib.IC
       display += "       ZIF Socket Handle -->  |\r\n";
       display += "                              O\r\n";
 
+      display += String.Format("\r\n      SRam   : {0}", Type);
+      display += adaptorInUse ? String.Format("\r\n      Adaptor: {0}\r\n", Adaptor.Type) : "";
       display += String.IsNullOrEmpty(Notes) ? "" : Notes;
 
       return display;

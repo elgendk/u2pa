@@ -64,7 +64,7 @@ namespace U2Pa.Lib
     /// <returns>The DIL-pinnumber.</returns>
     public int ToDIL(int zifPinNumer)
     {
-      if (zifPinNumer == 0) return 0;
+      if (zifPinNumer == 0 || zifPinNumer > zifType) return 0;
       int returnValue;
       if (zifPinNumer <= zifIndex)
       {
@@ -86,10 +86,13 @@ namespace U2Pa.Lib
     public int ToZIF(Pin dilPin)
     {
       if (dilPin.TrueZIF) return dilPin.Number;
-      if (dilPin.Number == 0) return 0;
+      if (dilPin.Number == 0 || dilPin.Number > dilType) return 0;
+      int returnValue;
       if (dilPin.Number <= dilIndex)
-        return dilPin.Number + zifIndex - dilIndex - placement;
-      return dilPin.Number + zifIndex - dilIndex + placement;
+        returnValue = dilPin.Number + zifIndex - dilIndex - placement;
+      else
+        returnValue = dilPin.Number + zifIndex - dilIndex + placement;
+      return returnValue > zifType ? 0 : returnValue;
     }
   }
 }

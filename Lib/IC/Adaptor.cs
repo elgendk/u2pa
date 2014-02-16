@@ -30,8 +30,19 @@ namespace U2Pa.Lib.IC
     /// </summary>
     public string Type;
 
+    /// <summary>
+    /// Placement/offset of the Adaptor in the ZIF socket.
+    /// </summary>
     public int Placement { get; protected set; }
+
+    /// <summary>
+    /// This many pins on the Adaptor.
+    /// </summary>
     public int PinType { get; protected set; }
+
+    /// <summary>
+    /// This many holes in the Adaptor socket.
+    /// </summary>
     public int HoleType { get; protected set; }
 
     protected IDictionary<int, int> FromPinToHole { get; set; }
@@ -39,11 +50,22 @@ namespace U2Pa.Lib.IC
     protected IPinTranslator ICTranslator { get; set; }
     protected IPinTranslator AdaptorTranslator { get; set; }
 
-    public Adaptor Init(int dilType, int zifType, int placement)
+    /// <summary>
+    /// Sets the <see cref="ICTranslator"/>.
+    /// </summary>
+    /// <param name="dilType">The dil type of the IC.</param>
+    /// <param name="placement">The placement of the IC in the Adaptor socket.</param>
+    /// <returns>The initialized Adaptor.</returns>
+    public Adaptor Init(int dilType, int placement)
     {
-      return Init(new PinTranslator(dilType, zifType, placement));
+      return Init(new PinTranslator(dilType, HoleType, placement));
     }
 
+    /// <summary>
+    /// Sets the <see cref="ICTranslator"/>.
+    /// </summary>
+    /// <param name="icTranslator">The ICTranslator.</param>
+    /// <returns></returns>
     public Adaptor Init(IPinTranslator icTranslator)
     {
       ICTranslator = icTranslator;

@@ -24,7 +24,7 @@
 <xs:schema id="Root" xmlns="" xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <xs:element name="Root">
     <xs:complexType>
-      <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
         <xs:element name="Adaptor">
           <xs:complexType>
             <xs:sequence>
@@ -45,7 +45,7 @@
             <xs:attribute type="xs:integer" name="placement"/>
           </xs:complexType>
         </xs:element>
-      </xs:sequence>
+      </xs:choice>
     </xs:complexType>
   </xs:element>
 </xs:schema>

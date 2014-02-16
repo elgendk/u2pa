@@ -27,4 +27,91 @@
     <Remap hole = "20" pin = "30"/>
     <Remap hole = "30" pin = "20"/>
   </Adaptor>
+
+  <Adaptor type = "UpsideDown" holes = "40" pins = "40" placement = "0">
+    <Remap hole = "1" pin = "21"/>
+    <Remap hole = "2" pin = "22"/>
+    <Remap hole = "3" pin = "23"/>
+    <Remap hole = "4" pin = "24"/>
+    <Remap hole = "5" pin = "25"/>
+    <Remap hole = "6" pin = "26"/>
+    <Remap hole = "7" pin = "27"/>
+    <Remap hole = "8" pin = "28"/>
+    <Remap hole = "9" pin = "29"/>
+    <Remap hole = "10" pin = "30"/>
+    <Remap hole = "11" pin = "31"/>
+    <Remap hole = "12" pin = "32"/>
+    <Remap hole = "13" pin = "33"/>
+    <Remap hole = "14" pin = "34"/>
+    <Remap hole = "15" pin = "35"/>
+    <Remap hole = "16" pin = "36"/>
+    <Remap hole = "17" pin = "37"/>
+    <Remap hole = "18" pin = "38"/>
+    <Remap hole = "19" pin = "39"/>
+    <Remap hole = "20" pin = "40"/>
+    <Remap hole = "21" pin = "1"/>
+    <Remap hole = "22" pin = "2"/>
+    <Remap hole = "23" pin = "3"/>
+    <Remap hole = "24" pin = "4"/>
+    <Remap hole = "25" pin = "5"/>
+    <Remap hole = "26" pin = "6"/>
+    <Remap hole = "27" pin = "7"/>
+    <Remap hole = "28" pin = "8"/>
+    <Remap hole = "29" pin = "9"/>
+    <Remap hole = "30" pin = "10"/>
+    <Remap hole = "31" pin = "11"/>
+    <Remap hole = "32" pin = "12"/>
+    <Remap hole = "33" pin = "13"/>
+    <Remap hole = "34" pin = "14"/>
+    <Remap hole = "35" pin = "15"/>
+    <Remap hole = "36" pin = "16"/>
+    <Remap hole = "37" pin = "17"/>
+    <Remap hole = "38" pin = "18"/>
+    <Remap hole = "39" pin = "19"/>
+    <Remap hole = "40" pin = "20"/>
+  </Adaptor>
+<!--
+  <Adaptor type = "Dummy" holes = "42" pins = "40" placement = "0">
+    <Remap hole = "1" pin = "30"/>
+    <Remap hole = "2" pin = "1"/>
+    <Remap hole = "3" pin = "2"/>
+    <Remap hole = "4" pin = "3"/>
+    <Remap hole = "5" pin = "4"/>
+    <Remap hole = "6" pin = "5"/>
+    <Remap hole = "7" pin = "6"/>
+    <Remap hole = "8" pin = "7"/>
+    <Remap hole = "9" pin = "8"/>
+    <Remap hole = "10" pin = "9"/>
+    <Remap hole = "11" pin = "10"/>
+    <Remap hole = "13" pin = "12"/>
+    <Remap hole = "14" pin = "13"/>
+    <Remap hole = "15" pin = "14"/>
+    <Remap hole = "16" pin = "15"/>
+    <Remap hole = "17" pin = "16"/>
+    <Remap hole = "18" pin = "17"/>
+    <Remap hole = "19" pin = "18"/>
+    <Remap hole = "20" pin = "19"/>
+    <Remap hole = "21" pin = "20"/>
+    <Remap hole = "22" pin = "21"/>
+    <Remap hole = "23" pin = "22"/>
+    <Remap hole = "24" pin = "23"/>
+    <Remap hole = "25" pin = "24"/>
+    <Remap hole = "26" pin = "25"/>
+    <Remap hole = "27" pin = "26"/>
+    <Remap hole = "28" pin = "27"/>
+    <Remap hole = "29" pin = "28"/>
+    <Remap hole = "30" pin = "29"/>
+    <Remap hole = "32" pin = "31"/>
+    <Remap hole = "33" pin = "32"/>
+    <Remap hole = "34" pin = "33"/>
+    <Remap hole = "35" pin = "34"/>
+    <Remap hole = "36" pin = "35"/>
+    <Remap hole = "37" pin = "36"/>
+    <Remap hole = "38" pin = "37"/>
+    <Remap hole = "39" pin = "38"/>
+    <Remap hole = "40" pin = "39"/>
+    <Remap hole = "41" pin = "40"/>
+    <Remap hole = "42" pin = "11"/>
+  </Adaptor>
+-->
 </Root>
