@@ -126,6 +126,11 @@ namespace U2Pa.Lib.IC
     public Adaptor Adaptor;
 
     /// <summary>
+    /// Placement/offset of the Adaptor in the ZIF socket.
+    /// </summary>
+    public int AdaptorPlacement;
+
+    /// <summary>
     /// Gets the <see cref="IPinTranslator"/>.
     /// </summary>
     /// <param name="zifType">The zif type.</param>
@@ -134,7 +139,7 @@ namespace U2Pa.Lib.IC
     {
       return Adaptor == null
         ? (IPinTranslator) (new PinTranslator(DilType, zifType, Placement))
-        : (IPinTranslator) Adaptor.Init(DilType, Placement);
+        : (IPinTranslator) Adaptor.Init(zifType, AdaptorPlacement, DilType, Placement);
     }
 
     /// <summary>

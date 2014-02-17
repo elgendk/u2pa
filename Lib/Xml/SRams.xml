@@ -34,7 +34,7 @@
     <ChipEnable>/8</ChipEnable>
     <OutputEnable></OutputEnable>
     <WriteEnable>/10</WriteEnable>
-    <Constants>/9</Constants>
+    <Constants></Constants>
     <VccPins>18</VccPins>
     <GndPins>20Z</GndPins>
   </SRam>

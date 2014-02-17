@@ -45,7 +45,7 @@ namespace U2Pa.Test
     }
 
     [Test]
-    public void Dil32ZIF40Placement1()
+    public void Dil32ZIF40Placement2()
     {
       var translator = new PinTranslator(32, 40, 2);
 

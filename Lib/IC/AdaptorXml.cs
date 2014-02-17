@@ -56,53 +56,60 @@ namespace U2Pa.Lib.IC
       var xSchema = new XmlSchemaSet();
       xSchema.Add("", Path.Combine("Xml", "Adaptors.xsd"));
       xDocument.Validate(xSchema, null);
-      specified =
-        xDocument.Descendants("Adaptor").ToDictionary(
-        x => x.Attribute("type").Value,
-        x =>
+      specified = xDocument.Descendants("Adaptor").ToDictionary(x => x.Attribute("type").Value, Load);
+    }
+
+    /// <summary>
+    /// Method for unit testing.
+    /// </summary>
+    internal static AdaptorXml ParseXmlDoc(string xmlString)
+    {
+      var xDocument = XDocument.Parse(xmlString);
+      var xSchema = new XmlSchemaSet();
+      xSchema.Add("", Path.Combine("Xml", "Adaptors.xsd"));
+      xDocument.Validate(xSchema, null);
+      return AdaptorXml.Load(xDocument.Descendants("Adaptor").Single());
+    }
+
+    internal static AdaptorXml Load(XElement x)
+    {
+      {
+        var remaps = x.Elements("Remap")
+          .Select(e => Tuple.Create(
+            Int32.Parse(e.Attribute("hole").Value),
+            Int32.Parse(e.Attribute("pin").Value)))
+          .ToList();
+        var fromHoleToPin = new Dictionary<int, int>();
+        var fromPinToHole = new Dictionary<int, int>();
+        foreach (var pair in remaps)
         {
-          var remaps = x.Elements("Remap")
-            .Select(e => Tuple.Create(
-              Int32.Parse(e.Attribute("hole").Value),
-              Int32.Parse(e.Attribute("pin").Value)))
-            .ToList();
-          var fromHoleToPin = new Dictionary<int, int>();
-          var fromPinToHole = new Dictionary<int, int>();
-          foreach (var pair in remaps)
-          {
-            int alreadyInDic;
-            if (fromHoleToPin.TryGetValue(pair.Item1, out alreadyInDic))
-            {
-              if (pair.Item2 < alreadyInDic)
-                fromHoleToPin[pair.Item1] = pair.Item2;
-            }
-            else
-              fromHoleToPin.Add(pair.Item1, pair.Item2);
+          int alreadyInDic;
+          if (fromHoleToPin.TryGetValue(pair.Item1, out alreadyInDic))
+            throw new U2PaException("Both pin{0} and pin{1} are mapped to hole{2}", alreadyInDic, pair.Item2, pair.Item1);
+          else
+            fromHoleToPin.Add(pair.Item1, pair.Item2);
 
-            if (fromPinToHole.TryGetValue(pair.Item2, out alreadyInDic))
-            {
-              if (pair.Item1 < alreadyInDic)
-                fromPinToHole[pair.Item2] = pair.Item1;
-            }
-            else
-              fromPinToHole.Add(pair.Item2, pair.Item1);
+          if (fromPinToHole.TryGetValue(pair.Item2, out alreadyInDic))
+          {
+            if (pair.Item1 < alreadyInDic)
+              fromPinToHole[pair.Item2] = pair.Item1;
           }
-          
-          var holeType = Int32.Parse(x.Attribute("holes").Value);
-          var pinType = Int32.Parse(x.Attribute("pins").Value);
-          var placement = Int32.Parse(x.Attribute("placement").Value);
+          else
+            fromPinToHole.Add(pair.Item2, pair.Item1);
+        }
 
-          return new AdaptorXml
-          {
-            Type = x.Attribute("type").Value,
-            HoleType = holeType,
-            PinType = pinType,
-            Placement = placement,
-            FromHoleToPin = fromHoleToPin,
-            FromPinToHole = fromPinToHole,
-            AdaptorTranslator = new PinTranslator(pinType, pinType, placement)
-          };
-        });
+        var holeType = Int32.Parse(x.Attribute("holes").Value);
+        var pinType = Int32.Parse(x.Attribute("pins").Value);
+
+        return new AdaptorXml
+        {
+          Type = x.Attribute("type").Value,
+          HoleType = holeType,
+          PinType = pinType,
+          FromHoleToPin = fromHoleToPin,
+          FromPinToHole = fromPinToHole
+        };
+      }
     }
   }
 }

@@ -60,29 +60,48 @@ namespace U2Pa.Lib.IC
       var xSchema = new XmlSchemaSet();
       xSchema.Add("", Path.Combine("Xml", "SRams.xsd"));
       xDocument.Validate(xSchema, null);
-      specified =
-        xDocument.Descendants("SRam").ToDictionary(
-        x => x.Attribute("type").Value,
-        x => new SRamXml()
-        {
-          Type = x.Attribute("type").Value,
-          DilType = Int32.Parse(x.Attribute("dilType").Value),
-          Placement = Int32.Parse(x.Attribute("placement").Value),
-          Adaptor = x.Attribute("adaptor") != null
-           ? AdaptorXml.Specified[x.Attribute("adaptor").Value]
-           : null,
-          VccLevel = Double.Parse(x.Attribute("Vcc").Value, CultureInfo.InvariantCulture),
-          AddressPins = x.ToPinArray("AddressPins"),
-          DataPins = x.ToPinArray("DataPins"),
-          ChipEnable = x.ToPinArray("ChipEnable"),
-          OutputEnable = x.ToPinArray("OutputEnable"),
-          WriteEnable = x.ToPinArray("WriteEnable"),
-          Constants = x.ToPinArray("Constants"),
-          VccPins = x.ToPinArray("VccPins"),
-          GndPins = x.ToPinArray("GndPins"),
-          Notes = x.Element("Notes") != null ? x.Element("Notes").Value : null,
-          Description = x.Element("Description") != null ? x.Element("Description").Value : null
-        });
+      specified = xDocument.Descendants("SRam").ToDictionary(
+        x => x.Attribute("type").Value, 
+        x => Load(x));
+    }
+
+    /// <summary>
+    /// Method for unit testing.
+    /// </summary>
+    internal static SRamXml ParseXmlDoc(string xmlString, IDictionary<string, AdaptorXml> unitTestAdaptors)
+    {
+      var xDocument = XDocument.Parse(xmlString);
+      var xSchema = new XmlSchemaSet();
+      xSchema.Add("", Path.Combine("Xml", "SRams.xsd"));
+      xDocument.Validate(xSchema, null);
+      return SRamXml.Load(xDocument.Descendants("SRam").Single(), unitTestAdaptors);
+    }
+
+    private static SRamXml Load(XElement x, IDictionary<string, AdaptorXml> unitTestAdaptors = null)
+    {
+      return new SRamXml
+      {
+        Type = x.Attribute("type").Value,
+        DilType = Int32.Parse(x.Attribute("dilType").Value),
+        Placement = Int32.Parse(x.Attribute("placement").Value),
+        Adaptor = x.Attribute("adaptor") != null
+         ? (unitTestAdaptors ?? AdaptorXml.Specified)[x.Attribute("adaptor").Value]
+         : null,
+        AdaptorPlacement = x.Attribute("adaptorPlacement") != null
+          ? Int32.Parse(x.Attribute("adaptorPlacement").Value)
+          : 0,
+        VccLevel = Double.Parse(x.Attribute("Vcc").Value, CultureInfo.InvariantCulture),
+        AddressPins = x.ToPinArray("AddressPins"),
+        DataPins = x.ToPinArray("DataPins"),
+        ChipEnable = x.ToPinArray("ChipEnable"),
+        OutputEnable = x.ToPinArray("OutputEnable"),
+        WriteEnable = x.ToPinArray("WriteEnable"),
+        Constants = x.ToPinArray("Constants"),
+        VccPins = x.ToPinArray("VccPins"),
+        GndPins = x.ToPinArray("GndPins"),
+        Notes = x.Element("Notes") != null ? x.Element("Notes").Value : null,
+        Description = x.Element("Description") != null ? x.Element("Description").Value : null
+      };
     }
   }
 }

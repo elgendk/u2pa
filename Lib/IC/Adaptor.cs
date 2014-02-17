@@ -26,22 +26,17 @@ namespace U2Pa.Lib.IC
   public abstract class Adaptor : IPinTranslator
   {
     /// <summary>
-    /// The 'name' of the Adaptor. 
+    /// The 'name' of the adaptor. 
     /// </summary>
     public string Type;
 
     /// <summary>
-    /// Placement/offset of the Adaptor in the ZIF socket.
-    /// </summary>
-    public int Placement { get; protected set; }
-
-    /// <summary>
-    /// This many pins on the Adaptor.
+    /// This many pins on the adaptor.
     /// </summary>
     public int PinType { get; protected set; }
 
     /// <summary>
-    /// This many holes in the Adaptor socket.
+    /// This many holes in the adaptor socket.
     /// </summary>
     public int HoleType { get; protected set; }
 
@@ -51,24 +46,17 @@ namespace U2Pa.Lib.IC
     protected IPinTranslator AdaptorTranslator { get; set; }
 
     /// <summary>
-    /// Sets the <see cref="ICTranslator"/>.
+    /// Initializes the adaptor for use.
     /// </summary>
-    /// <param name="dilType">The dil type of the IC.</param>
-    /// <param name="placement">The placement of the IC in the Adaptor socket.</param>
-    /// <returns>The initialized Adaptor.</returns>
-    public Adaptor Init(int dilType, int placement)
+    /// <param name="zifType">The type of socket, the adaptor is inserted in.</param>
+    /// <param name="adaptorPlacement">The placement of the adaptor.</param>
+    /// <param name="icDilType">The DIL type of the IC.</param>
+    /// <param name="icPlacement">The placement of the IC in the adaptor.</param>
+    /// <returns>The initialized adaptor.</returns>
+    public Adaptor Init(int zifType, int adaptorPlacement, int icDilType, int icPlacement)
     {
-      return Init(new PinTranslator(dilType, HoleType, placement));
-    }
-
-    /// <summary>
-    /// Sets the <see cref="ICTranslator"/>.
-    /// </summary>
-    /// <param name="icTranslator">The ICTranslator.</param>
-    /// <returns></returns>
-    public Adaptor Init(IPinTranslator icTranslator)
-    {
-      ICTranslator = icTranslator;
+      AdaptorTranslator = new PinTranslator(PinType, zifType, adaptorPlacement);
+      ICTranslator = new PinTranslator(icDilType, HoleType, icPlacement);
       return this;
     }
 

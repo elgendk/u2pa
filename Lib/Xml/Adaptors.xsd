@@ -42,7 +42,6 @@
             <xs:attribute type="xs:string" name="type"/>
             <xs:attribute type="xs:integer" name="holes"/>
             <xs:attribute type="xs:integer" name="pins"/>
-            <xs:attribute type="xs:integer" name="placement"/>
           </xs:complexType>
         </xs:element>
       </xs:choice>

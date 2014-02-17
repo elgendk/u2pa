@@ -20,10 +20,14 @@
 //    along with u2pa. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using NUnit.Framework;
 using U2Pa.Lib;
 using U2Pa.Lib.IC;
+using System.Xml.Linq;
+using System.Xml.Schema;
+using System.IO;
 
 namespace U2Pa.Test
 {
@@ -33,7 +37,7 @@ namespace U2Pa.Test
     [Test]
     public void Adaptor27nXMbTest()
     {
-      var adaptor = AdaptorXml.Specified["27nXMb"].Init(40, 0);
+      var adaptor = AdaptorXml.Specified["27nXMb"].Init(40, 0, 40, 0);
       for (var i = 1; i <= 40; i++)
       {
         var dilledPin = adaptor.ToDIL(i);
@@ -72,25 +76,6 @@ namespace U2Pa.Test
       }
     }
 
-    /*
-    [Test]
-    public void AdaptorDummyTest()
-    {
-      var adaptor = AdaptorXml.Specified["Dummy"].Init(42, 0);
-      for (var i = 0; i <= 43; i++)
-      {
-        var dilledPin = adaptor.ToDIL(i);
-        Console.WriteLine(".toDil({0}) => {1}", i, dilledPin);
-      }
-      for (var i = 0; i <= 43; i++)
-      {
-        var pin = new Pin { EnableLow = true, Number = i, TrueZIF = false };
-        var ziffedPin = adaptor.ToZIF(pin);
-        Console.WriteLine(".toZIF({0}) => {1}", i, ziffedPin);
-      }
-    }
-    */
-
 //  1----------ZIF-----------40
 //  2                        39
 //  3                        38
@@ -114,27 +99,16 @@ namespace U2Pa.Test
 //
 // We remap 7 and 26 on the adaptor.
 // All other we keep the same.
-    class TestAdaptor : Adaptor
-    {
-      public TestAdaptor()
-      {
-        FromHoleToPin = new Dictionary<int, int> 
-      {
-        { 7, 26 }, { 26, 7 }
-      };
-        FromPinToHole = new Dictionary<int, int>
-      {
-        { 26, 7 }, { 7, 26 }
-      };
-        AdaptorTranslator = new PinTranslator(32, 40, 1);
-        ICTranslator = new PinTranslator(24, 32, 1);
-      }
-    }
-
     [Test]
     public void TestPlacement()
     {
-      var adaptor = new TestAdaptor();
+      var adaptor = AdaptorXml.ParseXmlDoc(
+      @"<Root>
+          <Adaptor type = 'TestAdaptor' holes = '32' pins = '32'>
+            <Remap hole = '7' pin = '26'/>
+            <Remap hole = '26' pin = '7'/>
+          </Adaptor>
+        </Root>").Init(40, 1, 24, 1);
 
       // .ToDil
       for (var i = 0; i <= 6; i++)
