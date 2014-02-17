@@ -43,6 +43,7 @@
             <xs:attribute name="dilType" type="xs:integer" />
             <xs:attribute name="placement" type="xs:integer" />
             <xs:attribute name="adaptor" type="xs:string" use="optional"/>
+            <xs:attribute name="adaptorPlacement" type="xs:integer" use="optional"/>
             <xs:attribute name="Vcc" type="xs:string" />
           </xs:complexType>
         </xs:element>

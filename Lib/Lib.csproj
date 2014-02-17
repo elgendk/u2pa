@@ -74,6 +74,7 @@
     <Compile Include="IC\EpromXml.cs" />
     <Compile Include="IC\Eprom.cs" />
     <Compile Include="IC\Pin.cs" />
+    <Compile Include="IC\VectorTest.cs" />
     <Compile Include="IPinTranslator.cs" />
     <Compile Include="IShouter.cs" />
     <Compile Include="IUsbBulkDevice.cs" />

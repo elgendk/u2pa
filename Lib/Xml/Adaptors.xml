@@ -22,13 +22,13 @@
 //    along with u2pa. If not, see <http://www.gnu.org/licenses/>.
 -->
 <Root>
-  <Adaptor type = "27nXMb" holes = "40" pins = "40" placement = "0">
+  <Adaptor type = "27nXMb" holes = "40" pins = "40">
     <Remap hole = "11" pin = "20"/>
     <Remap hole = "20" pin = "30"/>
     <Remap hole = "30" pin = "20"/>
   </Adaptor>
 
-  <Adaptor type = "UpsideDown" holes = "40" pins = "40" placement = "0">
+  <Adaptor type = "UpsideDown" holes = "40" pins = "40">
     <Remap hole = "1" pin = "21"/>
     <Remap hole = "2" pin = "22"/>
     <Remap hole = "3" pin = "23"/>

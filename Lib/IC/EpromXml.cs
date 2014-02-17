@@ -60,35 +60,54 @@ namespace U2Pa.Lib.IC
       var xSchema = new XmlSchemaSet();
       xSchema.Add("", Path.Combine("Xml", "Eproms.xsd"));
       xDocument.Validate(xSchema, null);
-      specified = 
-        xDocument.Descendants("Eprom").ToDictionary(
-        x => x.Attribute("type").Value,
-        x => new EpromXml
-               {
-                 Type = x.Attribute("type").Value,
-                 DilType = Int32.Parse(x.Attribute("dilType").Value),
-                 Placement = Int32.Parse(x.Attribute("placement").Value),
-                 Adaptor = x.Attribute("adaptor") != null
-                  ? AdaptorXml.Specified[x.Attribute("adaptor").Value]
-                  : null,
-                 VccLevel = Double.Parse(x.Attribute("Vcc").Value, CultureInfo.InvariantCulture),
-                 VppLevel = Double.Parse(x.Attribute("Vpp").Value, CultureInfo.InvariantCulture),
-                 ProgPulse = Int32.Parse(x.Attribute("progPulse").Value, CultureInfo.InvariantCulture),
-                 InitialProgDelay = x.Attribute("initialProgDelay") != null 
-                   ? Int32.Parse(x.Attribute("initialProgDelay").Value) 
-                   : 0,
-                 AddressPins = x.ToPinArray("AddressPins"),
-                 DataPins = x.ToPinArray("DataPins"),
-                 ChipEnable = x.ToPinArray("ChipEnable"),
-                 OutputEnable = x.ToPinArray("OutputEnable"),
-                 Program = x.ToPinArray("Program"),
-                 Constants = x.ToPinArray("Constants"),
-                 VccPins = x.ToPinArray("VccPins"),
-                 GndPins = x.ToPinArray("GndPins"),
-                 VppPins = x.ToPinArray("VppPins"),
-                 Notes = x.Element("Notes") != null ? x.Element("Notes").Value : null,
-                 Description = x.Element("Description") != null ? x.Element("Description").Value : null
-               });
+      specified = xDocument.Descendants("Eprom").ToDictionary(
+        x => x.Attribute("type").Value, 
+        x => Load(x));
+    }
+
+    /// <summary>
+    /// Method for unit testing.
+    /// </summary>
+    internal static EpromXml ParseXmlDoc(string xmlString, IDictionary<string, AdaptorXml> unitTestAdaptors)
+    {
+      var xDocument = XDocument.Parse(xmlString);
+      var xSchema = new XmlSchemaSet();
+      xSchema.Add("", Path.Combine("Xml", "Eproms.xsd"));
+      xDocument.Validate(xSchema, null);
+      return EpromXml.Load(xDocument.Descendants("Eprom").Single(), unitTestAdaptors);
+    }
+
+    private static EpromXml Load(XElement x, IDictionary<string, AdaptorXml> unitTestAdaptors = null)
+    {
+      return new EpromXml
+      {
+        Type = x.Attribute("type").Value,
+        DilType = Int32.Parse(x.Attribute("dilType").Value),
+        Placement = Int32.Parse(x.Attribute("placement").Value),
+        Adaptor = x.Attribute("adaptor") != null
+        ? (unitTestAdaptors ?? AdaptorXml.Specified)[x.Attribute("adaptor").Value]
+        : null,
+        AdaptorPlacement = x.Attribute("adaptorPlacement") != null
+          ? Int32.Parse(x.Attribute("adaptorPlacement").Value)
+          : 0,
+        VccLevel = Double.Parse(x.Attribute("Vcc").Value, CultureInfo.InvariantCulture),
+        VppLevel = Double.Parse(x.Attribute("Vpp").Value, CultureInfo.InvariantCulture),
+        ProgPulse = Int32.Parse(x.Attribute("progPulse").Value, CultureInfo.InvariantCulture),
+        InitialProgDelay = x.Attribute("initialProgDelay") != null
+          ? Int32.Parse(x.Attribute("initialProgDelay").Value)
+          : 0,
+        AddressPins = x.ToPinArray("AddressPins"),
+        DataPins = x.ToPinArray("DataPins"),
+        ChipEnable = x.ToPinArray("ChipEnable"),
+        OutputEnable = x.ToPinArray("OutputEnable"),
+        Program = x.ToPinArray("Program"),
+        Constants = x.ToPinArray("Constants"),
+        VccPins = x.ToPinArray("VccPins"),
+        GndPins = x.ToPinArray("GndPins"),
+        VppPins = x.ToPinArray("VppPins"),
+        Notes = x.Element("Notes") != null ? x.Element("Notes").Value : null,
+        Description = x.Element("Description") != null ? x.Element("Description").Value : null
+      };
     }
   }
 }
