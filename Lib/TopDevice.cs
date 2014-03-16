@@ -56,17 +56,17 @@ namespace U2Pa.Lib
     /// <summary>
     /// The list of pins in the ZIF socket that can be used as Vcc.
     /// </summary>
-    public List<int> ValidVccPins;
+    public abstract List<int> ValidVccPins { get; }
 
     /// <summary>
     /// The list of pins in the ZIF socket that can be used as Vpp.
     /// </summary>
-    public List<int> ValidVppPins;
+    public abstract List<int> ValidVppPins { get; }
 
     /// <summary>
     /// The list of pins in the ZIF socket that can be used as Gnd.
     /// </summary>
-    public List<int> ValidGndPins;
+    public abstract List<int> ValidGndPins { get; }
 
     /// <summary>
     /// The valid VccLevels and their voltages.
@@ -113,8 +113,18 @@ namespace U2Pa.Lib
     /// <returns>The created instance of the Top Device.</returns>
     public static TopDevice Create(IShouter shouter)
     {
-      var bulkDevice = OpenBulkDevice(shouter);
+      return Create(shouter, OpenBulkDevice(shouter));
+    }
 
+    /// <summary>
+    /// Creates a new instance of the Top Device connected to the Top Programmer.
+    /// <remarks>Atm. only works for model Top2005+.</remarks>
+    /// </summary>
+    /// <param name="shouter">The shouter instance.</param>
+    /// <param name="bulkDevice">The bulk device to use.</param>
+    /// <returns>The created instance of the Top Device.</returns>
+    public static TopDevice Create(IShouter shouter, IUsbBulkDevice bulkDevice)
+    {
       var idString = ReadTopDeviceIdString(shouter, bulkDevice);
       shouter.ShoutLine(2, "Connected Top device is: {0}.", idString);
 

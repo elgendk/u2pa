@@ -21,37 +21,27 @@
 
 using System;
 using System.Linq;
+using System.Collections.Generic;
+using NUnit.Framework;
 using U2Pa.Lib;
+using U2Pa.Lib.IC;
+using System.Xml.Linq;
+using System.Xml.Schema;
+using System.IO;
 
 namespace U2Pa.Test
 {
-  /// <summary>
-  /// Test implementation.
-  /// </summary>
-  public class UsbBulkTestDevice : UsbBulkDeviceDelayer
+  [TestFixture]
+  public class EpromTest
   {
-    public UsbBulkTestDevice() : base(new RawUsbBulkTestDevice())
+    [Test]
+    public void TestEpromSpecificationTest() 
     {
+      foreach (var eprom in EpromXml.Specified)
+      {
+        Console.WriteLine(eprom.Value.Type);
+        Console.WriteLine(Top2005Plus.TestEpromSpecification(eprom.Value));
+      }
     }
-  }
-
-  public class RawUsbBulkTestDevice : IRawUsbBulkDevice
-  {
-    int numberOfCallsToSendPackage = 0;
-    int numberOfCallsToRecievePackage = 0;
-    byte[] idPackage = "top2005+DUMMY...".ToCharArray().Select(c => (byte)c).ToArray();
-    public void SendPackage(int verbosity, byte[] data, string description, params object[] args)
-    {
-      numberOfCallsToSendPackage++;
-    }
-
-    public byte[] RecievePackage(int verbosity, string description, params object[] args)
-    {
-      return numberOfCallsToRecievePackage == 0 ? idPackage : new byte[0];
-      numberOfCallsToRecievePackage++;
-    }
-
-    public void Dispose()
-    { }
   }
 }

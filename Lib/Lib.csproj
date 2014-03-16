@@ -116,6 +116,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <SubType>Designer</SubType>
     </Content>
+    <Content Include="Xml\VectorTests.xml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Xml\Adaptors.xsd">

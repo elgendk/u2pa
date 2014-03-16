@@ -88,6 +88,17 @@
     <VppPins>22</VppPins>
   </Eprom>
 
+  <Eprom type = "27020" dilType = "32" placement = "0" Vcc = "5" Vpp = "12.9" progPulse = "40">
+    <AddressPins>12, 11, 10, 9, 8, 7, 6, 5, 27, 26, 23, 25, 4, 28, 29, 3, 2, 30</AddressPins>
+    <DataPins>13, 14, 15, 17, 18, 19, 20, 21</DataPins>
+    <ChipEnable>/22</ChipEnable>
+    <OutputEnable>/24</OutputEnable>
+    <Program>/31</Program>
+    <VccPins>32</VccPins>
+    <GndPins>16</GndPins>
+    <VppPins>1</VppPins>
+  </Eprom>
+
   <Eprom type = "271024" dilType = "40" placement = "0" adaptor = "27nXMb" adaptorPlacement = "0" Vcc = "5" Vpp = "12.9" progPulse = "3" initialProgDelay = "2000">
     <Notes>
       On a Top2005+, pins 11 and 30 can't be GND'ed.
@@ -144,22 +155,7 @@
     <VppPins>1</VppPins>
   </Eprom>
 
-  <Eprom type = "TBP24S10" dilType = "16" placement = "0" Vcc = "5" Vpp = "5" progPulse = "0">
-    <Notes>
-      This is actually a bipolar PROM and can not be
-      programmed by the Top2005+. It can only be read.
-      It's made by Texas Instruments.
-    </Notes>
-    <AddressPins>5, 6, 7, 4, 3, 2, 1, 15</AddressPins>
-    <DataPins>12, 11, 10, 9</DataPins>
-    <ChipEnable>/13</ChipEnable>
-    <OutputEnable>/14</OutputEnable>
-    <Program></Program>
-    <VccPins>16</VccPins>
-    <GndPins>8</GndPins>
-    <VppPins></VppPins>
-  </Eprom>
-
+  <!-- GAL replacements for bipolar PROMS -->
   <Eprom type = "prom-3.1c" dilType = "24" placement = "0" Vcc = "5" Vpp = "5" progPulse = "0">
     <Notes>
       Galaga prom-3.1c implemented on a GAL22V10.
@@ -171,22 +167,6 @@
     <Program></Program>
     <VccPins>24</VccPins>
     <GndPins>12</GndPins>
-    <VppPins></VppPins>
-  </Eprom>
-  
-  <Eprom type = "TBP18S030" dilType = "16" placement = "0" Vcc = "5" Vpp = "5" progPulse = "0">
-    <Notes>
-      This is actually a bipolar PROM and can not be
-      programmed by the Top2005+. It can only be read.
-      It's made by Texas Instruments.
-    </Notes>
-    <AddressPins>10, 11, 12, 13, 14</AddressPins>
-    <DataPins>1, 2, 3, 4, 5, 6, 7, 9</DataPins>
-    <ChipEnable></ChipEnable>
-    <OutputEnable>/15</OutputEnable>
-    <Program></Program>
-    <VccPins>16</VccPins>
-    <GndPins>8</GndPins>
     <VppPins></VppPins>
   </Eprom>
 
@@ -204,11 +184,115 @@
     <VppPins></VppPins>
   </Eprom>
 
-  <Eprom type = "MB7122" dilType = "18" placement = "1" Vcc = "5" Vpp = "5" progPulse = "0">
+  <!-- Bipolar PROMS -->
+  <Eprom type = "N82S131" dilType = "16" placement = "0" Vcc = "5" Vpp = "5" progPulse = "0">
     <Notes>
       This is actually a bipolar PROM and can not be
       programmed by the Top2005+. It can only be read.
-      It's made by Fujitsu.
+    </Notes>
+    <AddressPins>5, 6, 7, 4, 3, 2, 1, 15, 14</AddressPins>
+    <DataPins>12, 11, 10, 9</DataPins>
+    <ChipEnable>/13</ChipEnable>
+    <OutputEnable></OutputEnable>
+    <Program></Program>
+    <VccPins>16</VccPins>
+    <GndPins>8</GndPins>
+    <VppPins></VppPins>
+  </Eprom>
+  <Alias type = "AM27S13" baseType = "N82S131"/>
+  <Alias type = "93466" baseType = "N82S131"/>
+
+  <Eprom type = "N82S129" dilType = "16" placement = "0" Vcc = "5" Vpp = "5" progPulse = "0">
+    <Notes>
+      This is actually a bipolar PROM and can not be
+      programmed by the Top2005+. It can only be read.
+    </Notes>
+    <AddressPins>5, 6, 7, 4, 3, 2, 1, 15</AddressPins>
+    <DataPins>12, 11, 10, 9</DataPins>
+    <ChipEnable>/13</ChipEnable>
+    <OutputEnable>/14</OutputEnable>
+    <Program></Program>
+    <VccPins>16</VccPins>
+    <GndPins>8</GndPins>
+    <VppPins></VppPins>
+  </Eprom>
+  <Alias type = "TBP24S10" baseType = "N82S129">
+    <Notes>
+      This is actually a bipolar PROM and can not be
+      programmed by the Top2005+. It can only be read.
+      It's made by Texas Instruments.
+    </Notes>
+  </Alias>
+  <Alias type = "MMI6301" baseType = "N82S129"/>
+  <Alias type = "MMI63s141" baseType = "N82S129"/>
+  <Alias type = "IM5623" baseType = "N82S129"/>
+  <Alias type = "N82S126" baseType = "N82S129">
+    <Notes>
+      This is actually a bipolar PROM and can not be
+      programmed by the Top2005+. It can only be read.
+      Open Collector.
+    </Notes>
+  </Alias>
+  <Alias type = "7610" baseType = "N82S129">
+    <Notes>
+      This is actually a bipolar PROM and can not be
+      programmed by the Top2005+. It can only be read.
+      Open Collector.
+    </Notes>
+  </Alias>
+  
+  <Eprom type = "N82S123" dilType = "16" placement = "0" Vcc = "5" Vpp = "5" progPulse = "0">
+    <Notes>
+      This is actually a bipolar PROM and can not be
+      programmed by the Top2005+. It can only be read.
+    </Notes>
+    <AddressPins>10, 11, 12, 13, 14</AddressPins>
+    <DataPins>1, 2, 3, 4, 5, 6, 7, 9</DataPins>
+    <ChipEnable></ChipEnable>
+    <OutputEnable>/15</OutputEnable>
+    <Program></Program>
+    <VccPins>16</VccPins>
+    <GndPins>8</GndPins>
+    <VppPins></VppPins>
+  </Eprom>
+  <Alias type = "TBP18S030" baseType = "N82S123">
+    <Notes>
+      This is actually a bipolar PROM and can not be
+      programmed by the Top2005+. It can only be read.
+      It's made by Texas Instruments.
+    </Notes>
+  </Alias>
+  <Alias type = "MMI6331" baseType = "N82S123"/>
+  <Alias type = "IM5610" baseType = "N82S123"/>
+  <Alias type = "N82S23" baseType = "N82S123">
+    <Notes>
+      This is actually a bipolar PROM and can not be
+      programmed by the Top2005+. It can only be read.
+      Open Collector.
+    </Notes>
+  </Alias>
+
+  <Eprom type = "N82S185" dilType = "18" placement = "1" Vcc = "5" Vpp = "5" progPulse = "0">
+    <Notes>
+      This is actually a bipolar PROM and can not be
+      programmed by the Top2005+. It can only be read.
+      Connection to GND must be done with a wire.
+    </Notes>
+    <AddressPins>5, 6, 7, 4, 3, 2, 1, 17, 16, 15, 8</AddressPins>
+    <DataPins>14, 13, 12, 11</DataPins>
+    <ChipEnable>/10</ChipEnable>
+    <OutputEnable></OutputEnable>
+    <Program></Program>
+    <VccPins>18</VccPins>
+    <GndPins>20Z</GndPins>
+    <VppPins></VppPins>
+  </Eprom>
+  <Alias type = "HM1-7685-5" baseType = "N82S185"/>
+
+  <Eprom type = "N82S137" dilType = "18" placement = "1" Vcc = "5" Vpp = "5" progPulse = "0">
+    <Notes>
+      This is actually a bipolar PROM and can not be
+      programmed by the Top2005+. It can only be read.
       Connection to GND must be done with a wire.
     </Notes>
     <AddressPins>5, 6, 7, 4, 3, 2, 1, 17, 16, 15</AddressPins>
@@ -220,12 +304,37 @@
     <GndPins>20Z</GndPins>
     <VppPins></VppPins>
   </Eprom>
-
-  <Eprom type = "MB7132" dilType = "24" placement = "0" Vcc = "5" Vpp = "5" progPulse = "0">
+  <Alias type = "MB7122" baseType = "N82S137">
     <Notes>
       This is actually a bipolar PROM and can not be
       programmed by the Top2005+. It can only be read.
       It's made by Fujitsu.
+      Connection to GND must be done with a wire.
+    </Notes>
+  </Alias>
+  <Alias type = "63S441" baseType = "N82S137"/>
+  <Alias type = "HM1-7643-5" baseType = "N82S137"/>
+
+  <Eprom type = "N82S195" dilType = "20" placement = "0" Vcc = "5" Vpp = "5" progPulse = "0">
+    <Notes>
+      This is actually a bipolar PROM and can not be
+      programmed by the Top2005+. It can only be read.
+    </Notes>
+    <AddressPins>9, 8, 7, 6, 5, 4, 3, 2, 1, 19, 18, 17</AddressPins>
+    <DataPins>14, 13, 12, 11</DataPins>
+    <ChipEnable>/16</ChipEnable>
+    <OutputEnable>/15</OutputEnable>
+    <Program></Program>
+    <VccPins>20</VccPins>
+    <GndPins>10</GndPins>
+    <VppPins></VppPins>
+  </Eprom>
+  <Alias type = "HM1-76165-5" baseType = "N82S195"/>
+
+  <Eprom type = "N82S181" dilType = "24" placement = "0" Vcc = "5" Vpp = "5" progPulse = "0">
+    <Notes>
+      This is actually a bipolar PROM and can not be
+      programmed by the Top2005+. It can only be read.
     </Notes>
     <AddressPins>8, 7, 6, 5, 4, 3, 2, 1, 23, 22</AddressPins>
     <DataPins>9, 10, 11, 13, 14, 15, 16, 17</DataPins>
@@ -236,4 +345,44 @@
     <GndPins>12</GndPins>
     <VppPins></VppPins>
   </Eprom>
+  <Alias type = "MB7132" baseType = "N82S181">
+    <Notes>
+      This is actually a bipolar PROM and can not be
+      programmed by the Top2005+. It can only be read.
+      It's made by Fujitsu.
+    </Notes>
+  </Alias>
+  <Alias type = "HM1-7631-5" baseType = "N82S181"/>
+
+  <Eprom type = "N82S141" dilType = "24" placement = "0" Vcc = "5" Vpp = "5" progPulse = "0">
+    <Notes>
+      This is actually a bipolar PROM and can not be
+      programmed by the Top2005+. It can only be read.
+    </Notes>
+    <AddressPins>8, 7, 6, 5, 4, 3, 2, 1, 23</AddressPins>
+    <DataPins>9, 10, 11, 13, 14, 15, 16, 17</DataPins>
+    <ChipEnable>18, /20</ChipEnable>
+    <OutputEnable>19, /21</OutputEnable>
+    <Program></Program>
+    <VccPins>24</VccPins>
+    <GndPins>12</GndPins>
+    <VppPins></VppPins>
+  </Eprom>
+  <Alias type = "MMI-6341-1J" baseType = "N82S141"/>
+
+  <Eprom type = "N82S191" dilType = "24" placement = "0" Vcc = "5" Vpp = "5" progPulse = "0">
+    <Notes>
+      This is actually a bipolar PROM and can not be
+      programmed by the Top2005+. It can only be read.
+    </Notes>
+    <AddressPins>8, 7, 6, 5, 4, 3, 2, 1, 23, 22, 21</AddressPins>
+    <DataPins>9, 10, 11, 13, 14, 15, 16, 17</DataPins>
+    <ChipEnable>18, /20</ChipEnable>
+    <OutputEnable>19</OutputEnable>
+    <Program></Program>
+    <VccPins>24</VccPins>
+    <GndPins>12</GndPins>
+    <VppPins></VppPins>
+  </Eprom>
+  <Alias type = "AM27S191" baseType = "N82S191"/>
 </Root>

@@ -63,6 +63,18 @@ namespace U2Pa.Lib.IC
       specified = xDocument.Descendants("Eprom").ToDictionary(
         x => x.Attribute("type").Value, 
         x => Load(x));
+      foreach (var aliasElement in xDocument.Descendants("Alias"))
+      {
+        var aliasType = aliasElement.Attribute("type").Value;
+        var baseType = aliasElement.Attribute("baseType").Value;
+        var aliasNotes = aliasElement.Element("Notes") != null ? aliasElement.Element("Notes").Value : null;
+        var aliasDescription = aliasElement.Element("Description") != null ? aliasElement.Element("Description").Value : null;
+        var baseEprom = Load(xDocument.Descendants("Eprom").Single(x => x.Attribute("type").Value == baseType));
+        baseEprom.Type = aliasType;
+        baseEprom.Notes = aliasNotes ?? baseEprom.Notes;
+        baseEprom.Description = aliasDescription ?? baseEprom.Description;
+        specified.Add(aliasType, baseEprom);
+      }
     }
 
     /// <summary>
