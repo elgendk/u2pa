@@ -188,5 +188,28 @@ namespace U2Pa.Lib
       if (x.Element(name) == null) return new Pin[0];
       return x.Element(name).Value.Split(',').Where(y => !String.IsNullOrEmpty(y)).Select(Pin.Parse).ToArray();
     }
+
+    internal static VectorValues ParseVectorValue(char letter)
+    {
+      switch (letter)
+      {
+        case '0':
+         return VectorValues.Zero;
+        case '1':
+         return VectorValues.One;
+        case 'V':
+         return VectorValues.Vcc;
+        case 'X':
+         return VectorValues.DontCare;
+        case 'G':
+         return VectorValues.Gnd;
+        case 'H':
+         return VectorValues.High;
+        case 'L':
+         return VectorValues.Low;
+        default:
+         throw new U2PaException("Unknown VectorValue: '{0}'", letter);
+      }
+    }
   }
 }

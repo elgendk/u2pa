@@ -51,6 +51,16 @@
             <xs:attribute name="initialProgDelay" type="xs:integer" use="optional" />
           </xs:complexType>
         </xs:element>
+        <xs:element name="Alias">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Description" type="xs:string" minOccurs="0" />
+              <xs:element name="Notes" type="xs:string" minOccurs="0" />
+            </xs:sequence>
+            <xs:attribute name="type" type="xs:string" />
+            <xs:attribute name="baseType" type="xs:string" />
+          </xs:complexType>
+        </xs:element>
       </xs:choice>
     </xs:complexType>
   </xs:element>
