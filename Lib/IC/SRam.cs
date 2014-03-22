@@ -199,7 +199,7 @@ namespace U2Pa.Lib.IC
         string middle;
         if (left[i].Item2 == 0) middle = " | | ";
         else if (!adaptorInUse && right[i].Item1 == 20 - Placement) middle = String.Format(" +-----{0}-----+ ", "-");
-        else if (!adaptorInUse && right[i].Item1 == 20 - Placement - (DilType / 2) + 1) middle = String.Format(" +-----{0}-----+ ", "O");
+        else if (!adaptorInUse && right[i].Item1 == 20 - Placement - (DilType / 2) + 1) middle = String.Format(" +-----{0}-----+ ", "^");
         else if (!adaptorInUse && right[i].Item2 == (DilType / 4) + 1) middle = String.Format(" +{0}+ ", Type.Pad(11));
         else middle = " +".PadRight(13) + "+ ";
 

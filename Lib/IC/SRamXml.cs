@@ -56,9 +56,9 @@ namespace U2Pa.Lib.IC
     /// </summary>
     private static void Load()
     {
-      var xDocument = XDocument.Load(Path.Combine("Xml", "SRams.xml"));
+      var xDocument = XDocument.Load(Path.Combine(Tools.GetSubDir("Xml"), "SRams.xml"));
       var xSchema = new XmlSchemaSet();
-      xSchema.Add("", Path.Combine("Xml", "SRams.xsd"));
+      xSchema.Add("", Path.Combine(Tools.GetSubDir("Xml"), "SRams.xsd"));
       xDocument.Validate(xSchema, null);
       specified = xDocument.Descendants("SRam").ToDictionary(
         x => x.Attribute("type").Value, 
@@ -72,7 +72,7 @@ namespace U2Pa.Lib.IC
     {
       var xDocument = XDocument.Parse(xmlString);
       var xSchema = new XmlSchemaSet();
-      xSchema.Add("", Path.Combine("Xml", "SRams.xsd"));
+      xSchema.Add("", Path.Combine(Tools.GetSubDir("Xml"), "SRams.xsd"));
       xDocument.Validate(xSchema, null);
       return SRamXml.Load(xDocument.Descendants("SRam").Single(), unitTestAdaptors);
     }

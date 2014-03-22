@@ -40,7 +40,7 @@ namespace U2Pa.Cmd
         if(helpTexts == null)
         {
           helpTexts = new Dictionary<string, string>();
-          foreach (var fileName in Directory.GetFiles("Help", "*.txt"))
+          foreach (var fileName in Directory.GetFiles(Tools.GetSubDir("Help"), "*.txt"))
           {
             using(var file = File.OpenText(fileName))
             {

@@ -52,9 +52,9 @@ namespace U2Pa.Lib.IC
     /// </summary>
     private static void Load()
     {
-      var xDocument = XDocument.Load(Path.Combine("Xml", "Adaptors.xml"));
+      var xDocument = XDocument.Load(Path.Combine(Tools.GetSubDir("Xml"), "Adaptors.xml"));
       var xSchema = new XmlSchemaSet();
-      xSchema.Add("", Path.Combine("Xml", "Adaptors.xsd"));
+      xSchema.Add("", Path.Combine(Tools.GetSubDir("Xml"), "Adaptors.xsd"));
       xDocument.Validate(xSchema, null);
       specified = xDocument.Descendants("Adaptor").ToDictionary(x => x.Attribute("type").Value, Load);
     }
@@ -66,7 +66,7 @@ namespace U2Pa.Lib.IC
     {
       var xDocument = XDocument.Parse(xmlString);
       var xSchema = new XmlSchemaSet();
-      xSchema.Add("", Path.Combine("Xml", "Adaptors.xsd"));
+      xSchema.Add("", Path.Combine(Tools.GetSubDir("Xml"), "Adaptors.xsd"));
       xDocument.Validate(xSchema, null);
       return AdaptorXml.Load(xDocument.Descendants("Adaptor").Single());
     }

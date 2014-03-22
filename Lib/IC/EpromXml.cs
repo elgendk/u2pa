@@ -56,9 +56,9 @@ namespace U2Pa.Lib.IC
     /// </summary>
     private static void Load()
     {
-      var xDocument = XDocument.Load(Path.Combine("Xml", "Eproms.xml"));
+      var xDocument = XDocument.Load(Path.Combine(Tools.GetSubDir("Xml"), "Eproms.xml"));
       var xSchema = new XmlSchemaSet();
-      xSchema.Add("", Path.Combine("Xml", "Eproms.xsd"));
+      xSchema.Add("", Path.Combine(Tools.GetSubDir("Xml"), "Eproms.xsd"));
       xDocument.Validate(xSchema, null);
       specified = xDocument.Descendants("Eprom").ToDictionary(
         x => x.Attribute("type").Value, 
@@ -84,7 +84,7 @@ namespace U2Pa.Lib.IC
     {
       var xDocument = XDocument.Parse(xmlString);
       var xSchema = new XmlSchemaSet();
-      xSchema.Add("", Path.Combine("Xml", "Eproms.xsd"));
+      xSchema.Add("", Path.Combine(Tools.GetSubDir("Xml"), "Eproms.xsd"));
       xDocument.Validate(xSchema, null);
       return EpromXml.Load(xDocument.Descendants("Eprom").Single(), unitTestAdaptors);
     }

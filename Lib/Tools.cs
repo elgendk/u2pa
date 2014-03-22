@@ -34,6 +34,31 @@ namespace U2Pa.Lib
   /// </summary>
   public static class Tools
   {
+    private static string baseDir;
+
+    /// <summary>
+    /// Gets the base dir of the executing assembly.
+    /// </summary>
+    public static string BaseDir
+    {
+      get
+      {
+        if (baseDir == null)
+          baseDir = AppDomain.CurrentDomain.BaseDirectory;
+        return baseDir;
+      }
+    }
+
+    /// <summary>
+    /// Combines the given dir with the <see cref="BaseDir"/>.
+    /// </summary>
+    /// <param name="subDir">Sub dir.</param>
+    /// <returns>The full path.</returns>
+    public static string GetSubDir(string subDir)
+    {
+      return Path.Combine(BaseDir, subDir);
+    }
+
     /// <summary>
     /// Read a binary file.
     /// </summary>
