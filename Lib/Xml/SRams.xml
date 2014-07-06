@@ -22,6 +22,20 @@
 //    along with u2pa. If not, see <http://www.gnu.org/licenses/>.
 -->
 <Root>
+  <SRam type = "5101" dilType = "22" placement = "1" Vcc= "5">
+    <Notes>
+    </Notes>
+    <AddressPins>4, 3, 2, 1, 21, 5, 6, 7</AddressPins>
+    <DataPins>9, 11, 13, 15</DataPins>
+    <DataOutPins>10, 12, 14, 16</DataOutPins>
+    <ChipEnable>17, /19</ChipEnable>
+    <OutputEnable>/18</OutputEnable>
+    <WriteEnable>/20</WriteEnable>
+    <Constants></Constants>
+    <VccPins>22</VccPins>
+    <GndPins>8</GndPins>
+  </SRam>
+  
   <SRam type = "6148" dilType = "18" placement = "1" Vcc= "5">
     <Notes>
       On a Top2005+, pin 19 can't be GND'ed.

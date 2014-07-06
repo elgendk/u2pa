@@ -31,7 +31,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>U2Pa.Lib</RootNamespace>
-    <AssemblyName>u2Pa.Lib</AssemblyName>
+    <AssemblyName>u2pa.Lib</AssemblyName>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
@@ -66,6 +66,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IDataGenerator.cs" />
     <Compile Include="IC\Adaptor.cs" />
     <Compile Include="BinaryDumpProcessor.cs" />
     <Compile Include="Config.cs" />
@@ -80,9 +81,11 @@
     <Compile Include="IUsbBulkDevice.cs" />
     <Compile Include="Kernel.cs" />
     <Compile Include="ProgressBar.cs" />
+    <Compile Include="RandomDataGenerator.cs" />
     <Compile Include="Shouter.cs" />
     <Compile Include="IC\SRam.cs" />
     <Compile Include="IC\SRamXml.cs" />
+    <Compile Include="SimpleDataGenerator.cs" />
     <Compile Include="Tools.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="PinTranslator.cs" />

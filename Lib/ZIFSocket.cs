@@ -136,7 +136,24 @@ namespace U2Pa.Lib
     }
 
     /// <summary>
-    /// Gets the data using the provided dil mask and returns it as an Int32.
+    /// Gets the values of the pins in the dil mask and returns it as an Int32.
+    /// </summary>
+    /// <param name="dilMask">The dil mask to read.</param>
+    /// <param name="translate">The (optional) pin translator to use.</param>
+    /// <returns>The read data as an Int32.</returns>
+    public BitArray GetDataAsBits(Pin[] dilMask, Func<Pin, int> translate = null)
+    {
+      var bitArray = new BitArray(dilMask.Length);
+      translate = translate ?? (x => x.Number);
+      for (var i = 0; i < dilMask.Length; i++)
+      {
+        bitArray[i] = pins[translate(dilMask[i])];
+      }
+      return bitArray;
+    }
+
+    /// <summary>
+    /// Gets the data using the provided dil mask and returns it a byte array.
     /// </summary>
     /// <param name="eprom">The dil mask to use.</param>
     /// <param name="translate">The (optional) pin translator to use.</param>

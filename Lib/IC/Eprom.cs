@@ -257,9 +257,9 @@ namespace U2Pa.Lib.IC
         display += String.Format("  |{0} {1} {2}{3}{4} {5} {6}|\r\n",
                                  left[i].Item1.ToString(CultureInfo.InvariantCulture).PadRight(2),
                                  zifPins[20 + (i + 1)].PadLeft(6),
-                                 (left[i].Item2 == 0 ? "| -----" : left[i].Item2.ToString(CultureInfo.InvariantCulture).PadRight(2)),
+                                 (left[i].Item2 == 0 ? "| =====" : left[i].Item2.ToString(CultureInfo.InvariantCulture).PadRight(2)),
                                  middle,
-                                 (right[i].Item2 == 0 ? "----- |" : right[i].Item2.ToString(CultureInfo.InvariantCulture).PadLeft(2)),
+                                 (right[i].Item2 == 0 ? "===== |" : right[i].Item2.ToString(CultureInfo.InvariantCulture).PadLeft(2)),
                                  zifPins[21 - (i + 1)].PadRight(6),
                                  right[i].Item1.ToString(CultureInfo.InvariantCulture).PadLeft(2));
       }
