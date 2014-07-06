@@ -22,6 +22,7 @@
 using System.Collections.Generic;
 using System;
 using System.Globalization;
+using System.Collections;
 namespace U2Pa.Lib.IC
 {
   public abstract class SRam
@@ -64,7 +65,14 @@ namespace U2Pa.Lib.IC
     /// <summary>
     /// The ordered sequence of the data pins.
     /// </summary>
+    /// <remarks>If <see cref="DataOutPins"/> is not specified, <see cref="DataPins"/> are assumed biderectional.</remarks>
     public Pin[] DataPins;
+
+    /// <summary>
+    /// The ordered sequence of the data out pins.
+    /// </summary>
+    /// <remarks>Optional. If not specified, <see cref="DataPins"/> are assumed biderectional.</remarks>
+    public Pin[] DataOutPins;
 
     /// <summary>
     /// The ChipEnable pin.
@@ -138,6 +146,15 @@ namespace U2Pa.Lib.IC
       zif.SetPins(data, DataPins, GetPinTranslator(zif.Size).ToZIF);
     }
 
+    /// <summary>
+    /// Sets the specified data on the specified zif socket.
+    /// </summary>
+    /// <param name="zif">The zif socket to write to.</param>
+    /// <param name="data">The data.</param>
+    public void SetData(ZIFSocket zif, BitArray data)
+    {
+      zif.SetPins(data, DataPins, GetPinTranslator(zif.Size).ToZIF);
+    }
 
     /// <summary>
     /// Displays the SRAM inserted correctly into the Top-programmer.
@@ -168,7 +185,9 @@ namespace U2Pa.Lib.IC
       for (var i = 0; i < AddressPins.Length; i++)
         zifPins[t.ToZIF(AddressPins[i])] = String.Format("A{0}", i);
       for (var i = 0; i < DataPins.Length; i++)
-        zifPins[t.ToZIF(DataPins[i])] = String.Format("D{0}", i);
+        zifPins[t.ToZIF(DataPins[i])] = String.Format("D{0}{1}", DataOutPins.Length == 0 ? "" : "I", i);
+      for (var i = 0; i < DataOutPins.Length; i++)
+        zifPins[t.ToZIF(DataOutPins[i])] = String.Format("DO{0}", i);
       foreach (var p in Constants)
       {
         zifPins[t.ToZIF(p)] = "C" + (p.EnableLow ? "0" : "1");
@@ -206,9 +225,9 @@ namespace U2Pa.Lib.IC
         display += String.Format("  |{0} {1} {2}{3}{4} {5} {6}|\r\n",
                                  left[i].Item1.ToString(CultureInfo.InvariantCulture).PadRight(2),
                                  zifPins[20 + (i + 1)].PadLeft(6),
-                                 (left[i].Item2 == 0 ? "| -----" : left[i].Item2.ToString(CultureInfo.InvariantCulture).PadRight(2)),
+                                 (left[i].Item2 == 0 ? "| =====" : left[i].Item2.ToString(CultureInfo.InvariantCulture).PadRight(2)),
                                  middle,
-                                 (right[i].Item2 == 0 ? "----- |" : right[i].Item2.ToString(CultureInfo.InvariantCulture).PadLeft(2)),
+                                 (right[i].Item2 == 0 ? "===== |" : right[i].Item2.ToString(CultureInfo.InvariantCulture).PadLeft(2)),
                                  zifPins[21 - (i + 1)].PadRight(6),
                                  right[i].Item1.ToString(CultureInfo.InvariantCulture).PadLeft(2));
       }

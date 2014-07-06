@@ -99,6 +99,7 @@ namespace U2Pa.Lib.IC
         Constants = x.ToPinArray("Constants"),
         VccPins = x.ToPinArray("VccPins"),
         GndPins = x.ToPinArray("GndPins"),
+        DataOutPins = x.Element("DataOutPins") != null ? x.ToPinArray("DataOutPins") : new Pin[0],
         Notes = x.Element("Notes") != null ? x.Element("Notes").Value : null,
         Description = x.Element("Description") != null ? x.Element("Description").Value : null
       };

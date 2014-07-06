@@ -517,34 +517,44 @@ namespace U2Pa.Lib
     {
       var sram = SRamXml.Specified[type];
       var totalNumberOfAdresses = sram.AddressPins.Length == 0 ? 0 : 1 << sram.AddressPins.Length;
-      List<Tuple<int, string, string>> firstPass, secondPass;
-      using (var progressBar = new ProgressBar(shouter, totalNumberOfAdresses * 4))
+      List<Tuple<int, string, string>> firstRandomPass, secondRandomPass, firstSimplePass, secondSimplePass;
+      using (var progressBar = new ProgressBar(shouter, totalNumberOfAdresses * 8))
       {
         using (var topDevice = TopDevice.Create(shouter))
         {
           shouter.ShoutLine(1, "Testing SRAM{0}", type);
           progressBar.Init();
-          firstPass = topDevice.SRamTest(shouter, sram, progressBar, totalNumberOfAdresses, false);
-          secondPass = topDevice.SRamTest(shouter, sram, progressBar, totalNumberOfAdresses, true);
+          firstRandomPass = topDevice.SRamTestPass(shouter, sram, progressBar, "First random test", totalNumberOfAdresses, new RandomDataGenerator(sram.DataPins.Length, totalNumberOfAdresses));
+          secondRandomPass = topDevice.SRamTestPass(shouter, sram, progressBar, "Second random test", totalNumberOfAdresses, new RandomDataGenerator(sram.DataPins.Length, totalNumberOfAdresses));
+          firstSimplePass = topDevice.SRamTestPass(shouter, sram, progressBar, "First simple test (01..)", totalNumberOfAdresses, new SimpleDataGenerator(sram.DataPins.Length, false));
+          secondSimplePass = topDevice.SRamTestPass(shouter, sram, progressBar, "Second simple test (10..)", totalNumberOfAdresses, new SimpleDataGenerator(sram.DataPins.Length, true));
         }
       }
       var returnValue = 0;
-      foreach (var tuple in firstPass)
-      {
-        shouter.ShoutLine(1, "Bad cell found in first pass. Address: {0} Expected {1} Read {2}",
-          tuple.Item1.ToString("X4"), tuple.Item3, tuple.Item2);
-        returnValue = 1;
-      }
-      foreach (var tuple in secondPass)
-      {
-        shouter.ShoutLine(1, "Bad cell found in second pass. Address: {0} Expected {1} Read {2}",
-          tuple.Item1.ToString("X4"), tuple.Item3, tuple.Item2);
-        returnValue = 1;
-      }
-
+      var printingVerbosity = 1;
+      returnValue = PrintTestPassResult(shouter, "first random", firstRandomPass, ref printingVerbosity);
+      returnValue = PrintTestPassResult(shouter, "second random", secondRandomPass, ref printingVerbosity);
+      returnValue = PrintTestPassResult(shouter, "first simple", firstSimplePass, ref printingVerbosity);
+      returnValue = PrintTestPassResult(shouter, "second simple", secondSimplePass, ref printingVerbosity);
       if(returnValue == 0)
         shouter.ShoutLine(1, "This piece of SRAM is just a'okay }};-P");
 
+      return returnValue;
+    }
+
+    private static int PrintTestPassResult(IShouter shouter, string text, List<Tuple<int, string, string>> pass, ref int printingVerbosity)
+    {
+      int returnValue = 0;
+      var oldPrintingVerbosity = printingVerbosity;
+      foreach (var tuple in pass)
+      {
+        shouter.ShoutLine(printingVerbosity, "Bad cell in {0} pass. Address: {1} Expected {2} Read {3}",
+          text, tuple.Item1.ToString("X4"), tuple.Item3, tuple.Item2);
+        printingVerbosity = 5;
+        returnValue = 1;
+        if (oldPrintingVerbosity <= 5)
+          break;
+      }
       return returnValue;
     }
 

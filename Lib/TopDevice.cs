@@ -485,12 +485,13 @@ namespace U2Pa.Lib
     /// <param name="totalNumberOfAdresses">The total number of adresses.</param>
     /// <param name="firstBit">The value of the first bit to write to the SRAM.</param>
     /// <returns>Tuples of non-working addresses: (address, read_byte, expected_byte).</returns>
-    public List<Tuple<int, string, string>> SRamTest(IShouter shouter, SRam sram, ProgressBar progressBar, int totalNumberOfAdresses, bool firstBit)
+    public List<Tuple<int, string, string>> OldSRamTest(IShouter shouter, SRam sram, ProgressBar progressBar, int totalNumberOfAdresses, bool firstBit)
     {
       var translator = sram.GetPinTranslator(ZIFType);
       SetVccLevel(sram.VccLevel);
       ApplyGnd(translator.ToZIF, sram.GndPins);
       ApplyVcc(translator.ToZIF, sram.VccPins);
+      PullUpsEnable(true);
 
       var badCells = new List<Tuple<int, string, string>>();
       var writerZif = new ZIFSocket(40);
@@ -534,14 +535,15 @@ namespace U2Pa.Lib
         WriteZIF(writerZif, "Writing SRam address.");
 
         var readerZif = ReadZIF("Reading SRam data.")[0];
-        foreach (var i in sram.DataPins.Select(translator.ToZIF))
+        var dataOutPins = sram.DataOutPins.Length != 0 ? sram.DataOutPins : sram.DataPins;
+        foreach (var i in dataOutPins.Select(translator.ToZIF))
         {
           if (readerZif[i] != bit)
           {
             var expected = "";
             var read = "";
             bit = startBit;
-            foreach (var j in sram.DataPins.Select(translator.ToZIF))
+            foreach (var j in dataOutPins.Select(translator.ToZIF))
             {
               expected = expected + (bit ? "1" : "0");
               read = read + (readerZif[j] ? "1" : "0");
@@ -555,6 +557,83 @@ namespace U2Pa.Lib
         }
 
         startBit = !startBit;
+        progressBar.Progress();
+      }
+      return badCells;
+    }
+
+    /// <summary>
+    /// A simple SRAM test.
+    /// </summary>
+    /// <param name="shouter">Public shouter instance.</param>
+    /// <param name="sram">The SRAM type.</param>
+    /// <param name="progressBar">The progress bar.</param>
+    /// <param name="passName">The name of the pass.</param>
+    /// <param name="totalNumberOfAdresses">The total number of adresses.</param>
+    /// <param name="dataGenerator">A device the generates values for addresses.</param>
+    /// <returns>Tuples of non-working addresses: (address, read_byte, expected_byte).</returns>
+    public List<Tuple<int, string, string>> SRamTestPass(IShouter shouter, SRam sram, ProgressBar progressBar, string passName, int totalNumberOfAdresses, IDataGenerator dataGenerator)
+    {
+      progressBar.Shout(passName);
+      var translator = sram.GetPinTranslator(ZIFType);
+      SetVccLevel(sram.VccLevel);
+      ApplyGnd(translator.ToZIF, sram.GndPins);
+      ApplyVcc(translator.ToZIF, sram.VccPins);
+      PullUpsEnable(true);
+
+      var badCells = new List<Tuple<int, string, string>>();
+      var writerZif = new ZIFSocket(40);
+      for (var address = 0; address < totalNumberOfAdresses; address++)
+      {
+        writerZif.SetAll(true);
+        writerZif.Disable(sram.GndPins, translator.ToZIF);
+        writerZif.Enable(sram.Constants, translator.ToZIF);
+        writerZif.Enable(sram.ChipEnable, translator.ToZIF);
+        sram.SetAddress(writerZif, address);
+        sram.SetData(writerZif, dataGenerator.GetData(address));
+
+        WriteZIF(writerZif, "");
+        writerZif.Enable(sram.WriteEnable, translator.ToZIF);
+        WriteZIF(writerZif, "");
+        writerZif.Disable(sram.WriteEnable, translator.ToZIF);
+        WriteZIF(writerZif, "");
+
+        progressBar.Progress();
+      }
+
+      for (var address = 0; address < totalNumberOfAdresses; address++)
+      {
+        writerZif.SetAll(true);
+        writerZif.Disable(sram.GndPins, translator.ToZIF);
+        writerZif.Enable(sram.Constants, translator.ToZIF);
+        writerZif.Enable(sram.ChipEnable, translator.ToZIF);
+        writerZif.Enable(sram.OutputEnable, translator.ToZIF);
+        writerZif.Disable(sram.WriteEnable, translator.ToZIF);
+        sram.SetAddress(writerZif, address);
+        WriteZIF(writerZif, "Writing SRam address.");
+
+        var readerZif = ReadZIF("Reading SRam data.")[0];
+        var dataOutPins = sram.DataOutPins.Length != 0 ? sram.DataOutPins : sram.DataPins;
+        var expectedData = dataGenerator.GetData(address);
+
+        var addressBitCounter = 0;
+        foreach (var i in dataOutPins.Select(translator.ToZIF))
+        {
+          if (readerZif[i] != expectedData[addressBitCounter++])
+          {
+            addressBitCounter = 0;
+            var expected = "";
+            var read = "";
+            foreach (var j in dataOutPins.Select(translator.ToZIF))
+            {
+              expected = expected + (expectedData[addressBitCounter++] ? "1" : "0");
+              read = read + (readerZif[j] ? "1" : "0");
+            }
+            badCells.Add(Tuple.Create(address, read, expected));
+            progressBar.Shout("{0}: Bad cell at address {1}", passName, address.ToString("X4"));
+            break;
+          }
+        }
         progressBar.Progress();
       }
       return badCells;

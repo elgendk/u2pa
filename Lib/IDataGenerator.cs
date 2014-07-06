@@ -19,38 +19,21 @@
 //    You should have received a copy of the GNU General Public License
 //    along with u2pa. If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Linq;
-using U2Pa.Lib;
+using System.Collections;
 
-namespace U2Pa.Test
+namespace U2Pa.Lib
 {
   /// <summary>
-  /// Test implementation.
+  /// Generates data in a consistent way such that
+  /// consecutive calls to the same address returns same data.
   /// </summary>
-  public class UsbBulkTestDevice : UsbBulkDeviceDelayer
+  public interface IDataGenerator
   {
-    public UsbBulkTestDevice() : base(new RawUsbBulkTestDevice())
-    {
-    }
-  }
-
-  public class RawUsbBulkTestDevice : IRawUsbBulkDevice
-  {
-    int numberOfCallsToSendPackage = 0;
-    int numberOfCallsToRecievePackage = 0;
-    byte[] idPackage = "top2005+DUMMY...".ToCharArray().Select(c => (byte)c).ToArray();
-    public void SendPackage(int verbosity, byte[] data, string description, params object[] args)
-    {
-      numberOfCallsToSendPackage++;
-    }
-
-    public byte[] RecievePackage(int verbosity, string description, params object[] args)
-    {
-      return numberOfCallsToRecievePackage++ == 0 ? idPackage : new byte[0];
-    }
-
-    public void Dispose()
-    { }
+    /// <summary>
+    /// Gets data for the specified address.
+    /// </summary>
+    /// <param name="address">Address.</param>
+    /// <returns>Data.</returns>
+    BitArray GetData(int address);
   }
 }

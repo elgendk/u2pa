@@ -32,6 +32,7 @@
               <xs:element name="Notes" type="xs:string" minOccurs="0" />
               <xs:element name="AddressPins" type="xs:string" minOccurs="1" />
               <xs:element name="DataPins" type="xs:string" minOccurs="1" />
+              <xs:element name="DataOutPins" type="xs:string" minOccurs="0" />
               <xs:element name="ChipEnable" type="xs:string" minOccurs="1" />
               <xs:element name="OutputEnable" type="xs:string" minOccurs="1" />
               <xs:element name="WriteEnable" type="xs:string" minOccurs="1" />
