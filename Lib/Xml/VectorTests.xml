@@ -22,22 +22,24 @@
 //    along with u2pa. If not, see <http://www.gnu.org/licenses/>.
 -->
 <Root>
-  <VectorTest type = "7421" dilType = "14" pullUpsEnabled = "false">
-    00000LGL00000V
-    10000LGL10000V
-    01000LGL01000V
-    11000LGL11000V
-    00010LGL00010V
-    10010LGL10010V
-    01010LGL01010V
-    11010LGL11010V
-    00001LGL00001V
-    10001LGL10001V
-    01001LGL01001V
-    11001LGL11001V
-    00011LGL00011V
-    10011LGL10011V
-    01011LGL01011V
-    11011HGH11011V
+  <VectorTest type = "TTL7421" dilType = "14" placement = "0" Vcc= "5" pullUpsEnabled = "true">
+    <Vectors>
+      00000LGL00000V
+      10000LGL10000V
+      01000LGL01000V
+      11000LGL11000V
+      00010LGL00010V
+      10010LGL10010V
+      01010LGL01010V
+      11010LGL11010V
+      00001LGL00001V
+      10001LGL10001V
+      01001LGL01001V
+      11001LGL11001V
+      00011LGL00011V
+      10011LGL10011V
+      01011LGL01011V
+      11011HGH11011V
+    </Vectors>
   </VectorTest>
 </Root>

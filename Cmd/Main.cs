@@ -127,6 +127,10 @@ namespace U2Pa.Cmd
             returnCode = BDump(shouter, cleanedArgs);
             break;
 
+          case "vector":
+            returnCode = Vector(shouter, cleanedArgs);
+            break;
+
           case "help":
             returnCode = Help(shouter, cleanedArgs);
             break;
@@ -149,7 +153,7 @@ namespace U2Pa.Cmd
     }
 
     /// <summary>
-    /// Entry point for the 'rom' catagory of commands.
+    /// Entry point for the 'rom' category of commands.
     /// </summary>
     /// <param name="shouter">The shouter instance.</param>
     /// <param name="args">Command line arguments</param>
@@ -215,7 +219,7 @@ namespace U2Pa.Cmd
     }
 
     /// <summary>
-    /// Entry point for the 'sram' catagory of commands.
+    /// Entry point for the 'sram' category of commands.
     /// </summary>
     /// <param name="shouter">The shouter instance.</param>
     /// <param name="args">Command line argumsnts</param>
@@ -279,7 +283,7 @@ namespace U2Pa.Cmd
     }
 
     /// <summary>
-    /// Entry point for the 'bdump' catagory of commands.
+    /// Entry point for the 'bdump' category of commands.
     /// </summary>
     /// <param name="shouter">The shouter instance.</param>
     /// <param name="args">Command line argumsnts</param>
@@ -308,7 +312,33 @@ namespace U2Pa.Cmd
     }
 
     /// <summary>
-    /// Entry point for the 'help' catagory of commands.
+    /// Entry point for the 'vector' category of commands.
+    /// </summary>
+    /// <param name="shouter">The shouter instance.</param>
+    /// <param name="args">Command line argumsnts</param>
+    /// <returns>Exit code. 0 is fine; all other is bad.</returns>
+    private static int Vector(Shouter shouter, List<string> args)
+    {
+      if (args.Count == 1)
+      {
+        args.Insert(0, "help");
+        Help(shouter, args);
+        return 0;
+      }
+
+      switch (args[1])
+      {
+        case "test":
+          return Kernel.VectorTest(shouter, args[2]);
+
+        default:
+          shouter.ShoutLine(1, "Unknown vector command {0}", args[1]);
+          return 1;
+      }
+    }
+
+    /// <summary>
+    /// Entry point for the 'help' category of commands.
     /// </summary>
     /// <param name="shouter">The shouter instance.</param>
     /// <param name="args">Command line arguments</param>
@@ -339,7 +369,7 @@ namespace U2Pa.Cmd
     }
 
     /// <summary>
-    /// Entry point for the 'dev' catagory of commands.
+    /// Entry point for the 'dev' category of commands.
     /// </summary>
     /// <param name="shouter">The shouter instance.</param>
     /// <param name="args">Command line argumsnts</param>

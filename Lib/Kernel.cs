@@ -651,5 +651,28 @@ namespace U2Pa.Lib
       return 0;
     }
     #endregion
+
+    #region Vector
+    /// <summary>
+    /// A simple vector test.
+    /// </summary>
+    /// <param name="shouter">The shouter instance.</param>
+    /// <param name="type">The type of test.</param>
+    /// <returns>The results of the test.</returns>
+    public static int VectorTest(IShouter shouter, string type)
+    {
+      IList<byte> bytes = new List<byte>();
+      var vectorTest = VectorTestXml.Specified[type];
+      List<VectorResult> results;
+      using (var progressBar = new ProgressBar(shouter, vectorTest.Vectors.Count))
+      {
+        using (var topDevice = TopDevice.Create(shouter))
+        {
+          results = topDevice.VectorTest(vectorTest, progressBar);
+        }
+      }
+      return 0;
+    }
+    #endregion Vector
   }
 }

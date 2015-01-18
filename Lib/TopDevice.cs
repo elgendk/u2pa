@@ -224,7 +224,7 @@ namespace U2Pa.Lib
       ApplyGnd(translator.ToZIF, eprom.GndPins);
       PullUpsEnable(true);
 
-      var zif = new ZIFSocket(40);
+      var zif = new ZIFSocket(ZIFType);
       var returnAddress = fromAddress;
       Shouter.ShoutLine(2, "Now reading bytes...");
       progressBar.Init();
@@ -302,7 +302,7 @@ namespace U2Pa.Lib
       ApplyGnd(translator.ToZIF, eprom.GndPins);
       ApplyVcc(translator.ToZIF, eprom.VccPins);
 
-      var initZif = new ZIFSocket(40);
+      var initZif = new ZIFSocket(ZIFType);
       initZif.SetAll(true);
       initZif.Disable(eprom.GndPins, translator.ToZIF);
       initZif.Enable(eprom.Constants, translator.ToZIF);
@@ -640,6 +640,35 @@ namespace U2Pa.Lib
     }
 
     /// <summary>
+    /// A simple vector test.
+    /// </summary>
+    /// <param name="vectorTest">The vector test.</param>
+    /// <param name="progressBar">The progress bar.</param>
+    /// <returns>The results of the test.</returns>
+    internal List<VectorResult> VectorTest(VectorTestXml vectorTest, ProgressBar progressBar)
+    {
+      List<VectorResult> results = new List<VectorResult>();
+      SetVccLevel(vectorTest.VccLevel);
+      PullUpsEnable(vectorTest.PullUpsEnabled);
+      List<Pin> vccPins = new List<Pin>();
+      List<Pin> gndPins = new List<Pin>();
+      foreach(var vector in vectorTest.Vectors)
+      {
+        if(!vccPins.SamePinsAs(vector.VccPins))
+        {
+          vccPins = vector.VccPins;
+          ApplyVcc(null, vccPins.ToArray());
+        }
+        if (!gndPins.SamePinsAs(vector.GndPins))
+        {
+          gndPins = vector.GndPins;
+          ApplyGnd(null, gndPins.ToArray());
+        }
+      }
+      return results;
+    }
+
+    /// <summary>
     /// Reads the ZIF-socket (12 times).
     /// </summary>
     /// <param name="packageName">The message to shout.</param>
@@ -664,7 +693,7 @@ namespace U2Pa.Lib
         var bytes = new List<byte>();
         for(var j = i; j < i + 5; j++)
           bytes.Add(readBuffer[j]);
-        zifs.Add(new ZIFSocket(40, bytes.ToArray()));
+        zifs.Add(new ZIFSocket(ZIFType, bytes.ToArray()));
       }
       return zifs.ToArray();
     }
