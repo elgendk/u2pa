@@ -214,6 +214,21 @@ namespace U2Pa.Lib
       return x.Element(name).Value.Split(',').Where(y => !String.IsNullOrEmpty(y)).Select(Pin.Parse).ToArray();
     }
 
+    /// <summary>
+    /// Compares the pin numbers in 2 lists of pins.
+    /// </summary>
+    internal static bool SamePinsAs(this List<Pin> first, List<Pin> second)
+    {
+      if (first.Count != second.Count)
+        return false;
+      for (var i = 0; i < first.Count; i++)
+      {
+        if (first[i].Number != second[i].Number)
+          return false;
+      }
+      return true;
+    }
+
     internal static VectorValues ParseVectorValue(char letter)
     {
       switch (letter)
@@ -235,6 +250,11 @@ namespace U2Pa.Lib
         default:
          throw new U2PaException("Unknown VectorValue: '{0}'", letter);
       }
+    }
+
+    internal static IEnumerable<VectorValues> AsVectorValues(this string input)
+    {
+      return input.ToCharArray().Select(c => ParseVectorValue(c));
     }
   }
 }

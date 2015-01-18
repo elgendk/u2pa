@@ -53,7 +53,7 @@ namespace U2Pa.Lib
     /// <returns>The generated equations.</returns>
     public string GenerateCUPLEquations(int numberOfOutputs, int numberOfInputs)
     {
-      var adresses = BuildAddressTable();
+      var adresses = BuildAddressTable(numberOfInputs);
       var data = BuildDataTable();
       StringBuilder sb = new StringBuilder();
       for (var i = 0; i < numberOfOutputs; i++)
@@ -132,39 +132,39 @@ namespace U2Pa.Lib
     /// <returns>The generated truth table.</returns>
     public string GenerateHumanReadableTruthTable(int numberOfOutputs, int numberOfInputs)
     {
-      var adresses = BuildAddressTable();
+      var adresses = BuildAddressTable(numberOfInputs);
       var data = BuildDataTable();
 
       var sb = new StringBuilder();
-      sb.AppendLine("| NNN | AAAAAAAA | DDDDDDDD | HH |");
-      sb.AppendLine("|     | 01234567 | 01234567 |    |");
-      sb.AppendLine("+-----+----------+----------+----+");
-      for (var j = 0; j < adresses.Length; j++)
+      sb.AppendLine("| NNN | AAAAAAAAAAAAAAAA | DDDDDDDDDDDDDDDD | HH |");
+      sb.AppendLine("|     | 0123456789ABCDEF | 0123456789ABCDEF |    |");
+      sb.AppendLine("+-----+------------------+------------------+----+");
+      for (var j = 0; j < Math.Pow(2, numberOfInputs); j++)
       {
         sb.Append("| ");
         sb.Append(j.ToString("X3").PadLeft(3, '0'));
         sb.Append(" | ");
-        for (var i = 0; i < 8; i++)
+        for (var i = 0; i < 16; i++)
         {
           if (i < numberOfInputs)
             sb.Append((adresses[j])[i] ? "1" : "0");
           else
-            sb.Append(" ");
+            sb.Append(".");
         }
         sb.Append(" | ");
-        for (var i = 0; i < 8; i++)
+        for (var i = 0; i < 16; i++)
         {
           if (i < numberOfOutputs)
             sb.Append((data[j])[i] ? "1" : "0");
           else
-            sb.Append(" ");
+            sb.Append(".");
         }
         sb.Append(" | ");
         sb.Append(Data[j].ToString("X2"));
         sb.Append(" |");
         sb.Append(Environment.NewLine);
       }
-      sb.AppendLine("+-----+----------+----------+----+");
+      sb.AppendLine("+-----+------------------+------------------+----+");
 
       return sb.ToString();
     }
@@ -174,9 +174,9 @@ namespace U2Pa.Lib
       return Data.Select(i => new BitArray(new[] { i })).ToArray();
     }
 
-    private BitArray[] BuildAddressTable()
+    private BitArray[] BuildAddressTable(int numberOfInputs)
     {
-      return Enumerable.Range(0, Data.Length).Select(i => new BitArray(new[] { (byte)i })).ToArray();
+      return Enumerable.Range(0, (Int32)Math.Pow(2,numberOfInputs)).Select(i => new BitArray(new[] { i })).ToArray();
     }
   }
 }

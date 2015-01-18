@@ -1,63 +1,99 @@
-﻿// Copied from the MaxLoader Manual:
-// =================================
-// The following are valid characters for test vectors:
-// 0 Apply input logic low (Vil) to an input pin
-// 1 Apply input logic high (Vih) to an input pin
-// C Clock an input pin (Vil, Vih, Vil)
-// F Float pin
-// N Power pin or untested output pin
-// V VCC pin
-// X Don't care: output values are not tested
-// G GND pin
-// K Clock an inverted input pin (Vih, Vil, Vih)
-// H Expected result on output pin is Vih
-// L Expected result on output pin is Vil
-// Z Test for high impedance
+﻿//                             u2pa
+//
+//    A command line interface for Top Universal Programmers
+//
+//    Copyright (C) Elgen };-) aka Morten Overgaard 2012
+//
+//    This file is part of u2pa.
+//
+//    u2pa is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
+//
+//    u2pa is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with u2pa. If not, see <http://www.gnu.org/licenses/>.
 
-// Start with:
-// ===========
-// 0 Apply input logic low (Vil) to an input pin
-// 1 Apply input logic high (Vih) to an input pin
-// V VCC pin
-// X Don't care: output values are not tested
-// G GND pin
-// H Expected result on output pin is Vih
-// L Expected result on output pin is Vil
+using System.Collections.Generic;
 
-public enum VectorValues
+namespace U2Pa.Lib.IC
 {
-  /// <summary>
-  /// 0 Apply input logic low (Vil) to an input pin.
-  /// </summary>
-  Zero,
+  public abstract class VectorTest
+  {
+    /// <summary>
+    /// The 'name' of the test i.e. 'TTL7432'. 
+    /// </summary>
+    public string Type;
 
-  /// <summary>
-  /// 1 Apply input logic high (Vih) to an input pin.
-  /// </summary>
-  One,
-  
-  /// <summary>
-  /// V VCC pin.
-  /// </summary>
-  Vcc,
+    /// <summary>
+    /// The number of pins.
+    /// </summary>
+    public int DilType;
 
-  /// <summary>
-  /// X Don't care: output values are not tested.
-  /// </summary>
-  DontCare,
-  
-  /// <summary>
-  /// G GND pin.
-  /// </summary>
-  Gnd,
+    /// <summary>
+    /// Important notes about the EPROM.
+    /// </summary>
+    public string Notes;
 
-  /// <summary>
-  /// H Expected result on output pin is Vih.
-  /// </summary>
-  High,
+    /// <summary>
+    /// Description.
+    /// </summary>
+    public string Description;
 
-  /// <summary>
-  /// L Expected result on output pin is Vil.
-  /// </summary>
-  Low
+    /// <summary>
+    /// Placement/offset of the EPROM in the ZIF socket.
+    /// </summary>
+    public int Placement;
+
+    /// <summary>
+    /// The VccLevel.
+    /// </summary>
+    public double VccLevel;
+
+    /// <summary>
+    /// Controls if pull-ups are to be enabled.
+    /// </summary>
+    public bool PullUpsEnabled;
+
+    /// <summary>
+    /// The ordered sequence of test steps.
+    /// </summary>
+    public List<Vector> Vectors;
+  }
+
+  public class Vector
+  {
+    /// <summary>
+    /// The ordered sequence of the input pins.
+    /// </summary>
+    public List<Pin> InputPins = new List<Pin>();
+
+    /// <summary>
+    /// The ordered sequence of the output pins.
+    /// </summary>
+    public List<Pin> OutputPins = new List<Pin>();
+
+    /// <summary>
+    /// The ordered sequence of the output pins.
+    /// </summary>
+    public List<Pin> DontCares = new List<Pin>();
+
+    /// <summary>
+    /// The pins that should be connected to Vcc.
+    /// </summary>
+    public List<Pin> VccPins = new List<Pin>();
+
+    /// <summary>
+    /// The pins that should be connected to GND.
+    /// </summary>
+    public List<Pin> GndPins = new List<Pin>();
+  }
+
+  public class VectorResult
+  { }
 }

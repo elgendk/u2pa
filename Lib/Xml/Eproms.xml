@@ -32,7 +32,7 @@
     <GndPins>12</GndPins>
     <VppPins>21</VppPins>
   </Eprom>
-  
+
   <Eprom type = "2732" dilType = "24" placement = "0" Vcc = "5" Vpp = "21" progPulse = "50">
     <AddressPins>8, 7, 6, 5, 4, 3, 2, 1, 23, 22, 19, 21</AddressPins>
     <DataPins>9, 10, 11, 13, 14, 15, 16, 17</DataPins>
@@ -44,6 +44,18 @@
     <VppPins>20</VppPins>
   </Eprom>
 
+  <Eprom type = "HN462532G" dilType = "24" placement = "0" Vcc = "5" Vpp = "21" progPulse = "50">
+    <AddressPins>8, 7, 6, 5, 4, 3, 2, 1, 23, 22, 19, 18</AddressPins>
+    <DataPins>9, 10, 11, 13, 14, 15, 16, 17</DataPins>
+    <ChipEnable>/20</ChipEnable>
+    <OutputEnable>/20</OutputEnable>
+    <Program>/20</Program>
+    <VccPins>24</VccPins>
+    <GndPins>12</GndPins>
+    <VppPins>21</VppPins>
+  </Eprom>
+  <Alias type = "TMS2532" baseType = "HN462532G"/>
+  
   <Eprom type = "2764" dilType = "28" placement = "0" Vcc = "5" Vpp = "12.9" progPulse = "40">
     <AddressPins>10, 9, 8, 7, 6, 5, 4, 3, 25, 24, 21, 23, 2</AddressPins>
     <DataPins>11, 12, 13, 15, 16, 17, 18, 19</DataPins>
@@ -178,6 +190,20 @@
     <DataPins>12, 13, 14, 15, 16, 17, 18, 19</DataPins>
     <ChipEnable></ChipEnable>
     <OutputEnable>/8</OutputEnable>
+    <Program></Program>
+    <VccPins>20</VccPins>
+    <GndPins>10</GndPins>
+    <VppPins></VppPins>
+  </Eprom>
+
+  <Eprom type = "GunbirdPALU11" dilType = "20" placement = "0" Vcc = "5" Vpp = "5" progPulse = "0">
+    <Notes>
+      Gunbird PAL U11.
+    </Notes>
+    <AddressPins>1, 2, 3, 4, 5, 6, 7, 8, 9</AddressPins>
+    <DataPins>12, 13, 14, 15, 16, 17, 18</DataPins>
+    <ChipEnable></ChipEnable>
+    <OutputEnable></OutputEnable>
     <Program></Program>
     <VccPins>20</VccPins>
     <GndPins>10</GndPins>
