@@ -15,7 +15,7 @@ However I do NOT promise to implement anything else.
 
 The source code is hosted as a Google Code Project in a Mercurial (hg) repo at
 the address:
-   http://code.google.com/p/u2pa/
+   https://bitbucket.org/Elgen/u2pa/
 
 Hope you enjoy U2Pa.
 
