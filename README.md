@@ -1,6 +1,6 @@
 # Alternative Software for Top2005+ Universal Programmer #
 ----
-Please read the [wiki](https://bitbucket.org/Elgen/u2pa/wiki/Home) for a detailed description of the programme.
+Please read the [wiki](https://github.com/elgendk/u2pa/wiki) for a detailed description of the programme.
 
 ----
 # Latest news: #
