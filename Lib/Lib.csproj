@@ -21,148 +21,56 @@
 //    You should have received a copy of the GNU General Public License
 //    along with u2pa. If not, see <http://www.gnu.org/licenses/>.
 -->
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{BCDA5C78-D3C6-439C-A377-DDA20680A40B}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>U2Pa.Lib</RootNamespace>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <AssemblyName>u2pa.Lib</AssemblyName>
-    <FileAlignment>512</FileAlignment>
+    <RootNamespace>U2Pa.Lib</RootNamespace>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
-    <PlatformTarget>x86</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>..\bin\</OutputPath>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningsAsErrors></WarningsAsErrors>
+    <OutDir>..\bin\</OutDir>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
-    <PlatformTarget>x86</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>..\bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="LibUsbDotNet">
-      <HintPath>Resources\LibUsbDotNet.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
+    <PackageReference Include="LibUsbDotNet" Version="2.2.8" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="IC\VectorTestXml.cs" />
-    <Compile Include="IDataGenerator.cs" />
-    <Compile Include="IC\Adaptor.cs" />
-    <Compile Include="BinaryDumpProcessor.cs" />
-    <Compile Include="Config.cs" />
-    <Compile Include="FPGAProgram.cs" />
-    <Compile Include="IC\AdaptorXml.cs" />
-    <Compile Include="IC\EpromXml.cs" />
-    <Compile Include="IC\Eprom.cs" />
-    <Compile Include="IC\Pin.cs" />
-    <Compile Include="IC\VectorTest.cs" />
-    <Compile Include="IPinTranslator.cs" />
-    <Compile Include="IShouter.cs" />
-    <Compile Include="IUsbBulkDevice.cs" />
-    <Compile Include="Kernel.cs" />
-    <Compile Include="ProgressBar.cs" />
-    <Compile Include="RandomDataGenerator.cs" />
-    <Compile Include="Shouter.cs" />
-    <Compile Include="IC\SRam.cs" />
-    <Compile Include="IC\SRamXml.cs" />
-    <Compile Include="SimpleDataGenerator.cs" />
-    <Compile Include="Tools.cs" />
-    <Compile Include="Enums.cs" />
-    <Compile Include="PinTranslator.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Top2005Plus.cs" />
-    <Compile Include="TopDevice.cs" />
-    <Compile Include="U2PaException.cs" />
-    <Compile Include="UsbBulkDeviceDelayer.cs" />
-    <Compile Include="ZIFSocket.cs" />
-    <Compile Include="UsbBulkDevice.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="License.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Doc\Protocol.txt" />
-    <Content Include="Resources\LibUsbDotNet.dll" />
-    <Content Include="Resources\LibUsbDotNet.xml" />
-    <Content Include="Xml\Adaptors.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Xml\Config.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <SubType>Designer</SubType>
-    </Content>
-    <Content Include="Xml\SRams.xml">
-      <SubType>Designer</SubType>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Xml\Eproms.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <SubType>Designer</SubType>
-    </Content>
-    <Content Include="Xml\VectorTests.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <SubType>Designer</SubType>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Xml\Adaptors.xsd">
-      <SubType>Designer</SubType>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Xml\Config.xsd">
-      <SubType>Designer</SubType>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Xml\Eproms.xsd">
-      <SubType>Designer</SubType>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <None Include="Doc\Installation.txt">
+    <None Update="Xml\Adaptors.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Doc\Disclaimer.txt">
+    <None Update="Xml\Adaptors.xsd">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Doc\ReleaseNotes.txt">
+    <None Update="Xml\Config.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Doc\AddingSupportForNewICs.txt" />
-    <Content Include="Xml\SRams.xsd">
-      <SubType>Designer</SubType>
+    <None Update="Xml\Config.xsd">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <None Include="Xml\VectorTests.xsd">
-      <SubType>Designer</SubType>
+    </None>
+    <None Update="Xml\Eproms.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Xml\Eproms.xsd">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Xml\SRams.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Xml\SRams.xsd">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Xml\VectorTests.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Xml\VectorTests.xsd">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+
 </Project>
