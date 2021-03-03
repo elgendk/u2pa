@@ -159,7 +159,7 @@ namespace U2Pa.Lib
         "\r{0}{1}{2}{3}{4}",
         currentBar,
         Environment.NewLine,
-        "+---------------------------------------------------------------+".PadRight(75),
+        "+ ------------- + ------------- + ------------- + ------------- +".PadRight(75),
         Environment.NewLine,
         m.PadRight(75)));
     }

@@ -23,7 +23,6 @@ using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using System.Xml.Schema;
-using System.Collections.Generic;
 
 namespace U2Pa.Lib
 {
@@ -41,13 +40,21 @@ namespace U2Pa.Lib
       var xSchema = new XmlSchemaSet();
       xSchema.Add("", Path.Combine("Xml","Config.xsd"));
       xDocument.Validate(xSchema, null);
-      ICTestBinPath = xDocument
+      var filesElement = xDocument
         .Descendants("Config")
         .Single()
-        .Element("Files")
-        .Element("ICTestBinPath")
-        .Attribute("path")
-        .Value;
+        .Element("Files");
+      var iCTestBinPathElement = filesElement
+        .Elements("ICTestBinPath")
+        .SingleOrDefault(x => x.Attributes().SingleOrDefault(a => a.Name == "os")?.Value == OsDetector.Platform.ToString());
+      if(iCTestBinPathElement != null)
+      {
+        ICTestBinPath = iCTestBinPathElement.Attribute("path").Value;
+      }
+      else
+      {
+        throw new U2PaException($"No ICTestBinPath configuration for OS: {OsDetector.Platform.ToString()}");
+      }
     }
 
     /// <summary>

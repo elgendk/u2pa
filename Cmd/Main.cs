@@ -106,6 +106,7 @@ namespace U2Pa.Cmd
         shouter.ShoutLine(2, "* Alternative software for Top Universal Programmers *");
         shouter.ShoutLine(2, "******************************************************");
         shouter.ShoutLine(2, "Verbosity level: {0}", shouter.VerbosityLevel);
+        shouter.ShoutLine(2, "OS: {0}", OsDetector.Platform);
         shouter.ShoutLine(2, "U2Pa initiated at {0}", timestamp);
 
         var returnCode = 0;

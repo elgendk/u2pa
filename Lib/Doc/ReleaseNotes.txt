@@ -35,4 +35,4 @@ on Windows. I think this is due to the fact, that the implementation of
 libusb-1.0 is faster on Linux than on Windows. As a consequence, I recommend
 running U2Pa on a Linux box.
 
-For newest version, go to: https://bitbucket.org/Elgen/u2pa/
+For newest version, go to: https://github.com/elgendk/u2pa/

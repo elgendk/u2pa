@@ -3,7 +3,7 @@ Setting up your system for using U2Pa:
 
 Windows (native .NET):
 ----------------------
-1)  Make sure that .NET4.0 is installed on your system
+1)  Make sure that .NET5.0 SDK is installed on your system
 
 2)  Get hold of an Top2005+ Universal Programmer
 
@@ -26,15 +26,15 @@ Windows (native .NET):
     a "real" driver you don't have to uninstall the Top-driver from
     TopWin6 to use U2Pa. You can now use the 2 programs side-by-side
 
-9)  Build the U2Pa-soluiton with VisualStudio (or with the build.bat if
-    you haven't got VisualStudio installed)
+9)  Build the U2Pa-solution with the command
+   ~> dotnet build
 
 10) You can now find the command line tool u2pa.exe in the bin-directory
 
 11) The command line tool is best launched from WindowsPowerShell
 
 12) To test that the filter is up and running, you can issue the command
-   ~>./u2pa.exe prog id
+   ~> ./u2pa.exe prog id
    
 13) Open the file Config.xml in the subfolder Xml and check that path to
     the file ictest.bin is correct. We need the one from the blib2
@@ -47,12 +47,11 @@ Linux (Mono):
 -------------
 
 1)  Download and install the latest version of Mono on your Linux system
-    (must support .NET 4.0)
+    (must support .NET 5.0)
     
 2)  Download and install the libusb-1.0 on your Linux system
 
-3)  Build the U2Pa-soluiton with MonoDevelop (or with the xbuild if
-    you haven't got MonoDevelop installed)
+3)  Build the U2Pa-soluiton with dotnet
     
 4)  Connect the Top2005+ to a USB-port
 
