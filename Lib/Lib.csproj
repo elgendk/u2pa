@@ -37,7 +37,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="LibUsbDotNet" Version="2.2.8" />
+    <PackageReference Include="LibUsbDotNet" Version="2.2.29" />
   </ItemGroup>
 
   <ItemGroup>
