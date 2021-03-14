@@ -55,7 +55,7 @@ namespace U2Pa.Test
       Assert.That(result, Is.EqualTo(expected));
     }
 
-    [Test]
+    //[Test]
     public void Temp()
     {
       foreach (var vectorTest in VectorTestXml.Specified)
