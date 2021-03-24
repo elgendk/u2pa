@@ -10,6 +10,9 @@ Windows (native .NET):
 3)  Download (if it's not on the disc that came with the Top2005+)
     and install TopWin6
     You can get it here (or by using google): http://www.topwin6.com/
+    This is not possible on a 64bit Windows system, as not 64bit drivers
+    exists. Instead you can install the Top2005+ libusb driver from the
+    Drivers folder, and skip sted 4) and 6)-8).
 
 4)  Test the programmer and software and make sure it works
 
