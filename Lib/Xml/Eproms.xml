@@ -411,4 +411,15 @@
     <VppPins></VppPins>
   </Eprom>
   <Alias type = "AM27S191" baseType = "N82S191"/>
+
+  <Eprom type = "TC531000P" dilType = "28" placement = "0" Vcc = "5" Vpp = "12.9" progPulse = "40">
+    <AddressPins>10, 9, 8, 7, 6, 5, 4, 3, 25, 24, 21, 23, 2, 26, 27, 1, 22</AddressPins>
+    <DataPins>11, 12, 13, 15, 16, 17, 18, 19</DataPins>
+    <ChipEnable>/20</ChipEnable>
+    <OutputEnable></OutputEnable>
+    <Program></Program>
+    <VccPins>28</VccPins>
+    <GndPins>14</GndPins>
+    <VppPins></VppPins>
+  </Eprom>
 </Root>
