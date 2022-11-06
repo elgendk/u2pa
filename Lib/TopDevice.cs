@@ -210,7 +210,7 @@ namespace U2Pa.Lib
     /// <returns>The next adress to be read.</returns>
     public int ReadEprom(
       Eprom eprom, 
-      ProgressBar progressBar, 
+      IProgressBar progressBar, 
       IList<byte> bytes, 
       int fromAddress, 
       int totalNumberOfAdresses)
@@ -227,7 +227,7 @@ namespace U2Pa.Lib
       var zif = new ZIFSocket(ZIFType);
       var returnAddress = fromAddress;
       Shouter.ShoutLine(2, "Now reading bytes...");
-      progressBar.Init();
+      progressBar.Init(totalNumberOfAdresses);
       foreach (var address in Enumerable.Range(fromAddress, totalNumberOfAdresses - fromAddress))
       {
         zif.SetAll(true);
@@ -315,9 +315,9 @@ namespace U2Pa.Lib
       ApplyVpp(translator.ToZIF, eprom.VppPins);
       PullUpsEnable(true);
 
-      using (var progress = new ProgressBar(Shouter, totalNumberOfAdresses))
+      using (var progress = new ProgressBar(Shouter))
       {
-        progress.Init();
+        progress.Init(totalNumberOfAdresses);
         foreach (var address in Enumerable.Range(0, totalNumberOfAdresses))
         {
           //if(patch != null)
@@ -395,9 +395,9 @@ namespace U2Pa.Lib
         ApplyVpp(translator.ToZIF, eprom.VppPins);
       }
       
-      using (var progress = new ProgressBar(Shouter, totalNumberOfAdresses))
+      using (var progress = new ProgressBar(Shouter))
       {
-        progress.Init();
+        progress.Init(totalNumberOfAdresses);
         foreach (var address in Enumerable.Range(0, totalNumberOfAdresses))
         {
           var pulse = 1;
@@ -485,7 +485,7 @@ namespace U2Pa.Lib
     /// <param name="totalNumberOfAdresses">The total number of adresses.</param>
     /// <param name="firstBit">The value of the first bit to write to the SRAM.</param>
     /// <returns>Tuples of non-working addresses: (address, read_byte, expected_byte).</returns>
-    public List<Tuple<int, string, string>> OldSRamTest(IShouter shouter, SRam sram, ProgressBar progressBar, int totalNumberOfAdresses, bool firstBit)
+    public List<Tuple<int, string, string>> OldSRamTest(IShouter shouter, SRam sram, IProgressBar progressBar, int totalNumberOfAdresses, bool firstBit)
     {
       var translator = sram.GetPinTranslator(ZIFType);
       SetVccLevel(sram.VccLevel);
@@ -572,7 +572,7 @@ namespace U2Pa.Lib
     /// <param name="totalNumberOfAdresses">The total number of adresses.</param>
     /// <param name="dataGenerator">A device the generates values for addresses.</param>
     /// <returns>Tuples of non-working addresses: (address, read_byte, expected_byte).</returns>
-    public List<Tuple<int, string, string>> SRamTestPass(IShouter shouter, SRam sram, ProgressBar progressBar, string passName, int totalNumberOfAdresses, IDataGenerator dataGenerator)
+    public List<Tuple<int, string, string>> SRamTestPass(IShouter shouter, SRam sram, IProgressBar progressBar, string passName, int totalNumberOfAdresses, IDataGenerator dataGenerator)
     {
       progressBar.Shout(passName);
       var translator = sram.GetPinTranslator(ZIFType);
@@ -645,8 +645,9 @@ namespace U2Pa.Lib
     /// <param name="vectorTest">The vector test.</param>
     /// <param name="progressBar">The progress bar.</param>
     /// <returns>The results of the test.</returns>
-    internal List<VectorResult> VectorTest(VectorTestXml vectorTest, ProgressBar progressBar)
+    internal List<VectorResult> VectorTest(VectorTestXml vectorTest, IProgressBar progressBar)
     {
+      progressBar.Init(vectorTest.Vectors.Count);
       List<VectorResult> results = new List<VectorResult>();
       SetVccLevel(vectorTest.VccLevel);
       PullUpsEnable(vectorTest.PullUpsEnabled);

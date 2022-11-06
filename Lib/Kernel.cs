@@ -145,7 +145,7 @@ namespace U2Pa.Lib
       var eprom = EpromXml.Specified[type];
       var totalNumberOfAdresses = eprom.AddressPins.Length == 0 ? 0 : 1 << eprom.AddressPins.Length;
       var startAddress = 0;
-      using (var progressBar = new ProgressBar(shouter, totalNumberOfAdresses))
+      using (var progressBar = new ProgressBar(shouter))
       {
         while (startAddress < totalNumberOfAdresses)
         {
@@ -518,12 +518,12 @@ namespace U2Pa.Lib
       var sram = SRamXml.Specified[type];
       var totalNumberOfAdresses = sram.AddressPins.Length == 0 ? 0 : 1 << sram.AddressPins.Length;
       List<Tuple<int, string, string>> firstRandomPass, secondRandomPass, firstSimplePass, secondSimplePass;
-      using (var progressBar = new ProgressBar(shouter, totalNumberOfAdresses * 8))
+      using (var progressBar = new ProgressBar(shouter))
       {
         using (var topDevice = TopDevice.Create(shouter))
         {
           shouter.ShoutLine(1, "Testing SRAM{0}", type);
-          progressBar.Init();
+          progressBar.Init(totalNumberOfAdresses * 8);
           firstRandomPass = topDevice.SRamTestPass(shouter, sram, progressBar, "First random test", totalNumberOfAdresses, new RandomDataGenerator(sram.DataPins.Length, totalNumberOfAdresses));
           secondRandomPass = topDevice.SRamTestPass(shouter, sram, progressBar, "Second random test", totalNumberOfAdresses, new RandomDataGenerator(sram.DataPins.Length, totalNumberOfAdresses));
           firstSimplePass = topDevice.SRamTestPass(shouter, sram, progressBar, "First simple test (01..)", totalNumberOfAdresses, new SimpleDataGenerator(sram.DataPins.Length, false));
@@ -664,7 +664,7 @@ namespace U2Pa.Lib
       IList<byte> bytes = new List<byte>();
       var vectorTest = VectorTestXml.Specified[type];
       List<VectorResult> results;
-      using (var progressBar = new ProgressBar(shouter, vectorTest.Vectors.Count))
+      using (var progressBar = new ProgressBar(shouter))
       {
         using (var topDevice = TopDevice.Create(shouter))
         {

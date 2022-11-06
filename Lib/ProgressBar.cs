@@ -26,7 +26,7 @@ namespace U2Pa.Lib
   /// <summary>
   /// Progress bar.
   /// </summary>
-  public class ProgressBar : IDisposable
+  public class ProgressBar : IProgressBar
   {
     private IShouter shouter;
     private int size;
@@ -44,12 +44,9 @@ namespace U2Pa.Lib
     /// ctor.
     /// </summary>
     /// <param name="shouter">Public shouter instance.</param>
-    /// <param name="size">The total number of progresses before finished.</param>
-    public ProgressBar(IShouter shouter, int size)
+    public ProgressBar(IShouter shouter)
     {
       this.shouter = shouter;
-      this.size = size;
-      stride = size / 64;
       savedVerbosity = shouter.VerbosityLevel;
     }
 
@@ -59,8 +56,11 @@ namespace U2Pa.Lib
     /// Can be called multiple times.
     /// </remarks>
     /// </summary>
-    public void Init()
+    /// <param name="size">The total number of progresses before finished.</param>
+    public void Init(int size)
     {
+      this.size = size;
+      stride = size / 64;
       if (initialized || savedVerbosity == 0)
         return;
       // Shut all others up };-)
@@ -151,7 +151,7 @@ namespace U2Pa.Lib
     /// </summary>
     /// <param name="message">The message (may contain String.Format mark-ups).</param>
     /// <param name="obj">Parameters to the message.</param>
-    internal void Shout(string message, params object[] obj)
+    public void Shout(string message, params object[] obj)
     {
       var m = String.Format(message, obj);
       SetCursor(verticalPlacement);
