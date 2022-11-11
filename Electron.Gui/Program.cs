@@ -1,6 +1,7 @@
 using Electron.Gui.Data;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
+using ElectronNET.API;
+using ElectronNET.API.Entities;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +9,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<WeatherForecastService>();
+builder.Services.AddElectron();
+builder.WebHost.UseElectron(args);
 
 var app = builder.Build();
 
@@ -25,4 +28,19 @@ app.UseRouting();
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 
+BootStrap();
+
 app.Run();
+
+async void BootStrap()
+{
+  var options = new BrowserWindowOptions
+  {
+    Show = false,
+  };
+
+  var mainWindow = await Task.Run(async () => await ElectronNET.API.Electron.WindowManager.CreateWindowAsync(options));
+  mainWindow.OnReadyToShow += () => mainWindow.Show();
+
+  ElectronNET.API.Electron.Menu.SetApplicationMenu(new MenuItem[0]);
+}

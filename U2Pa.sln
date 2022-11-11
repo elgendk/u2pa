@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test", "Test\Test.csproj", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Electron.Link", "Electron.Link\Electron.Link.csproj", "{05E25BF4-F549-4AAC-94C7-BAE0B012E7DD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Electron.Gui", "Electron.Gui\Electron.Gui.csproj", "{E3249E96-7A77-487A-8B67-76A38658B93E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Electron.Gui", "Electron.Gui\Electron.Gui.csproj", "{E3249E96-7A77-487A-8B67-76A38658B93E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
