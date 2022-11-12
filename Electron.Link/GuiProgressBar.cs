@@ -15,6 +15,7 @@ namespace U2pa.Electron.Link
 
     public void Init(int size)
     {
+      Dispose();
       state.MaxProgress = size;
       refreshTimer = new Timer(state.TimerCallBack, null, 0, 10);
     }

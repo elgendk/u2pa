@@ -1,0 +1,68 @@
+﻿@page "/rom"
+@using U2Pa.Lib
+@using U2Pa.Lib.IC
+@using U2pa.Electron.Link
+
+<PageTitle>Rom</PageTitle>
+
+<h1>Read a 27512</h1>
+
+<p role="status">Address count: @progressState.CurrentProgress</p>
+<p role="status">State: @progressState.CurrentProgressBarShout</p>
+<p><progress value="@progressState.CurrentProgress" max="@progressState.MaxProgress"></progress></p>
+
+
+<button class="btn btn-primary" @onclick="Start">Start</button>
+
+@code {
+    private GuiState progressState;
+    private bool currentlyCounting = false;
+
+    protected override void OnInitialized()
+    {
+        progressState = new GuiState(Tick);
+    }
+
+    private void Tick(object? _)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async void Start()
+    {
+        if (currentlyCounting)
+            return;
+
+        var shouter = new GuiShouter(progressState);
+        currentlyCounting = true;
+        progressState.Reset();
+        IList<byte> result;
+
+        using (var progressBar = new GuiProgressBar(progressState))
+        {
+            progressBar.Shout("Init");
+            result = await Task<IList<byte>>.Run(() =>
+            {
+                IList<byte> bytes = new List<byte>();
+                var eprom = EpromXml.Specified["27512"];
+                var totalNumberOfAdresses = eprom.AddressPins.Length == 0 ? 0 : 1 << eprom.AddressPins.Length;
+                var startAddress = 0;
+                while (startAddress < totalNumberOfAdresses)
+                {
+                    using (var topDevice = TopDevice.Create(shouter))
+                    {
+                        progressBar.Shout("Reading");
+                        startAddress = topDevice.ReadEprom(eprom, progressBar, bytes, startAddress, totalNumberOfAdresses);
+                    }
+                    if (startAddress < totalNumberOfAdresses)
+                        progressBar.Shout("Disposing Top USB interface and inits a new");
+                }
+                progressBar.Shout("Done!");
+                return bytes;
+            });
+        }
+        Tick(null);
+
+        currentlyCounting = false;
+    }
+    }

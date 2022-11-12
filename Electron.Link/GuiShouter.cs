@@ -12,7 +12,7 @@ namespace U2pa.Electron.Link
       set => guiProgressState.VerbosityLevel = value; 
     }
 
-    GuiShouter(GuiState guiProgressState) => this.guiProgressState = guiProgressState;
+    public GuiShouter(GuiState guiProgressState) => this.guiProgressState = guiProgressState;
 
     
     public void ShoutLine(int verbosity, string message, params object[] obj)
