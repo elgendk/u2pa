@@ -1,22 +1,27 @@
 ﻿@page "/counter"
+@using U2pa.Electron.Link
 
 <PageTitle>Counter</PageTitle>
 
 <h1>Counter</h1>
 
-<p role="status">Current count: @currentCount</p>
-<p role="status">State: @state</p>
-<p><progress value="@currentCount" max="100"></progress></p>
+<p role="status">Current count: @progressState.CurrentProgress</p>
+<p role="status">State: @progressState.CurrentProgressBarShout</p>
+<p><progress value="@progressState.CurrentProgress" max="@progressState.MaxProgress"></progress></p>
 
 
 <button class="btn btn-primary" @onclick="Start">Start</button>
 
 @code {
-    private int currentCount = 0;
+    private GuiState progressState;
     private bool currentlyCounting = false;
-    private string state = "<virgin>";
 
-    private void Tick(object _)
+    protected override void OnInitialized()
+    {
+        progressState = new GuiState(Tick);
+    }
+
+    private void Tick(object? _)
     {
         InvokeAsync(StateHasChanged);
     }
@@ -27,24 +32,31 @@
             return;
 
         currentlyCounting = true;
-        state = "Counting";
-
-        currentCount = 0;
-
-        using (var timer = new Timer(Tick, null, 0, 10))
+        progressState.Reset();
+        using (var progressBar = new GuiProgressBar(progressState))
         {
-            state = await Task<string>.Run(() =>
+            progressBar.Init(100);
+
+            var endState = await Task<string>.Run(() =>
             {
                 for (var i = 0; i < 100; i++)
                 {
-                    currentCount++;
+                    progressBar.Progress();
+                    if(i == 50)
+                      progressBar.Shout("We're half way there!");
+                    if(i == 60)
+                      progressBar.Shout("Ooooh!");
+                    if(i == 70)
+                      progressBar.Shout("Wooooooh!");
+                    if(i == 80)
+                      progressBar.Shout("Living on a prayer!");
                     var stamp = DateTime.Now.AddMilliseconds(100);
                     while (DateTime.Now < stamp) ;
                 }
                 return "Done!";
             });
+            progressBar.Shout(endState);
         }
-
         Tick(null);
 
         currentlyCounting = false;

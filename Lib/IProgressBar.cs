@@ -47,6 +47,6 @@ namespace U2Pa.Lib
     /// </summary>
     /// <param name="message">The message (may contain String.Format mark-ups).</param>
     /// <param name="obj">Parameters to the message.</param>
-    internal void Shout(string message, params object[] obj);
+    public void Shout(string message, params object[] obj);
   }
 }
