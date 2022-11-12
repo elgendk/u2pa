@@ -1,7 +1,8 @@
 using Electron.Gui.Data;
 using ElectronNET.API;
 using ElectronNET.API.Entities;
-
+using MediatR;
+using U2pa.Electron.Link.Handlers.Rom;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,7 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddElectron();
 builder.WebHost.UseElectron(args);
+builder.Services.AddMediatR(typeof(ReadCommand));
 
 var app = builder.Build();
 

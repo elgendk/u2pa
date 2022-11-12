@@ -1,26 +1,43 @@
 ﻿@page "/rom"
+@using MediatR
 @using U2Pa.Lib
 @using U2Pa.Lib.IC
 @using U2pa.Electron.Link
+@using U2pa.Electron.Link.Handlers.Rom
 
 <PageTitle>Rom</PageTitle>
 
 <h1>Read a 27512</h1>
 
-<p role="status">Address count: @progressState.CurrentProgress</p>
-<p role="status">State: @progressState.CurrentProgressBarShout</p>
-<p><progress value="@progressState.CurrentProgress" max="@progressState.MaxProgress"></progress></p>
+<p role="status">Address count: @guiState.CurrentProgress</p>
+<p role="status">State: @guiState.CurrentProgressBarShout</p>
+<p>
+  <select class="form-control selectpicker" @bind="SelectedRomType">
+  <option>--select--</option>
+  @foreach (var item in RomTypes)
+  {
+  <option value="@item">@item</option>
+  }
+  </select>
+</p>
+<p>
+  <progress value="@guiState.CurrentProgress" max="@guiState.MaxProgress"></progress>
+</p>
 
 
-<button class="btn btn-primary" @onclick="Start">Start</button>
+<button class="btn btn-primary" @onclick="Read">Read</button>
 
+@inject IMediator mediator
 @code {
-    private GuiState progressState;
-    private bool currentlyCounting = false;
+    private GuiState guiState;
+    private bool currentlyReading = false;
+    private List<string> RomTypes;
+    private string SelectedRomType;
 
-    protected override void OnInitialized()
+    protected override async void OnInitialized()
     {
-        progressState = new GuiState(Tick);
+        guiState = new GuiState(Tick);
+        RomTypes = (await mediator.Send(new GetAllRomTypesQuery(), CancellationToken.None));
     }
 
     private void Tick(object? _)
@@ -28,41 +45,25 @@
         InvokeAsync(StateHasChanged);
     }
 
-    private async void Start()
+    private async void Read()
     {
-        if (currentlyCounting)
+        if (currentlyReading)
             return;
-
-        var shouter = new GuiShouter(progressState);
-        currentlyCounting = true;
-        progressState.Reset();
-        IList<byte> result;
-
-        using (var progressBar = new GuiProgressBar(progressState))
+ 
+            
+        if(SelectedRomType == null || SelectedRomType == "--select--")
         {
-            progressBar.Shout("Init");
-            result = await Task<IList<byte>>.Run(() =>
-            {
-                IList<byte> bytes = new List<byte>();
-                var eprom = EpromXml.Specified["27512"];
-                var totalNumberOfAdresses = eprom.AddressPins.Length == 0 ? 0 : 1 << eprom.AddressPins.Length;
-                var startAddress = 0;
-                while (startAddress < totalNumberOfAdresses)
-                {
-                    using (var topDevice = TopDevice.Create(shouter))
-                    {
-                        progressBar.Shout("Reading");
-                        startAddress = topDevice.ReadEprom(eprom, progressBar, bytes, startAddress, totalNumberOfAdresses);
-                    }
-                    if (startAddress < totalNumberOfAdresses)
-                        progressBar.Shout("Disposing Top USB interface and inits a new");
-                }
-                progressBar.Shout("Done!");
-                return bytes;
-            });
+            ElectronNET.API.Electron.Dialog.ShowErrorBox("No Rom type selected", "Please select a valid Rom type");
+            return;
         }
-        Tick(null);
+            
+        currentlyReading = true;
+         
+        guiState.Reset();
+        var request = new ReadCommand(guiState, SelectedRomType);
+        await mediator.Send(request, CancellationToken.None);
 
-        currentlyCounting = false;
+        Tick(null);
+        currentlyReading = false;
     }
-    }
+}

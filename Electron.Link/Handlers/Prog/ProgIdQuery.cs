@@ -1,14 +1,13 @@
 ﻿using MediatR;
 using U2Pa.Lib;
-using U2Pa.Lib.IC;
 
 namespace U2pa.Electron.Link.Handlers.Prog
 {
-  public class ProgIdRequest : IRequest<string>
+  public class ProgIdQuery : IRequest<string>
   {
-    public class Handler : IRequestHandler<ProgIdRequest, string>
+    public class Handler : IRequestHandler<ProgIdQuery, string>
     {
-      public async Task<string> Handle(ProgIdRequest request, CancellationToken cancellationToken)
+      public async Task<string> Handle(ProgIdQuery request, CancellationToken cancellationToken)
       {
         var shouter = new Shouter(0);
         return await Task.FromResult(TopDevice.ReadTopDeviceIdString(shouter));
