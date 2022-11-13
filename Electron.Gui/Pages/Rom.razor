@@ -7,12 +7,18 @@
 
 <PageTitle>Rom</PageTitle>
 
+<p>
+  <select class="form-control selectpicker" @bind="SelectedOperation">
+    <option>Read</option>
+    <option>Write</option>
+  </select>
+</p>
 <p>Selected file: @SelectedFile</p>
 <p role="status">Address count: @guiState.CurrentProgress</p>
 <p role="status">State: @guiState.CurrentProgressBarShout</p>
 <p>
   <select class="form-control selectpicker" @bind="SelectedRomType">
-    <option>--select--</option>
+    <option>@uninitialized</option>
     @foreach (var item in RomTypes)
     {
       <option value="@item">@item</option>
@@ -24,15 +30,17 @@
 </p>
 
 <button class="btn btn-primary" @onclick="SelectFile">Select file</button>
-<button class="btn btn-primary" @onclick="Read">Read</button>
+<button class="btn btn-primary" @onclick="Execute">Execute</button>
 <button class="btn btn-primary" @onclick="Cancel">Cancel</button>
 
 @inject IMediator mediator
 @code {
+    const string uninitialized = "<choose>"; 
     private CancellationTokenSource tokenSource;
     private GuiState guiState;
-    private bool currentlyReading = false;
-    private string SelectedFile = "<none>";
+    private bool currentlyWorking= false;
+    private string SelectedOperation = "Read";
+    private string SelectedFile = uninitialized;
     private List<string> RomTypes;
     private string SelectedRomType;
 
@@ -48,42 +56,94 @@
     }
 
     private async void SelectFile()
-    {   
-        var files = (await ElectronNET.API.Electron.Dialog.ShowOpenDialogAsync(
-          ElectronNET.API.Electron.WindowManager.BrowserWindows.First(), new ElectronNET.API.Entities.OpenDialogOptions()));
-
-        if(files.Length == 1)
+    {
+        if (SelectedOperation == "Read")
         {
-            SelectedFile = files[0];
+            var file = (await ElectronNET.API.Electron.Dialog.ShowSaveDialogAsync(
+              ElectronNET.API.Electron.WindowManager.BrowserWindows.First(),
+              new ElectronNET.API.SaveDialogOptions()));
+
+            if (file != null)
+            {
+                SelectedFile = file;
+            }            
+        }     
+        else
+        {
+            var files = (await ElectronNET.API.Electron.Dialog.ShowOpenDialogAsync(
+              ElectronNET.API.Electron.WindowManager.BrowserWindows.First(),
+              new ElectronNET.API.Entities.OpenDialogOptions()));
+
+            if (files.Length == 1)
+            {
+                SelectedFile = files[0];
+            }            
         }
+
         Tick(null);
     }
 
-    private async void Read()
+    private bool EnsurePrerequisites()
     {
-        if (currentlyReading)
-            return;
+        if (currentlyWorking)
+            return false;
 
-
-        if(SelectedRomType == null || SelectedRomType == "--select--")
+        if(SelectedRomType == null || SelectedRomType == uninitialized)
         {
             ElectronNET.API.Electron.Dialog.ShowErrorBox("No Rom type selected", "Please select a valid Rom type");
-            return;
+            return false;
         }
 
-        currentlyReading = true;
+        if(SelectedFile == null || SelectedFile == uninitialized)
+        {
+            ElectronNET.API.Electron.Dialog.ShowErrorBox("No file name choosen", "Please choose a filename");
+            return false;
+        }
+
+        return true;
+    }
+
+    private async void Execute()
+    {
+        if (SelectedOperation == "Read")
+            await Read();
+        else
+            await Write();
+    }
+
+    private async Task Read()
+    {
+        if (!EnsurePrerequisites())
+            return;
+
+        currentlyWorking = true;
 
         guiState.Reset();
         var request = new ReadCommand(guiState, SelectedRomType, SelectedFile);
         tokenSource = new CancellationTokenSource();
         await mediator.Send(request, tokenSource.Token);
+        tokenSource = null!;
 
         Tick(null); 
-        currentlyReading = false;
+        currentlyWorking = false;
     }
 
-    private async void Cancel()
+    private async Task Write()
     {
-        tokenSource.Cancel();
+        if (!EnsurePrerequisites())
+            return;
+
+        currentlyWorking = true;
+
+        guiState.Reset();
+        var request = new WriteCommand(guiState, SelectedRomType, SelectedFile);
+        tokenSource = new CancellationTokenSource();
+        await mediator.Send(request, tokenSource.Token);
+        tokenSource = null!;
+
+        Tick(null); 
+        currentlyWorking = false;
     }
+
+    private async void Cancel() => tokenSource?.Cancel();
 }

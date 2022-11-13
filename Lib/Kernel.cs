@@ -171,11 +171,14 @@ namespace U2Pa.Lib
     /// </param>
     public static void RomWrite(IShouter shouter, string type, IList<byte> fileData, params string[] vppLevel)
     {
-      using (var topDevice = TopDevice.Create(shouter))
+      var eprom = EpromXml.Specified[type];
+      var totalNumberOfAdresses = eprom.AddressPins.Length == 0 ? 0 : 1 << eprom.AddressPins.Length;
+      using (var progressBar = new ProgressBar(shouter))
       {
-        var eprom = EpromXml.Specified[type];
-        topDevice.WriteEpromClassic(eprom, fileData);
-        //topDevice.WriteEpromFast(eprom, fileData);
+        using (var topDevice = TopDevice.Create(shouter))
+        {
+          topDevice.WriteEpromClassic(eprom, progressBar, fileData);
+        }
       }
     }
 

@@ -295,8 +295,11 @@ namespace U2Pa.Lib
     /// </summary>
     /// <param name="eprom">The EPROM type.</param>
     /// <param name="bytes">The bytes to write.</param>
-    /// <param name="patch">Not used yet!</param>
-    public void WriteEpromClassic(Eprom eprom, IList<byte> bytes, IList<int> patch = null)
+    public void WriteEpromClassic(
+      Eprom eprom,
+      IProgressBar progressBar,
+      IList<byte> bytes,
+      CancellationToken? cancellationToken = null)
     {
       var totalNumberOfAdresses = eprom.AddressPins.Length == 0 ? 0 : 1 << eprom.AddressPins.Length;
       var translator = eprom.GetPinTranslator(ZIFType);
@@ -318,58 +321,50 @@ namespace U2Pa.Lib
       ApplyVpp(translator.ToZIF, eprom.VppPins);
       PullUpsEnable(true);
 
-      using (var progress = new ProgressBar(Shouter))
+      progressBar.Init(totalNumberOfAdresses);
+      foreach (var address in Enumerable.Range(0, totalNumberOfAdresses))
       {
-        progress.Init(totalNumberOfAdresses);
-        foreach (var address in Enumerable.Range(0, totalNumberOfAdresses))
-        {
-          //if(patch != null)
-          //{
-          //  if(!patch.Contains(address))
-          //    continue;
-          //  progress.Shout("Now patching address {0}", address);
-          //}
+        cancellationToken?.ThrowIfCancellationRequested();
 
-          var zif = new ZIFSocket(40);
+        var zif = new ZIFSocket(40);
 
-          // Pull up all pins
-          zif.SetAll(true);
+        // Pull up all pins
+        zif.SetAll(true);
 
-          zif.Disable(eprom.GndPins, translator.ToZIF);
-          zif.Enable(eprom.Constants, translator.ToZIF);
-          zif.Disable(eprom.Program, translator.ToZIF);
-          zif.Disable(eprom.ChipEnable, translator.ToZIF);
-          zif.Disable(eprom.OutputEnable, translator.ToZIF);
+        zif.Disable(eprom.GndPins, translator.ToZIF);
+        zif.Enable(eprom.Constants, translator.ToZIF);
+        zif.Disable(eprom.Program, translator.ToZIF);
+        zif.Disable(eprom.ChipEnable, translator.ToZIF);
+        zif.Disable(eprom.OutputEnable, translator.ToZIF);
 
-          // Set address and data
-          eprom.SetAddress(zif, address);
-          var data = eprom.DataPins.Length > 8
-            ? new[] { bytes[2 * address], bytes[2 * address + 1] } 
-            : new[] { bytes[address]}; 
-          eprom.SetData(zif, data);
+        // Set address and data
+        eprom.SetAddress(zif, address);
+        var data = eprom.DataPins.Length > 8
+          ? new[] { bytes[2 * address], bytes[2 * address + 1] }
+          : new[] { bytes[address] };
+        eprom.SetData(zif, data);
 
-          // Prepare ZIF without programming in order to let it stabilize
-          // TODO: Do we really need to do this?
-          WriteZIF(zif, "Write address & data to ZIF");
-          
-          // In order to let the boost converter for manual Vcc
-          // spin up to full output voltage.
-          if(address == 0 && eprom.InitialProgDelay != 0)
-            BulkDevice.Delay(eprom.InitialProgDelay);
+        // Prepare ZIF without programming in order to let it stabilize
+        // TODO: Do we really need to do this?
+        WriteZIF(zif, "Write address & data to ZIF");
 
-          // Enter programming mode
-          zif.Enable(eprom.Program, translator.ToZIF);
-          zif.Enable(eprom.ChipEnable, translator.ToZIF);
-          WriteZIF(zif, "Start pulse E");
+        // In order to let the boost converter for manual Vcc
+        // spin up to full output voltage.
+        if (address == 0 && eprom.InitialProgDelay != 0)
+          BulkDevice.Delay(eprom.InitialProgDelay);
 
-          // Exit programming mode after at least <pulse> ms
-          zif.Disable(eprom.Program, translator.ToZIF);
-          zif.Disable(eprom.ChipEnable, translator.ToZIF);
-          BulkDevice.Delay(eprom.ProgPulse);
-          WriteZIF(zif, "End pulse E");
+        // Enter programming mode
+        zif.Enable(eprom.Program, translator.ToZIF);
+        zif.Enable(eprom.ChipEnable, translator.ToZIF);
+        WriteZIF(zif, "Start pulse E");
 
-          progress.Progress();
-        }
+        // Exit programming mode after at least <pulse> ms
+        zif.Disable(eprom.Program, translator.ToZIF);
+        zif.Disable(eprom.ChipEnable, translator.ToZIF);
+        BulkDevice.Delay(eprom.ProgPulse);
+        WriteZIF(zif, "End pulse E");
+
+        progressBar.Progress();
       }
     }
 
