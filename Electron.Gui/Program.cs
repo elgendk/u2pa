@@ -1,4 +1,3 @@
-using Electron.Gui.Data;
 using ElectronNET.API;
 using ElectronNET.API.Entities;
 using MediatR;
@@ -9,7 +8,6 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddElectron();
 builder.WebHost.UseElectron(args);
 builder.Services.AddMediatR(typeof(ReadCommand));

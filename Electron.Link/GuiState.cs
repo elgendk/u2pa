@@ -6,16 +6,16 @@
     public int CurrentProgress { get; internal set; }
     public string CurrentProgressBarShout { get; internal set; } = null!;
     public int VerbosityLevel { get; set; }
-    public Action<string> ShoutCallBack { get; internal set; }
+    public Action<int, string> ShoutCallBack { get; internal set; }
     public TimerCallback TimerCallBack { get; private set; }
 
     public GuiState(
       TimerCallback? timerCallBack = null,
-      Action<string>? shoutCallBack = null,
+      Action<int, string>? shoutCallBack = null,
       int verbosityLevel = 3)
     {
       TimerCallBack = timerCallBack ?? (o => { });
-      ShoutCallBack = shoutCallBack ?? (s => { });
+      ShoutCallBack = shoutCallBack ?? ((i, s) => { });
       VerbosityLevel = verbosityLevel;
     }
 

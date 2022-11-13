@@ -17,9 +17,9 @@ namespace U2pa.Electron.Link
     
     public void ShoutLine(int verbosity, string message, params object[] obj)
     {
-      if (verbosity <= VerbosityLevel && guiProgressState.ShoutCallBack != null)
+      if (guiProgressState.ShoutCallBack != null)
       {
-        guiProgressState.ShoutCallBack(String.Format((VerbosityLevel == 5 ? "V" + verbosity + ": " : "") + message, obj));
+        guiProgressState.ShoutCallBack(verbosity, String.Format(message, obj));
       }
     }
   }

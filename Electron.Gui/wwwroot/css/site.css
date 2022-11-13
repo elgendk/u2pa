@@ -12,6 +12,10 @@ a, .btn-link {
     color: #0071c1;
 }
 
+.logTextArea {
+  width: 99%;
+}
+
 .btn-primary {
     color: #fff;
     background-color: #1b6ec2;

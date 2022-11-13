@@ -4,7 +4,7 @@ namespace U2pa.Electron.Link
   public class GuiProgressBar : IProgressBar
   {
     private GuiState state;
-    private Timer refreshTimer;
+    private Timer? refreshTimer;
 
     public GuiProgressBar(GuiState state) => this.state = state; 
 
