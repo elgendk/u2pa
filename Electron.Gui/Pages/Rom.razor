@@ -13,22 +13,23 @@
 <p role="status">State: @guiState.CurrentProgressBarShout</p>
 <p>
   <select class="form-control selectpicker" @bind="SelectedRomType">
-  <option>--select--</option>
-  @foreach (var item in RomTypes)
-  {
-  <option value="@item">@item</option>
-  }
+    <option>--select--</option>
+    @foreach (var item in RomTypes)
+    {
+      <option value="@item">@item</option>
+    }
   </select>
 </p>
 <p>
   <progress value="@guiState.CurrentProgress" max="@guiState.MaxProgress"></progress>
 </p>
 
-
 <button class="btn btn-primary" @onclick="Read">Read</button>
+<button class="btn btn-primary" @onclick="Cancel">Cancel</button>
 
 @inject IMediator mediator
 @code {
+    private CancellationTokenSource tokenSource;
     private GuiState guiState;
     private bool currentlyReading = false;
     private List<string> RomTypes;
@@ -49,21 +50,27 @@
     {
         if (currentlyReading)
             return;
- 
-            
+
+
         if(SelectedRomType == null || SelectedRomType == "--select--")
         {
             ElectronNET.API.Electron.Dialog.ShowErrorBox("No Rom type selected", "Please select a valid Rom type");
             return;
         }
-            
+
         currentlyReading = true;
-         
+
         guiState.Reset();
         var request = new ReadCommand(guiState, SelectedRomType);
-        await mediator.Send(request, CancellationToken.None);
+        tokenSource = new CancellationTokenSource();
+        await mediator.Send(request, tokenSource.Token);
 
-        Tick(null);
+        Tick(null); 
         currentlyReading = false;
+    }
+
+    private async void Cancel()
+    {
+        tokenSource.Cancel();
     }
 }

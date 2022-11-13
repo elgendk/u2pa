@@ -213,7 +213,8 @@ namespace U2Pa.Lib
       IProgressBar progressBar, 
       IList<byte> bytes, 
       int fromAddress, 
-      int totalNumberOfAdresses)
+      int totalNumberOfAdresses,
+      CancellationToken? cancellationToken = null)
     {
       const int rewriteCount = 5;
       const int rereadCount = 5;
@@ -230,6 +231,8 @@ namespace U2Pa.Lib
       progressBar.Init(totalNumberOfAdresses);
       foreach (var address in Enumerable.Range(fromAddress, totalNumberOfAdresses - fromAddress))
       {
+        cancellationToken?.ThrowIfCancellationRequested();
+
         zif.SetAll(true);
         zif.Disable(eprom.GndPins, translator.ToZIF);
         zif.Enable(eprom.Constants, translator.ToZIF);

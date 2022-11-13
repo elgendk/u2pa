@@ -22,25 +22,36 @@ namespace U2pa.Electron.Link.Handlers.Rom
         var shouter = new GuiShouter(request.State);
         using (var progressBar = new GuiProgressBar(request.State))
         {
-          progressBar.Shout("Init");
-          await Task<IList<byte>>.Run(() =>
+          progressBar.Shout("Initializing ...");
+          try
           {
-            IList<byte> bytes = new List<byte>();
-            var eprom = EpromXml.Specified[request.RomType];
-            var totalNumberOfAdresses = eprom.AddressPins.Length == 0 ? 0 : 1 << eprom.AddressPins.Length;
-            var startAddress = 0;
-            while (startAddress < totalNumberOfAdresses)
+            await Task<IList<byte>>.Run(() =>
             {
-              using (var topDevice = TopDevice.Create(shouter))
+              IList<byte> bytes = new List<byte>();
+              var eprom = EpromXml.Specified[request.RomType];
+              var totalNumberOfAdresses = eprom.AddressPins.Length == 0 ? 0 : 1 << eprom.AddressPins.Length;
+              var startAddress = 0;
+              while (startAddress < totalNumberOfAdresses)
               {
-                progressBar.Shout("Reading");
-                startAddress = topDevice.ReadEprom(eprom, progressBar, bytes, startAddress, totalNumberOfAdresses);
+                using (var topDevice = TopDevice.Create(shouter))
+                {
+                  progressBar.Shout("Reading");
+                  startAddress = topDevice.ReadEprom(eprom, progressBar, bytes, startAddress, totalNumberOfAdresses, cancellationToken);
+                }
+                if (startAddress < totalNumberOfAdresses)
+                  progressBar.Shout("Disposing Top USB interface and inits a new");
               }
-              if (startAddress < totalNumberOfAdresses)
-                progressBar.Shout("Disposing Top USB interface and inits a new");
-            }
-            progressBar.Shout("Done!");
-          });
+              progressBar.Shout("Done!");
+            }, cancellationToken);
+          }
+          catch(TaskCanceledException)
+          {
+            progressBar.Shout("Canceled!");
+          }
+          catch (OperationCanceledException)
+          {
+            progressBar.Shout("Canceled!");
+          }
         }
         return true;
       }
